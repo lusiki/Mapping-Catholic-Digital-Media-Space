@@ -2,6 +2,12 @@
 
 A comprehensive computational analysis of **600,000+ posts** from Croatian Catholic digital media across multiple platforms (2021-2026). This project maps the structure, themes, emotions, and temporal dynamics of religious communication in the Croatian digital public sphere.
 
+## Working Paper
+
+📄 **[Attention Markets in Religious Digital Media: Mapping the Croatian Catholic Digital Space](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/paper/attention_markets_paper.html)**
+
+---
+
 ## Interactive Maps
 
 Explore the full interactive analyses:
@@ -121,7 +127,10 @@ The project classifies sources into meaningful actor types within the Croatian C
 ## Repository Structure
 
 ```
-├── maps/                           # Quarto source files and HTML outputs
+├── paper/                          # Working paper
+│   ├── attention_markets_paper.qmd # Paper source
+│   └── attention_markets_paper.html# Paper rendered
+├── maps/                           # Interactive map analyses
 │   ├── map_1_platform_actors.qmd   # Map 1 source
 │   ├── map_1_platform_actors.html  # Map 1 rendered
 │   ├── map_2_thematic.qmd          # Map 2 source
@@ -164,9 +173,3 @@ https://github.com/lusiki/Mapping-Catholic-Digital-Media-Space
 ## Author
 
 **DigiKat Project**
-
----
-
-## License
-
-[Add license information]
