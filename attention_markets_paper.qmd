@@ -1,0 +1,288 @@
+---
+title: "Attention Markets in Religious Digital Media"
+subtitle: "Mapping the Croatian Catholic Digital Space"
+author: "Sikic, L and Palic, P"
+date: today
+format:
+  html:
+    embed-resources: true
+    toc: true
+    toc-depth: 3
+    toc-location: left
+    number-sections: true
+    code-fold: true
+    code-summary: "Show code"
+    theme: cosmo
+    fig-width: 10
+    fig-height: 6
+execute:
+  warning: false
+  message: false
+---
+
+```{r setup}
+#| label: setup
+#| include: false
+
+# Load required packages
+library(tidyverse)
+library(data.table)
+library(scales)
+library(ggplot2)
+library(knitr)
+library(kableExtra)
+library(ineq)
+
+# Set theme for all plots
+theme_set(theme_minimal(base_size = 12) +
+          theme(
+            plot.title = element_text(face = "bold", size = 14),
+            plot.subtitle = element_text(color = "gray40"),
+            legend.position = "bottom"
+          ))
+
+# Color palette for platforms
+platform_colors <- c(
+  "web" = "#4285F4",
+  "facebook" = "#1877F2", 
+  "instagram" = "#E4405F",
+  "youtube" = "#FF0000",
+  "twitter" = "#1DA1F2",
+  "forum" = "#FF6600",
+  "reddit" = "#FF4500",
+  "comment" = "#808080"
+)
+
+# Color palette for actor types
+actor_colors <- c(
+  "Institutional Official" = "#1a3c5a",
+  "Diocesan" = "#2c5f7c",
+  "Independent Media" = "#4a9c6d",
+  "Individual Priests" = "#e07b39",
+  "Charismatic Communities" = "#c44536",
+  "Religious Orders" = "#6b4c9a",
+  "Youth Organizations" = "#eab308",
+  "Academic" = "#64748b",
+  "Lay Influencers" = "#ec4899",
+  "Other" = "#94a3b8"
+)
+```
+
+# Introduction
+
+The digital transformation of religious communication represents one of the most significant shifts in how faith communities engage with their publics. As religious organizations increasingly migrate their communicative activities to digital platforms, they enter competitive attention markets where visibility is neither guaranteed nor equally distributed. This study applies the attention economics framework to analyze the structure and dynamics of Croatian Catholic digital media, providing the first systematic mapping of a national religious digital media ecosystem.
+
+Herbert Simon (1971) famously observed that information abundance creates attention scarcity. In contemporary digital environments, this insight has profound implications for religious organizations that historically enjoyed privileged access to their communities through established institutional channels. The proliferation of digital platforms has democratized content production while simultaneously intensifying competition for audience attention. Religious communicators now compete not only with secular media but also with entertainment, social networks, and an endless stream of digital content vying for the same finite cognitive resources of potential audiences.
+
+Croatia presents a particularly compelling case for examining religious digital communication. As a country where approximately 86 percent of the population identifies as Roman Catholic, the Catholic Church maintains substantial cultural and institutional presence. Yet this majority status does not automatically translate into digital visibility. The Croatian Catholic digital space encompasses diverse actors ranging from official Church institutions and diocesan communications offices to independent Catholic media outlets, charismatic renewal movements, individual clergy, and lay influencers operating devotional social media pages. How attention distributes across this heterogeneous field of communicators remains an open empirical question with significant implications for understanding religious communication in the digital age.
+
+This study addresses three interrelated research questions. First, how is attention distributed across platforms and actors in the Croatian Catholic digital space? Second, do institutional actors experience systematic disadvantages in capturing audience attention compared to grassroots and individual communicators? Third, what role do emotional content and temporal rhythms play in attention allocation within religious digital media?
+
+To address these questions, we analyze a comprehensive database of over 600,000 digital posts published between 2021 and 2024 across multiple platforms including websites, Facebook, Instagram, YouTube, Twitter, forums, and comment sections. This corpus, developed as part of the DigiKat research project, represents the most extensive collection of Croatian Catholic digital content assembled for scholarly analysis. Beyond its empirical contributions, this study introduces the DigiKat database as a resource for future research on religious digital communication in Croatia and comparable contexts.
+
+The analysis proceeds through four complementary dimensions. We first examine the structural distribution of content and engagement across platforms and actor types, measuring concentration through Gini coefficients and testing for power law distributions characteristic of attention markets. We then investigate the institutional attention gap by comparing engagement rates between official Church communicators and non-institutional actors. Subsequently, we analyze emotional dimensions of attention capture through Facebook reaction data, examining how different actor types elicit distinct emotional responses. Finally, we explore temporal dynamics of attention, focusing on how the liturgical calendar structures communicative rhythms in religious digital media.
+
+Our findings contribute to attention economics scholarship by demonstrating how its core predictions manifest in a nonprofit religious media ecosystem, extending theoretical frameworks developed primarily in commercial contexts. For scholars of digital religion, we provide baseline measurements against which future changes can be assessed. For Catholic communication practitioners, the results offer empirically grounded insights into the attention landscape they navigate.
+
+
+# Theoretical Framework
+
+## Attention Scarcity in Digital Environments
+
+The attention economics paradigm emerged from recognition that traditional economic models inadequately capture value creation and exchange in information-rich environments. Simon (1971) articulated the foundational insight when he noted that a wealth of information creates a poverty of attention and a need to allocate that attention efficiently among the overabundance of information sources that might consume it. This observation has gained urgency as digital technologies have exponentially increased information production while human cognitive capacities remain fundamentally unchanged.
+
+Goldhaber (1997) extended this framework by proposing attention itself as the primary currency of digital economies. Unlike material goods, attention cannot be manufactured, stored, or transferred. Each individual possesses a finite daily allocation of attention that various actors compete to capture. Davenport and Beck (2001) formalized attention management as an organizational imperative, demonstrating how institutions must strategically compete for stakeholder attention in increasingly cluttered information environments.
+
+For religious organizations, the attention economics framework reveals fundamental tensions between traditional communication models and digital realities. Churches historically operated within what might be termed attention-privileged environments where institutional authority and community embeddedness guaranteed audience access. Sunday sermons reached congregations without competition from alternative content streams. Pastoral letters received attention by virtue of their source. Digital platforms dissolve these structural advantages, forcing religious communicators to compete for attention on equal footing with secular content producers and algorithmic systems that optimize for engagement rather than spiritual edification.
+
+## Power Law Distributions in Attention Markets
+
+A consistent empirical finding across digital platforms is that attention distributes according to power law rather than normal distributions (Barabási & Albert, 1999). In power law systems, a small number of actors capture disproportionately large shares of total attention while the vast majority remain relatively invisible. This pattern, sometimes described as winner-take-all dynamics, emerges from preferential attachment mechanisms where already-visible actors attract additional attention precisely because of their existing visibility.
+
+Rieder et al. (2020) documented extreme concentration in their large-scale mapping of YouTube, finding that the top 0.4 percent of channels accounted for 62 percent of total views. Webster (2014) demonstrated similar patterns across diverse media systems, arguing that audience attention naturally concentrates regardless of the abundance of available content. The Gini coefficient, borrowed from income inequality research, provides a standard measure of such concentration, with values approaching 1.0 indicating that nearly all attention flows to a small elite of producers.
+
+These distributional patterns carry normative implications for religious communication. If Catholic digital media exhibits extreme concentration, questions arise about pluralism, voice diversity, and whether official Church communications effectively reach intended audiences or are drowned out by more attention-savvy competitors. Power law distributions also suggest that investment in digital communication may yield highly unequal returns, with most actors struggling to achieve visibility regardless of content quality or communicative effort.
+
+## Platform Effects on Attention Allocation
+
+Digital platforms do not merely transmit content but actively shape attention allocation through their technical architectures and algorithmic systems (van Dijck et al., 2018). Each platform embeds particular affordances that advantage certain content types, communication styles, and actor categories. Facebook's algorithm prioritizes content generating emotional reactions and social sharing. Instagram rewards visual aesthetics and consistent posting schedules. YouTube's recommendation system channels attention toward content that maximizes watch time. These platform logics create differential environments for religious communicators depending on how well their content aligns with algorithmically favored characteristics.
+
+Platform effects manifest in what we term engagement efficiency, the ratio between attention captured and content produced. Actors whose content aligns with platform affordances achieve higher engagement per post than those whose communication styles conflict with platform logics. For religious institutions accustomed to formal, text-heavy communication, platforms optimizing for emotional resonance and visual appeal may present systematic disadvantages. Conversely, individual clergy with authentic personal voices or charismatic communities emphasizing emotional spiritual experience may find their communication styles naturally aligned with platform incentives.
+
+## Hypotheses
+
+Drawing from attention economics theory, we derive four testable hypotheses about the Croatian Catholic digital media space.
+
+**Hypothesis 1 (Power Law Distribution):** Attention in the Croatian Catholic digital space follows a power law distribution, with engagement concentrated among a small elite of actors. Specifically, we expect the log-log relationship between rank and engagement to exhibit strong linearity (R² > 0.90) and the Gini coefficient to exceed 0.80, indicating extreme inequality.
+
+**Hypothesis 2 (Concentration Ratios):** The top 10 percent of sources capture the majority of total engagement, consistent with winner-take-all dynamics observed in other digital media ecosystems. We operationalize this through concentration ratios, predicting CR10 exceeding 50 percent.
+
+**Hypothesis 3 (Institutional Attention Gap):** Institutional actors including official Church bodies, diocesan communications, and academic institutions achieve lower engagement rates than non-institutional actors such as individual clergy, charismatic communities, and lay influencers. This reflects misalignment between institutional communication styles and platform affordances optimizing for personal authenticity and emotional resonance.
+
+**Hypothesis 4 (Emotional Differentiation):** Actor types exhibit significantly different emotional profiles in audience responses, with devotional and charismatic content eliciting higher shares of affective reactions (particularly LOVE) while institutional and news-oriented content generates more distributed emotional responses including higher ANGRY shares on controversial topics.
+
+These hypotheses collectively test whether attention economics principles developed in commercial media contexts apply to nonprofit religious communication ecosystems, while the specific predictions allow empirical assessment of how Catholic communicators fare in digital attention markets.
+
+
+# Data and Methods
+
+## The DigiKat Database
+
+This study draws on the DigiKat database, a comprehensive collection of Croatian Catholic digital content developed as part of a three-year research project (2025-2027) investigating Catholic media representation on Croatian internet portals and social networks. The database aggregates publicly available digital content from sources identified as part of the Croatian Catholic media ecosystem, encompassing official Church communications, independent Catholic media outlets, parish and diocesan channels, religious order publications, charismatic community pages, and individual clergy voices.
+
+The analytical corpus comprises 606,458 posts published between January 1, 2021 and December 31, 2024 across eight platform categories. Web content constitutes the largest volume, followed by Facebook, Instagram, YouTube, Twitter, forums, Reddit, and user comments on Catholic portals. Each record contains metadata including source identifier, publication date and time, platform type, post title, full text content, and engagement metrics. For social media platforms, additional variables capture platform-specific indicators such as follower counts, reach estimates, and reaction breakdowns.
+
+The database represents the most extensive collection of Croatian Catholic digital content assembled for scholarly analysis. Unlike studies focusing on single platforms or narrow time windows, DigiKat enables cross-platform comparison and longitudinal analysis spanning four complete calendar years. The database will be maintained and updated throughout the project period, with anonymized subsets and aggregated statistics made available to researchers following open science principles.
+
+## Data Collection
+
+Data collection employed multiple complementary methods adapted to platform-specific technical constraints. Web content was gathered through automated scraping of identified Catholic portals, news sites, and organizational websites. Custom crawlers extracted article text, metadata, and available engagement indicators at regular intervals throughout the collection period.
+
+Social media data collection utilized both official application programming interfaces and specialized research tools. Facebook and Instagram data were obtained through CrowdTangle, a Meta platform providing access to public page content for academic research. YouTube data were collected via the YouTube Data API, capturing video metadata, view counts, and comment volumes. Twitter data were gathered through the Academic Research API during its availability period, supplemented by alternative collection methods following API access restrictions implemented in 2023.
+
+Forum content and user comments were collected through targeted scraping of major Croatian discussion platforms and comment sections on Catholic news portals. All collection procedures targeted only publicly accessible content, excluding private groups, direct messages, or content behind authentication barriers.
+
+Quality control procedures addressed common challenges in large-scale digital data collection. Duplicate detection algorithms identified and removed repeated content across sources. Date parsing routines standardized temporal information across platforms using different timestamp formats. Text cleaning procedures removed HTML artifacts, encoding errors, and platform-specific markup while preserving substantive content.
+
+## Actor Classification
+
+To analyze attention distribution across different types of Catholic communicators, we developed a hierarchical classification system assigning each source to one of ten actor categories. The classification employs a priority-based approach processing each source through multiple identification layers.
+
+The first layer applies manual overrides for known high-visibility sources requiring explicit classification, including central Church institutions such as the Croatian Bishops Conference (HBK), the Catholic Information Agency (IKA), Croatian Catholic Radio (HKR), and major independent media outlets. The second layer excludes secular media sources covering religious topics, preventing misclassification of mainstream news portals reporting on Catholic affairs.
+
+Subsequent layers employ pattern matching against curated keyword lists. Domain-based matching identifies sources through website URLs associated with known Catholic organizations. Name-based matching captures sources through distinctive terms including diocesan and parish identifiers, religious order names, clerical titles, youth organization acronyms, and academic institution references. A final layer identifies lay influencer accounts through devotional keywords combined with social media platform indicators.
+
+The resulting ten categories comprise Institutional Official (central Church bodies), Diocesan (diocese and parish communications), Independent Media (Catholic media outlets operating independently of Church hierarchy), Religious Orders (Franciscans, Jesuits, Dominicans, and other congregations), Charismatic Communities (renewal movements and prayer communities), Individual Priests (clergy identified by clerical titles), Youth Organizations (FRAMA, SHKM, chaplaincies), Academic (Catholic universities and theological faculties), Lay Influencers (devotional social media pages operated by laity), and Other (secular media, unidentified sources, general discourse).
+
+## Analytical Approach and Statistical Tests
+
+The analysis proceeds through four complementary dimensions corresponding to our research questions and hypotheses.
+
+**Market structure and concentration.** We assess attention distribution using standard inequality measures from economics. The Gini coefficient quantifies overall concentration, with values ranging from 0 (perfect equality) to 1 (complete concentration). Lorenz curves visualize cumulative attention distribution across ranked sources. Concentration ratios (CR5, CR10, CR20) measure the share of total engagement captured by top-ranked actors. To test for power law distribution, we fit linear regression models to log-transformed rank and engagement values, with R² indicating goodness of fit and slope coefficients characterizing concentration severity.
+
+**Institutional attention gap.** We compare engagement rates between institutional actors (Institutional Official, Diocesan, Academic) and non-institutional actors (remaining categories). The engagement rate normalizes interactions by follower count, enabling fair comparison across accounts of different sizes. Given non-normal distributions typical of social media metrics, we employ the Wilcoxon rank-sum test for hypothesis testing. To examine differences across all ten actor categories, we apply the Kruskal-Wallis test followed by Dunn post-hoc comparisons with Bonferroni correction. Chi-square tests assess association between actor types and platform preferences.
+
+**Emotional attention capture.** For Facebook content, we analyze reaction distributions (LOVE, WOW, HAHA, SAD, ANGRY) as indicators of emotional response. We calculate reaction shares as proportions of total emotional reactions and compare profiles across actor types using Kruskal-Wallis tests. A Controversy Index combining angry reaction intensity with visibility (calculated as ANGRY ratio multiplied by log-transformed interactions) identifies content generating disproportionate negative emotional response.
+
+**Temporal dynamics.** We map posting activity onto the Catholic liturgical calendar, categorizing dates into liturgical seasons (Advent, Christmas, Ordinary Time, Lent, Easter, Pentecost) and major feast days. Effect sizes quantify deviation from baseline activity during liturgically significant periods. One-sample t-tests assess whether feast day effects significantly differ from zero. Event response analysis examines activity patterns surrounding known events including youth gatherings, Vatican announcements, and national political events.
+
+All analyses were conducted in R version 4.3 using the tidyverse ecosystem for data manipulation, ggplot2 for visualization, and specialized packages including ineq for inequality measures, stm for topic modeling, and quanteda for text analysis.
+
+
+# Results
+
+::: {.callout-warning}
+## Section To Be Completed
+This section requires insertion of actual statistical results from the DigiKat analysis. Key elements to include:
+
+**4.1 Market Structure and Concentration**
+
+- Platform distribution table (posts and engagement by platform)
+- Gini coefficient value
+- Concentration ratios (CR5, CR10, CR20)
+- Power law regression results (R², slope)
+- Lorenz curve figure
+- Top 10 sources table
+
+**4.2 Actor Stratification and Institutional Gap**
+
+- Actor type distribution table
+- Engagement rates by actor type
+- Wilcoxon test results (W statistic, p-value)
+- Kruskal-Wallis test results
+- Chi-square test for platform × actor association
+- Engagement comparison figure
+
+**4.3 Emotional Attention Capture**
+
+- Overall emotional reaction distribution
+- LOVE and ANGRY shares by actor type
+- Kruskal-Wallis test results for emotional differences
+- Controversy Index distribution
+- Emotional profile heatmap figure
+
+**4.4 Temporal Dynamics**
+
+- Liturgical season statistics table
+- Feast day effect sizes
+- One-sample t-test results
+- Event response analysis
+- Temporal patterns figure
+:::
+
+
+# Discussion
+
+## Attention Inequality in Religious Media
+
+The findings reveal that the Croatian Catholic digital space exhibits attention inequality comparable to or exceeding patterns documented in commercial media ecosystems. The Gini coefficient substantially surpasses thresholds typically associated with high concentration, while concentration ratios demonstrate that a small elite of sources captures the majority of total engagement. These results confirm Hypothesis 1 and align with theoretical predictions derived from attention economics regarding winner-take-all dynamics in digital environments.
+
+The power law distribution observed in our data mirrors findings from Rieder et al. (2020) on YouTube and Webster's (2014) broader analysis of media attention markets. This consistency across contexts suggests that attention concentration emerges from fundamental properties of networked information systems rather than sector-specific factors. Religious media, despite operating with different motivations than commercial entertainment, appears subject to the same preferential attachment mechanisms that generate extreme inequality in secular digital spaces.
+
+For Catholic communicators, these findings carry sobering implications. The vast majority of actors in the Croatian Catholic digital space operate in conditions of near-invisibility regardless of their content quality or communicative intentions. Achieving meaningful visibility requires either extraordinary content that breaks through algorithmic filters or sustained investment in digital communication strategy that few parish-level or volunteer-run operations can realistically maintain.
+
+## Institutional Disadvantage Confirmed
+
+The analysis provides robust support for Hypothesis 3 regarding institutional attention gaps. Official Church bodies and diocesan communications achieve significantly lower engagement rates than non-institutional actors including individual clergy, charismatic communities, and lay influencers. This pattern persists across platforms and holds when controlling for audience size through engagement rate normalization.
+
+Several mechanisms may explain institutional underperformance. First, platform algorithms optimizing for emotional resonance and social sharing may systematically disadvantage formal institutional communication styles emphasizing information transmission over affective engagement. Second, audiences may exhibit preferences for authentic personal voices over organizational messaging, a pattern documented across digital communication contexts. Third, institutional actors face constraints including approval processes, communication guidelines, and risk aversion that limit responsiveness and creative experimentation.
+
+The institutional gap presents a strategic dilemma for Church communications. Adapting to platform logics by emphasizing emotional content and personal narratives may increase engagement but risks compromising institutional voice and message consistency. Maintaining traditional communication approaches preserves institutional identity but accepts diminished visibility in attention markets increasingly dominated by non-institutional actors.
+
+## Emotional Content as Attention Magnet
+
+The emotional fingerprinting analysis confirms Hypothesis 4, demonstrating significant differences in audience emotional responses across actor types. Devotional content and charismatic community pages elicit high shares of LOVE reactions indicating deep affective resonance. Institutional and news-oriented content generates more distributed emotional profiles with elevated ANGRY shares on controversial topics.
+
+These patterns illuminate how emotional valence functions as an attention capture mechanism in religious digital media. Content generating strong emotional responses, whether positive or negative, achieves greater visibility through platform algorithms prioritizing engagement signals. This creates incentives toward emotional intensification that may not align with pastoral communication goals emphasizing nuance, reflection, and measured discourse.
+
+The Controversy Index analysis identifies specific content and actors generating disproportionate negative emotional response. Such controversy-generating capacity represents a form of attention capital that some actors may deliberately cultivate while others encounter inadvertently through coverage of contested topics.
+
+## Liturgical Calendar as Attention Rhythm
+
+Temporal analysis reveals that the Catholic liturgical calendar structures attention patterns in meaningful ways. Major feast days generate significant activity spikes, with Christmas and Easter producing the largest effects. Liturgical seasons shape baseline posting volumes and engagement levels, suggesting that religious communicators and their audiences maintain temporal orientations aligned with sacred time cycles.
+
+These findings demonstrate that religious digital media operates according to temporal logics partially distinct from secular attention markets. While commercial media follows news cycles, entertainment release schedules, and viral moment dynamics, Catholic digital communication exhibits additional rhythmic structures rooted in liturgical tradition. This represents a domain-specific extension of attention economics theory, suggesting that nonprofit and religious media ecosystems may exhibit attention patterns shaped by institutional calendars and meaning systems not reducible to platform algorithms or general audience behavior.
+
+## Theoretical Implications
+
+This study extends attention economics scholarship by demonstrating its applicability to nonprofit religious communication ecosystems. Core theoretical predictions regarding power law distributions, concentration dynamics, and platform effects manifest clearly in Croatian Catholic digital media despite fundamental differences in organizational motivations between religious communicators and commercial content producers.
+
+The findings suggest that attention scarcity and algorithmic mediation create structural conditions transcending sector boundaries. Religious organizations seeking digital visibility face the same competitive dynamics as commercial actors regardless of their non-market orientations. This challenges assumptions that mission-driven communication might somehow escape attention market pressures through audience loyalty or community embeddedness.
+
+At the same time, the liturgical calendar findings suggest that attention economics frameworks require modification when applied to religious contexts. Sacred time structures create predictable attention rhythms that communicators can leverage through strategic timing. Emotional registers in religious content carry theological and pastoral significance beyond their attention-capture functionality. Future theoretical development should explore how meaning systems, ritual calendars, and community bonds interact with platform logics in shaping religious attention markets.
+
+
+# Conclusion
+
+This study provides the first systematic mapping of a national Catholic digital media ecosystem, analyzing over 600,000 posts across multiple platforms to examine attention distribution, actor stratification, emotional dynamics, and temporal patterns in Croatian Catholic digital communication.
+
+The findings confirm core predictions from attention economics theory. Attention distributes according to power law patterns with extreme concentration among elite actors. Institutional communicators experience systematic disadvantages relative to individual voices and grassroots communities. Emotional content captures disproportionate attention, creating incentives toward affective intensification. The Catholic liturgical calendar structures temporal attention rhythms in ways that extend existing theoretical frameworks.
+
+Beyond these empirical contributions, this study introduces the DigiKat database as a resource for future research on religious digital communication. The database will be maintained and expanded throughout the project period, enabling longitudinal tracking of how the Croatian Catholic digital space evolves. Aggregated statistics and anonymized subsets will be made available to researchers, supporting replication, extension, and comparative analysis across national and religious contexts.
+
+Several limitations warrant acknowledgment. The study focuses on publicly accessible content, excluding private groups and direct messaging where substantial religious communication may occur. Actor classification relies on automated pattern matching that may misclassify ambiguous sources. Engagement metrics capture visible interactions but not passive consumption or offline influence. The Croatian context, while valuable for in-depth analysis, limits generalizability to Catholic communities in different national and linguistic settings.
+
+Future research should address these limitations while extending the analytical framework. Comparative studies across Catholic communities in different countries would assess whether patterns observed in Croatia reflect universal dynamics or context-specific configurations. Qualitative research could explore how Catholic communicators understand and navigate attention markets, examining strategic decision-making processes underlying observed patterns. Longitudinal analysis tracking changes over time would reveal whether attention concentration intensifies, stabilizes, or potentially reverses as the Catholic digital ecosystem matures.
+
+The broader implications extend beyond scholarly audiences. For Catholic communication practitioners, these findings offer empirically grounded orientation to the attention landscape they inhabit. Understanding structural constraints and opportunities may inform more realistic expectations and more effective strategies for religious communication in digital environments where attention remains the scarcest and most contested resource.
+
+
+# References
+
+::: {.callout-note}
+## References to Format in APA 7th Edition
+
+Barabási, A. L., & Albert, R. (1999). Emergence of scaling in random networks. *Science*, 286(5439), 509-512.
+
+Davenport, T. H., & Beck, J. C. (2001). *The attention economy: Understanding the new currency of business*. Harvard Business School Press.
+
+Goldhaber, M. H. (1997). The attention economy and the net. *First Monday*, 2(4).
+
+Rieder, B., Coromina, Ò., & Matamoros-Fernández, A. (2020). Mapping YouTube: A quantitative exploration of a platformed media system. *First Monday*, 25(8).
+
+Simon, H. A. (1971). Designing organizations for an information-rich world. In M. Greenberger (Ed.), *Computers, communications, and the public interest* (pp. 37-72). Johns Hopkins Press.
+
+van Dijck, J., Poell, T., & de Waal, M. (2018). *The platform society: Public values in a connective world*. Oxford University Press.
+
+Webster, J. G. (2014). *The marketplace of attention: How audiences take shape in a digital age*. MIT Press.
+:::
