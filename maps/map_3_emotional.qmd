@@ -26,7 +26,7 @@ execute:
 # ============================================================================
 # CONFIGURATION - ADJUST THESE PARAMETERS
 # ============================================================================
-SAMPLE_PCT <- 0.10
+SAMPLE_PCT <- 0.05
 # ============================================================================
 
 library(tidyverse)
@@ -91,6 +91,28 @@ emotion_colors <- c(
 
 This document presents **Map 3 of the DigiKat project**, analyzing the emotional structure of Croatian Catholic digital media. The core question driving this analysis is **What emotional register characterizes Croatian Catholic digital communication, and where does controversy emerge?**
 
+## Methodological Overview
+
+**Sentiment analysis** classifies text into positive, neutral, or negative categories based on the emotional tone of the language used. This automated classification (AUTO_SENTIMENT in the data) provides a high level view of emotional valence across the corpus.
+
+**Facebook reactions** offer a more granular view of audience emotional response. Unlike simple likes, reactions (LOVE, WOW, HAHA, SAD, ANGRY) capture distinct emotional states, enabling us to construct emotional fingerprints for different actors and content types.
+
+**Key metrics in this analysis:**
+
+| Metric | Definition | Interpretation |
+|--------|------------|----------------|
+| Sentiment ratio | Positive posts / Negative posts | Higher values indicate more positive tone |
+| LOVE share | LOVE reactions / Total emotional reactions | Measures affection/appreciation response |
+| ANGRY share | ANGRY reactions / Total emotional reactions | Measures anger/outrage response |
+| Controversy Index | (ANGRY / Interactions) x log(Interactions) | Combines anger intensity with reach |
+
+**Interpretation guidance:**
+
+- High LOVE share with low ANGRY share indicates devotional, well received content
+- High ANGRY share may indicate controversial topics or provocative framing
+- Controversy Index accounts for both intensity (ANGRY ratio) and visibility (interaction volume)
+- Differences between automated sentiment and audience reactions reveal gaps between intent and reception
+
 ```{r load-data}
 #| label: load-data
 
@@ -113,46 +135,165 @@ date_range <- paste(min(dta$DATE), "to", max(dta$DATE))
 ```{r actor-classification}
 #| label: actor-classification
 
-secular_media_exclusions <- c(
-  "slobodnadalmacija", "vecernji", "index.hr", "jutarnji", "novilist",
-  "24sata", "direktno.hr", "nacional", "tportal", "dnevnik.hr", "hrt.hr",
-  "n1info", "rtl.hr", "net.hr", "telegram.hr", "story.hr", "forum.hr",
-  "glasistre", "dnevno.hr", "prigorski", "glas-slavonije", "croativ",
-  "oluja.info", "maxportal", "hkv.hr", "icv.hr", "novosti.hr", "7dnevno",
-  "mnovine", "sjever.hr", "dulist.hr", "pozega.eu", "sibenik.in",
-  "ferata.hr", "epodravina", "glasgacke", "radio-zlatar", "medjimurski.hr",
-  "sbperiskop", "zagorje-international", "pozeski", "novine.hr",
-  "dubrovnikinsider", "regionalni", "leportale", "varazdinske-vijesti",
-  "radionasice", "brodportal", "ljportal", "dubrovnikportal", "01portal",
-  "tomislavnews", "hia.com.hr", "portalnovosti", "antenazadar",
-  "dalmacijanews", "zadarskilist", "medjimurjepress",
-  "zagreb.info", "034portal", "057info", "inmemoriam", "magicus.info",
-  "book.hr", "mojzagreb.info", "skole.hr", "tvprofil", "cityportal",
-  "klikaj.hr", "lika-online", "priznajem.hr", "ploce.com",
-  "dragovoljac.com", "sbonline", "narod.hr", "infokiosk", "hrsvijet",
-  "tomislavcity", "vrisak.info", "croatia", "anonymous_user", "reddit",
-  "dalmacijadanas"
+# =============================================================================
+# ACTOR CLASSIFICATION V4 - SYNCHRONIZED WITH MAP 1
+# =============================================================================
+# Uses hierarchical priority: manual overrides -> secular exclusions -> 
+# domain matching -> pattern matching -> lay influencer detection -> default
+# =============================================================================
+
+# MANUAL OVERRIDES: Highest priority explicit classifications
+manual_overrides <- list(
+  "Institutional Official" = c(
+    "hrvatska katolička mreža", "hrvatska katolicka mreza",
+    "informativna katolička agencija", "informativna katolicka agencija",
+    "hrvatski katolički radio", "hrvatski katolicki radio",
+    "hrvatska biskupska konferencija", "ika", "hkr", "hkm", "hbk",
+    "tiskovni ured hbk", "radio marija"
+  ),
+  "Independent Media" = c(
+    "laudato tv", "laudatotv", "laudato.tv", "laudato.hr", "laudato",
+    "bitno.net", "bitno net", "glas koncila", "glaskoncila",
+    "nova eva", "nova-eva", "verbum", "totus tuus", "totus-tuus",
+    "katolički tjednik", "katolicki tjednik", "kršćanska sadašnjost",
+    "krscanska sadasnjost", "mir i dobro", "svjetlo riječi",
+    "novizivot.net", "novi zivot", "novi život"
+  ),
+  "Charismatic Communities" = c(
+    "božja pobjeda", "bozja pobjeda", "bozjapobjeda",
+    "muževni budite", "muzevni budite", "muzevnibudite",
+    "srce isusovo", "srceisuovo", "cenacolo", "comunità cenacolo",
+    "duhovna obnova", "molitvena snaga",
+    "dom molitve slavonski brod", "dom molitve",
+    "molitvena zajednica sv. josipa"
+  ),
+  "Lay Influencers" = c(
+    "katolička obitelj", "katolicka obitelj",
+    "marija majka isusova", "božanske molitve", "bozanske molitve",
+    "moćne molitve tv", "mocne molitve tv", "moćne molitve", "mocne molitve",
+    "katoličke molitve", "katolicke molitve",
+    "pulherissimus", "pod smokvom",
+    "hrana za dušu", "hrana za dusu",
+    "добровољци", "miletić marin", "miletic marin",
+    "dijete vjere", "vjera",
+    "kapljice ljubavi božje", "kapljice ljubavi bozje",
+    "kršćanstvo", "krscanstvo",
+    "jutarnja molitva duhu svetom", "blago molitve",
+    "biblija krunice molitve",
+    "molitve bogu",
+    "vojnik sreće", "vojnik srece", "duhovne poruke i inspiracija",
+    "kes duhovni kutak", "duhovni kutak",
+    "molitve.hr", "duhovniportal.com", "duhovniportal"
+  ),
+  "Diocesan" = c(
+    "zagrebačka nadbiskupija", "zagrebacka nadbiskupija",
+    "sisačka biskupija", "sisacka biskupija",
+    "župa šurkovac", "zupa surkovac", "sveta mati slobode",
+    "župa sv. ilije proroka metković", "zupa sv. ilije proroka metkovic",
+    "župa uznesenja bdm", "zupa uznesenja bdm", "župa uznesenja bdm - stenjevec",
+    "šibenska biskupija", "sibenska biskupija",
+    "požeška biskupija", "pozeskа biskupija",
+    "dubrovacka biskupija", "dubrovačka biskupija",
+    "dubrovacka-biskupija.hr",
+    "zupa tramosnica", "župa tramošnica",
+    "župa sv. vida", "zupa sv. vida", "župa sv. vida - petruševec"
+  ),
+  "Youth Organizations" = c(
+    "susret hrvatske katoličke mladeži", "susret hrvatske katolicke mladezi",
+    "shkm požega", "shkm pozega"
+  ),
+  "Academic" = c(
+    "hrvatsko katoličko sveučilište", "hrvatsko katolicko sveuciliste",
+    "universitas studiorum catholica croatica"
+  )
 )
 
-classify_actor_v2 <- function(from_value, url_value = NA) {
+# SECULAR MEDIA EXCLUSIONS: Always classify as Other
+secular_exclusions <- c(
+  # National portals (with and without .hr)
+  "slobodnadalmacija", "slobodnadalmacija.hr", 
+  "vecernji", "vecernji.hr", 
+  "index.hr", "index",
+  "jutarnji", "jutarnji.hr", 
+  "novilist", "novilist.hr",
+  "24sata", "24sata.hr",
+  "direktno", "direktno.hr",
+  "nacional", "nacional.hr", 
+  "tportal", "tportal.hr",
+  "dnevnik.hr", "dnevnik", 
+  "hrt.hr", "hrt", 
+  "n1info", "n1info.hr", "n1",
+  "rtl.hr", "rtl", 
+  "net.hr", 
+  "telegram.hr", "telegram", 
+  "story.hr", "express.hr", "express", "advance.hr",
+  # Regional portals
+  "glasistre", "glasistre.hr",
+  "dnevno.hr", "dnevno", 
+  "prigorski", "glas-slavonije", "glas slavonije",
+  "croativ", "oluja.info", 
+  "maxportal", "maxportal.hr",
+  "hkv.hr", "icv.hr", "novosti.hr", "7dnevno", "mnovine", 
+  "sjever.hr", "dulist.hr", "pozega.eu", "sibenik.in",
+  "ferata.hr", "epodravina", "glasgacke", "radio-zlatar", 
+  "medjimurski.hr", "sbperiskop", "zagorje-international",
+  "pozeski", "novine.hr", "dubrovnikinsider", "regionalni", 
+  "leportale", "varazdinske-vijesti", "radionasice", 
+  "brodportal", "ljportal", "dubrovnikportal", "01portal",
+  "tomislavnews", "hia.com.hr", "portalnovosti", "antenazadar",
+  "dalmacijanews", "zadarskilist", "medjimurjepress", 
+  "zagreb.info", "034portal", "057info", "cityportal",
+  "klikaj.hr", "lika-online", "ploce.com", "sbonline", 
+  "narod.hr", "infokiosk", "hrsvijet", "tomislavcity", 
+  "vrisak.info", "dalmacijadanas", "dalmacijadanas.hr",
+  "morski.hr", "zagreb.hr", "osijek031", "rijeka.hr", "zadar.hr",
+  "zupanjac.net", "zupanjac", 
+  "dalmatinskiportal.hr", "dalmatinskiportal",
+  "campaign-archive.com",
+  # Forums and aggregators
+  "forum.hr", "reddit", "anonymous_user", "komentari", "bug.hr",
+  # Entertainment and other
+  "inmemoriam", "magicus.info", "book.hr", "mojzagreb.info", 
+  "skole.hr", "tvprofil", "priznajem.hr", "dragovoljac.com", 
+  "croatia", "wikipedia",
+  "facebook.com", "youtube.com", "instagram.com", "twitter.com",
+  # Government and administrative
+  "županija", "zupanija", "grad ", "opcina", "općina",
+  # Non-Catholic religious groups
+  "kršćanska proročka crkva", "krscanska prorocka crkva",
+  "crkva svemogućeg boga", "crkva svemoguceg boga",
+  "jehovini svjedoci", "adventisti", "baptisti", "pentekostalna",
+  # Political parties
+  "domovinski pokret", "hdz", "sdp", "most", "možemo", "mozemo"
+)
+
+classify_actor_v4 <- function(from_value, url_value = NA, platform_value = NA) {
   from_lower <- tolower(from_value)
   url_lower <- tolower(ifelse(is.na(url_value), "", url_value))
+  platform_lower <- tolower(ifelse(is.na(platform_value), "", platform_value))
+  combined <- paste(from_lower, url_lower)
   
-  if (any(sapply(secular_media_exclusions, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+  # Helper function for matching
+
+  match_any <- function(patterns, text) {
+    any(sapply(patterns, function(p) grepl(p, text, fixed = TRUE)))
+  }
+  
+  # PRIORITY 1: Manual overrides (highest priority)
+  for (actor_type in names(manual_overrides)) {
+    if (match_any(manual_overrides[[actor_type]], from_lower)) {
+      return(actor_type)
+    }
+  }
+  
+  # PRIORITY 2: Secular exclusions
+  if (match_any(secular_exclusions, combined)) {
     return("Other")
   }
   
+  # PRIORITY 3: Domain-based classification
   institutional_domains <- c("hkm.hr", "ika.hkm.hr", "hkr.hkm.hr", "hbk.hr")
   if (any(sapply(institutional_domains, function(x) grepl(x, url_lower, fixed = TRUE)))) {
-    return("Institutional Official")
-  }
-  
-  institutional_names <- c(
-    "hrvatska katolička mreža", "katolička mreža", "hkm", 
-    "informativna katolička agencija", "ika", "hrvatski katolički radio", "hkr",
-    "hrvatska biskupska konferencija", "hbk"
-  )
-  if (any(sapply(institutional_names, function(x) grepl(x, from_lower, fixed = TRUE)))) {
     return("Institutional Official")
   }
   
@@ -166,114 +307,110 @@ classify_actor_v2 <- function(from_value, url_value = NA) {
     return("Diocesan")
   }
   
-  diocesan_names <- c(
-    "nadbiskupija", "biskupija", "župa ", "zupa ", 
-    "zagrebačka nadbiskupija", "splitsko-makarska", "đakovačko-osječka",
-    "riječka nadbiskupija", "zadarska nadbiskupija", "sisačka biskupija",
-    "varaždinska biskupija", "križevačka eparhija"
-  )
-  if (any(sapply(diocesan_names, function(x) grepl(x, from_lower, fixed = TRUE)))) {
-    return("Diocesan")
-  }
-  
-  independent_media_exact <- c(
-    "laudatotv", "laudato tv", "laudato.tv", "laudato.hr",
-    "bitno.net", "bitno net", "glas koncila", "glaskoncila.hr",
-    "nova-eva.com", "nova eva", "katolički tjednik", "katolicki tjednik",
-    "kršćanska sadašnjost", "ks.hr", "verbum.hr", "verbum",
-    "mir i dobro", "gfranciskovic", "kfranciskovic", "totus tuus"
-  )
-  if (any(sapply(independent_media_exact, function(x) grepl(x, from_lower, fixed = TRUE)))) {
-    return("Independent Media")
-  }
-  
   independent_media_domains <- c(
     "laudato.hr", "laudato.tv", "bitno.net", "glaskoncila.hr", 
-    "nova-eva.com", "verbum.hr", "ks.hr"
+    "nova-eva.com", "verbum.hr", "ks.hr", "novizivot.net"
   )
   if (any(sapply(independent_media_domains, function(x) grepl(x, url_lower, fixed = TRUE)))) {
     return("Independent Media")
   }
   
-  religious_orders_exact <- c(
+  # PRIORITY 4: Pattern-based classification
+  
+  # Check for parish patterns (covers missing diacritics)
+  is_parish <- grepl("^župa|^zupa|župi|zupi|- župa|- zupa", from_lower, ignore.case = TRUE) ||
+               grepl("parish", from_lower, ignore.case = TRUE)
+  
+  diocesan_names <- c("nadbiskupija", "biskupija")
+  if (is_parish || any(sapply(diocesan_names, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Diocesan")
+  }
+  
+  # Religious orders
+  religious_orders <- c(
     "franjevci", "franjevački", "franjevacki", "ofm",
-    "isusovci", "družba isusova", "druzba isusova", "sj",
-    "dominikanci", "dominikanski", "op",
+    "isusovci", "družba isusova", "druzba isusova",
+    "dominikanci", "dominikanski",
     "salezijanci", "salezijanski", "sdb",
     "karmelićani", "karmelicani", "karmel",
     "benediktinci", "benediktinski", "osb",
     "kapucini", "kapucinski", "ofmcap",
-    "pavlini", "pavlinski",
-    "trapisti", "cisterciti",
-    "sestre milosrdnice", "uršulinke", "klarise"
+    "pavlini", "pavlinski", "trapisti", "cisterciti",
+    "sestre milosrdnice", "uršulinke", "klarise",
+    "službenice milosrđa", "kćeri božje ljubavi", "kceri bozje ljubavi"
   )
-  if (any(sapply(religious_orders_exact, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+  if (any(sapply(religious_orders, function(x) grepl(x, from_lower, fixed = TRUE)))) {
     return("Religious Orders")
   }
   
-  charismatic_exact <- c(
-    "božja pobjeda", "bozja pobjeda", "bozjapobjeda",
-    "srce isusovo", "srceisuovo", "srceisusovo",
-    "muževni budite", "muzevni budite", "muzevnibudite",
+  # Charismatic communities
+  charismatic <- c(
     "molitvena zajednica", "karizmatska", "cenacolo",
     "emmanuel community", "emmanuel zajednica", "taize",
     "neokatekumenski", "neokatekumenska", "kursiljo",
-    "fokolari", "fokolarini", "komunija i oslobođenje"
+    "fokolari", "fokolarini", "komunija i oslobođenje",
+    "dom molitve", "kuća molitve", "kuca molitve"
   )
-  if (any(sapply(charismatic_exact, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+  if (any(sapply(charismatic, function(x) grepl(x, from_lower, fixed = TRUE)))) {
     return("Charismatic Communities")
   }
   
-  priest_patterns <- c(
-    "fra ", "don ", "vlč.", "vlc.", "msgr.", "mons.",
-    "padre ", "o. ", "pater ", "biskup ", "nadbiskup ",
-    "kardinal ", "svećenik", "svecenik"
-  )
-  if (any(sapply(priest_patterns, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+  # Individual priests (check prefix at start of name)
+  priest_prefixes <- c("fra ", "don ", "vlč.", "vlc.", "msgr.", "mons.",
+                       "o. ", "pater ", "preč.", "prec.")
+  for (prefix in priest_prefixes) {
+    if (startsWith(from_lower, prefix)) return("Individual Priests")
+  }
+  if (grepl("svećenik|svecenik|župnik|zupnik", from_lower)) {
     return("Individual Priests")
   }
   
-  youth_exact <- c(
+  # Youth organizations
+  youth <- c(
     "frama", "shkm", "katolička mladež", "katolicka mladez",
-    "ministranti", "mladifra", "mladi fra", "kaem", "kud",
+    "ministranti", "mladifra", "mladi fra", "kaem",
     "sveučilišna kapelanija", "studentska kapelanija"
   )
-  if (any(sapply(youth_exact, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+  if (any(sapply(youth, function(x) grepl(x, from_lower, fixed = TRUE)))) {
     return("Youth Organizations")
   }
   
-  academic_exact <- c(
+  # Academic
+  academic <- c(
     "unicath", "katolički bogoslovni fakultet", "kbf",
     "teologija", "filozofski fakultet družbe isusove", "hks.hr",
     "hrvatsko katoličko sveučilište", "hku"
   )
-  if (any(sapply(academic_exact, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+  if (any(sapply(academic, function(x) grepl(x, from_lower, fixed = TRUE)))) {
     return("Academic")
   }
   
-  lay_influencer_patterns <- c(
-    "vjera", "molitva", "isus", "krist", "gospa", "marija",
-    "hrana za dušu", "hrana za dusu", "dijete vjere",
-    "pulherissimus", "riječ", "rijec", "katolik",
-    "kršćan", "krscan", "evanđelje", "evandelje",
-    "duhovn", "svetac", "sveci", "biblij", "psalm",
-    "blagoslov", "nebo", "spasenje", "uskrs", "božić", "bozic"
+  # PRIORITY 5: Lay influencer detection (platform-aware)
+  lay_keywords <- c(
+    "vjera", "molitva", "molitve", "isus", "krist", "gospa", "marija",
+    "duhovnost", "duhovna", "duhovni", "biblija", "psalm", "blagoslov",
+    "krunica", "rozarij", "katolička obitelj", "evanđelje", "evandelje"
   )
   
-  is_social_media <- grepl("facebook\\.com|youtube\\.com|instagram\\.com", url_lower) |
-                     !grepl("\\.", from_lower)
+  lay_exclude <- c(".hr", ".net", ".com", "portal", "vijesti", "news", "radio")
   
-  if (is_social_media && any(sapply(lay_influencer_patterns, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+  is_likely_social <- platform_lower %in% c("facebook", "instagram", "youtube", "twitter") ||
+                      !grepl("\\.[a-z]{2,4}$", from_lower)
+  
+  has_devotional <- any(sapply(lay_keywords, function(x) grepl(x, from_lower, fixed = TRUE)))
+  has_media_marker <- any(sapply(lay_exclude, function(x) grepl(x, from_lower, fixed = TRUE)))
+  
+  if (is_likely_social && has_devotional && !has_media_marker) {
     return("Lay Influencers")
   }
   
   return("Other")
 }
 
-# FIX: Use unlist to ensure ACTOR_TYPE is a character vector, not a list
-dta[, ACTOR_TYPE := unlist(mapply(classify_actor_v2, FROM, URL, SIMPLIFY = FALSE))]
+# Apply classification
+dta[, ACTOR_TYPE := mapply(classify_actor_v4, FROM, URL, SOURCE_TYPE)]
 
-# Verify it's a character column
+# Verify classification
 cat("ACTOR_TYPE class:", class(dta$ACTOR_TYPE), "\n")
 cat("ACTOR_TYPE distribution:\n")
 print(table(dta$ACTOR_TYPE))
@@ -300,7 +437,16 @@ tibble(
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
 ```
 
-# Analysis 3.1 Sentiment Distribution
+# Analysis 3.1: Sentiment Distribution
+
+Sentiment analysis classifies each post as positive, neutral, or negative based on linguistic features. This section examines how sentiment varies across the corpus, platforms, and actor types.
+
+**Reading the charts:**
+
+- **Overall distribution** shows the baseline emotional tone of the corpus
+- **Platform comparison** reveals how different media afford different emotional registers
+- **Actor comparison** identifies which communicators tend toward more positive or negative framing
+- **Positivity ratio** (positive/negative) summarizes relative emotional valence
 
 ```{r sentiment-overall}
 #| label: sentiment-overall
@@ -327,6 +473,8 @@ ggplot(sentiment_dist, aes(x = reorder(AUTO_SENTIMENT, -Count), y = Count, fill 
 ```
 
 ## Sentiment by Platform
+
+Different platforms may encourage different emotional registers due to their affordances, audience expectations, and content formats.
 
 ```{r sentiment-by-platform}
 #| label: sentiment-by-platform
@@ -358,6 +506,8 @@ ggplot(sentiment_platform, aes(x = reorder(SOURCE_TYPE, Total), y = Percentage, 
 
 ## Sentiment by Actor Type
 
+Actor types may have characteristic emotional registers reflecting their institutional roles, communication strategies, and target audiences.
+
 ```{r sentiment-by-actor}
 #| label: sentiment-by-actor
 #| fig-height: 9
@@ -387,6 +537,8 @@ ggplot(sentiment_actor, aes(x = factor(ACTOR_TYPE, levels = rev(actor_order)),
 ```
 
 ## Sentiment Summary Table
+
+The **Positivity Ratio** divides positive posts by negative posts. Values above 1 indicate more positive than negative content; higher values indicate a more positive overall tone.
 
 ```{r sentiment-summary-table}
 #| label: sentiment-summary-table
@@ -420,6 +572,8 @@ sentiment_summary[order(-Positive_Pct)] %>%
 ```
 
 ## Sentiment and Engagement Relationship
+
+Does emotional tone affect audience engagement? This analysis examines whether positive, neutral, or negative content generates different levels of interaction.
 
 ```{r sentiment-engagement}
 #| label: sentiment-engagement
@@ -460,9 +614,19 @@ p2 <- ggplot(dta[!is.na(AUTO_SENTIMENT) & INTERACTIONS > 0 & INTERACTIONS < quan
 p1 + p2
 ```
 
-# Analysis 3.2 Emotional Fingerprinting
+# Analysis 3.2: Emotional Fingerprinting
 
-Facebook reactions provide granular emotional data beyond simple sentiment.
+Facebook reactions provide granular emotional data beyond simple sentiment. Each reaction type captures a distinct emotional response:
+
+| Reaction | Emotional Meaning | Content Association |
+|----------|-------------------|---------------------|
+| LOVE | Deep affection, strong appreciation | Devotional, inspirational |
+| WOW | Surprise, amazement | News, revelations |
+| HAHA | Amusement, humor | Light content, satire |
+| SAD | Sorrow, empathy | Death notices, suffering |
+| ANGRY | Outrage, disagreement | Controversy, injustice |
+
+By analyzing the mix of reactions each actor type receives, we can construct **emotional fingerprints** that characterize their audience relationships.
 
 ```{r emotion-prep}
 #| label: emotion-prep
@@ -502,6 +666,8 @@ if (nrow(fb_data) > 0) {
 
 ## Overall Emotional Profile
 
+The overall distribution of emotional reactions reveals the dominant emotional register of Croatian Catholic Facebook content.
+
 ```{r emotion-overall}
 #| label: emotion-overall
 #| fig-height: 6
@@ -539,6 +705,8 @@ if (nrow(fb_data) > 0) {
 ```
 
 ## Emotional Fingerprints by Actor Type
+
+Each actor type has a characteristic mix of emotional reactions. These fingerprints reveal how audiences emotionally engage with different types of Catholic communicators.
 
 ```{r emotion-fingerprint-actor}
 #| label: emotion-fingerprint-actor
@@ -579,6 +747,8 @@ if (nrow(fb_data) > 0 && sum(fb_data$Total_Reactions > 0, na.rm = TRUE) > 0) {
 
 ## Comparative Emotional Profiles
 
+The heatmap provides a comparative view of emotional profiles across all actor types, making it easy to identify which actors receive similar or different emotional responses.
+
 ```{r emotion-heatmap}
 #| label: emotion-heatmap
 #| fig-height: 8
@@ -608,6 +778,8 @@ if (exists("actor_emotions") && nrow(actor_emotions) > 0) {
 
 ## LOVE Ratio Analysis
 
+LOVE reactions indicate deep appreciation and emotional connection. High LOVE share suggests content that resonates strongly with audience values and emotions.
+
 ```{r love-ratio-analysis}
 #| label: love-ratio-analysis
 #| fig-height: 7
@@ -632,7 +804,7 @@ if (nrow(fb_data) > 0 && sum(fb_data$Total_Reactions > 0, na.rm = TRUE) > 0) {
     scale_y_continuous(expand = expansion(mult = c(0, 0.15))) +
     labs(
       title = "LOVE Reaction Share by Actor Type",
-      subtitle = "Mean percentage of LOVE among all emotional reactions",
+      subtitle = "Mean percentage of LOVE among all emotional reactions (with standard error)",
       x = NULL,
       y = "LOVE Share (%)"
     ) +
@@ -641,6 +813,8 @@ if (nrow(fb_data) > 0 && sum(fb_data$Total_Reactions > 0, na.rm = TRUE) > 0) {
 ```
 
 ## ANGRY Ratio Analysis
+
+ANGRY reactions signal disagreement, outrage, or frustration. High ANGRY share may indicate controversial content, provocative framing, or topics that elicit strong negative responses.
 
 ```{r angry-ratio-analysis}
 #| label: angry-ratio-analysis
@@ -666,7 +840,7 @@ if (nrow(fb_data) > 0 && sum(fb_data$Total_Reactions > 0, na.rm = TRUE) > 0) {
     scale_y_continuous(expand = expansion(mult = c(0, 0.2))) +
     labs(
       title = "ANGRY Reaction Share by Actor Type",
-      subtitle = "Mean percentage of ANGRY among all emotional reactions",
+      subtitle = "Mean percentage of ANGRY among all emotional reactions (with standard error)",
       x = NULL,
       y = "ANGRY Share (%)"
     ) +
@@ -695,7 +869,18 @@ if (exists("actor_emotions") && nrow(actor_emotions) > 0) {
 }
 ```
 
-# Analysis 3.3 Controversy Detection
+# Analysis 3.3: Controversy Detection
+
+Controversy is operationalized through the **Controversy Index**, which combines the intensity of angry reactions with the visibility of the content.
+
+**Formula:** `Controversy Index = (ANGRY_COUNT / INTERACTIONS) × log(INTERACTIONS + 1)`
+
+This formula ensures that:
+1. Content with higher ANGRY ratios scores higher
+2. Content with more total interactions (greater reach) scores higher
+3. The logarithmic transformation prevents extremely viral posts from dominating
+
+Posts above the 95th percentile threshold are flagged as **controversial**.
 
 ```{r controversy-index}
 #| label: controversy-index
@@ -706,7 +891,7 @@ if (nrow(fb_data) > 0) {
   controversy_threshold <- quantile(fb_data$Controversy_Index, 0.95, na.rm = TRUE)
   fb_data[, Is_Controversial := Controversy_Index > controversy_threshold]
   
-  cat("Controversy threshold (95th percentile):", controversy_threshold, "\n")
+  cat("Controversy threshold (95th percentile):", round(controversy_threshold, 4), "\n")
   cat("Controversial posts:", sum(fb_data$Is_Controversial, na.rm = TRUE), "\n")
 }
 ```
@@ -728,7 +913,7 @@ if (nrow(fb_data) > 0 && sum(fb_data$Controversy_Index > 0, na.rm = TRUE) > 0) {
     scale_y_continuous(labels = comma) +
     labs(
       title = "Controversy Index Distribution",
-      subtitle = "Controversy Index = (ANGRY / INTERACTIONS) × log(INTERACTIONS)",
+      subtitle = "Controversy Index = (ANGRY / INTERACTIONS) x log(INTERACTIONS)",
       x = "Controversy Index (log scale)",
       y = "Number of Posts"
     )
@@ -736,6 +921,9 @@ if (nrow(fb_data) > 0 && sum(fb_data$Controversy_Index > 0, na.rm = TRUE) > 0) {
 ```
 
 ## Most Controversial Posts
+
+<details>
+<summary>**Click to expand** (Top 20 most controversial posts)</summary>
 
 ```{r top-controversial}
 #| label: top-controversial
@@ -764,7 +952,11 @@ if (nrow(fb_data) > 0) {
 }
 ```
 
+</details>
+
 ## Controversy by Actor Type
+
+Which actor types produce the most controversial content on average?
 
 ```{r controversy-by-actor}
 #| label: controversy-by-actor
@@ -798,6 +990,8 @@ if (nrow(fb_data) > 0) {
 ```
 
 ## Controversy Rate by Actor Type
+
+The controversy rate shows the percentage of posts from each actor type that exceed the 95th percentile controversy threshold.
 
 ```{r controversy-rate}
 #| label: controversy-rate
@@ -846,6 +1040,8 @@ if (exists("controversy_actor") && nrow(controversy_actor) > 0) {
 
 ## Controversy Over Time
 
+Tracking controversy over time can reveal periods of heightened conflict or tension in the Catholic digital space.
+
 ```{r controversy-temporal}
 #| label: controversy-temporal
 #| fig-height: 7
@@ -875,6 +1071,9 @@ if (nrow(fb_data) > 0) {
 ```
 
 ## Top Controversial Sources
+
+<details>
+<summary>**Click to expand** (Sources with highest mean controversy, minimum 20 posts)</summary>
 
 ```{r top-controversial-sources}
 #| label: top-controversial-sources
@@ -906,7 +1105,18 @@ if (nrow(fb_data) > 0) {
 }
 ```
 
-# Analysis 3.4 Emotion by Sentiment
+</details>
+
+# Analysis 3.4: Emotion by Sentiment
+
+This section cross-tabulates automated sentiment classification with actual emotional reactions to validate whether sentiment labels align with audience responses.
+
+**Expected patterns:**
+- Positive sentiment posts should receive more LOVE reactions
+- Negative sentiment posts should receive more ANGRY and SAD reactions
+- Neutral sentiment posts should show balanced emotional profiles
+
+Deviations from these patterns may indicate limitations in the sentiment classifier or interesting disconnects between content tone and audience reception.
 
 ```{r emotion-sentiment-cross}
 #| label: emotion-sentiment-cross
@@ -944,6 +1154,8 @@ if (nrow(fb_data) > 0 && sum(fb_data$Total_Reactions > 0, na.rm = TRUE) > 0) {
 
 ## Sentiment Validation Through Reactions
 
+The **Positive Ratio** divides LOVE by (ANGRY + SAD) to measure whether sentiment classifications align with actual emotional responses. Higher ratios for positive sentiment validate the classifier.
+
 ```{r sentiment-validation}
 #| label: sentiment-validation
 #| fig-height: 7
@@ -969,7 +1181,9 @@ if (nrow(fb_data) > 0 && sum(fb_data$Total_Reactions > 0, na.rm = TRUE) > 0) {
 }
 ```
 
-# Analysis 3.5 Emotional Temporal Patterns
+# Analysis 3.5: Emotional Temporal Patterns
+
+Emotional patterns may vary over time due to seasonal factors (liturgical calendar), events (elections, scandals), or longer term trends in the Catholic digital space.
 
 ```{r emotion-temporal}
 #| label: emotion-temporal
@@ -1010,12 +1224,13 @@ if (nrow(fb_data) > 0 && sum(fb_data$Total_Reactions > 0, na.rm = TRUE) > 0) {
 
 ## Day of Week Emotional Patterns
 
+Do posting patterns by day of week affect emotional responses? Sunday posts (liturgical content) may receive different reactions than weekday posts.
+
 ```{r emotion-dayofweek}
 #| label: emotion-dayofweek
 #| fig-height: 7
 
 if (nrow(fb_data) > 0 && sum(fb_data$Total_Reactions > 0, na.rm = TRUE) > 0) {
-  # Use lubridate::wday explicitly to avoid data.table conflict
   fb_data[, DOW := lubridate::wday(DATE, label = TRUE, abbr = FALSE)]
   
   emotion_dow <- fb_data[Total_Reactions > 0 & !is.na(DOW), .(
@@ -1084,6 +1299,78 @@ tibble(
 ) %>%
   kable(col.names = c("Finding", "Value")) %>%
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+## Hypotheses Testing Summary
+
+| Hypothesis | Metric to Examine | Finding |
+|------------|-------------------|---------|
+| H10: Catholic digital content is predominantly positive | Sentiment distribution, positivity ratio | See overall sentiment distribution |
+| H11: Lay influencers have highest LOVE ratios | LOVE share by actor type | Compare actor emotional fingerprints |
+| H12: Independent media generates most controversy | Controversy rate by actor type | Compare controversy rates |
+| H13: Negative sentiment correlates with higher engagement | Sentiment-engagement relationship | See sentiment-engagement analysis |
+
+---
+
+# Appendix: Classification Quality Diagnostics
+
+<details>
+<summary>**Click to expand diagnostics** (Quality assurance for actor classification)</summary>
+
+```{r classification-diagnostics}
+#| label: classification-diagnostics
+
+# Actor type distribution check
+actor_dist <- dta[, .(
+  Posts = .N,
+  Sources = uniqueN(FROM),
+  Mean_Interactions = mean(INTERACTIONS, na.rm = TRUE)
+), by = ACTOR_TYPE][order(-Posts)]
+
+actor_dist %>%
+  mutate(
+    Posts = format(Posts, big.mark = ","),
+    Sources = format(Sources, big.mark = ","),
+    Mean_Interactions = round(Mean_Interactions, 1)
+  ) %>%
+  kable(col.names = c("Actor Type", "Posts", "Sources", "Mean Interactions"),
+        caption = "Actor Type Distribution in Emotional Analysis Sample") %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+```{r other-category-check}
+#| label: other-category-check
+
+# Check high-engagement sources in Other category
+other_high_engagement <- dta[ACTOR_TYPE == "Other" & SOURCE_TYPE == "facebook", .(
+  Posts = .N,
+  Total_Interactions = sum(INTERACTIONS, na.rm = TRUE)
+), by = FROM][order(-Total_Interactions)][1:15]
+
+other_high_engagement %>%
+  mutate(
+    Posts = format(Posts, big.mark = ","),
+    Total_Interactions = format(Total_Interactions, big.mark = ",")
+  ) %>%
+  kable(col.names = c("Source", "Posts", "Total Interactions"),
+        caption = "Top Facebook Sources in 'Other' Category (review for misclassification)") %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+</details>
+
+---
+
+# Appendix: Model Diagnostics
+
+```{r model-diagnostics}
+#| label: model-diagnostics
+
+cat("Emotional Analysis Summary:\n")
+cat("Total posts:", nrow(dta), "\n")
+cat("Posts with sentiment:", sum(!is.na(dta$AUTO_SENTIMENT)), "\n")
+cat("Facebook posts with reactions:", nrow(fb_data), "\n")
+cat("Date range:", as.character(min(dta$DATE)), "to", as.character(max(dta$DATE)), "\n")
 ```
 
 ```{r session-info}
