@@ -4,9 +4,10 @@
 *.rdb
 *.rdx
 
-# Quarto cache
+# Quarto cache and intermediate files
 *_cache/
 .quarto/
+*.rmarkdown
 
 # Generated HTML support files (can be regenerated)
 *_files/
@@ -29,3 +30,6 @@ Thumbs.db
 *.tmp
 *.temp
 ~$*
+
+# Claude Code local settings
+.claude/
