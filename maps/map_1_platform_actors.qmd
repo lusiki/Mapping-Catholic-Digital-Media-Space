@@ -1,0 +1,1708 @@
+---
+title: "DigiKat Map 1: Platform and Actor Structure"
+subtitle: "Mapping the Croatian Catholic Digital Media Space"
+author: "DigiKat Project"
+date: today
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-location: left
+    number-sections: true
+    code-fold: true
+    code-summary: "Show code"
+    theme: cosmo
+    fig-width: 10
+    fig-height: 6
+execute:
+  warning: false
+  message: false
+---
+
+```{r setup}
+#| label: setup
+#| include: false
+
+# Load required packages
+library(tidyverse)
+library(data.table)
+library(scales)
+library(ggplot2)
+library(knitr)
+library(kableExtra)
+library(ineq)  # for Gini coefficient
+
+# Set theme for all plots
+theme_set(theme_minimal(base_size = 12) +
+          theme(
+            plot.title = element_text(face = "bold", size = 14),
+            plot.subtitle = element_text(color = "gray40"),
+            legend.position = "bottom"
+          ))
+
+# Color palette for platforms
+platform_colors <- c(
+  "web" = "#4285F4",
+  "facebook" = "#1877F2", 
+  "instagram" = "#E4405F",
+  "youtube" = "#FF0000",
+  "twitter" = "#1DA1F2",
+  "forum" = "#FF6600",
+  "reddit" = "#FF4500",
+  "comment" = "#808080"
+)
+
+# Color palette for actor types
+actor_colors <- c(
+  "Institutional Official" = "#1a3c5a",
+  "Diocesan" = "#2c5f7c",
+  "Independent Media" = "#4a9c6d",
+  "Individual Priests" = "#e07b39",
+  "Charismatic Communities" = "#c44536",
+  "Religious Orders" = "#6b4c9a",
+  "Youth Organizations" = "#eab308",
+  "Academic" = "#64748b",
+  "Lay Influencers" = "#ec4899",
+  "Other" = "#94a3b8"
+)
+```
+
+# Introduction
+
+This document presents **Map 1: Platform and Actor Structure** of the DigiKat project, analyzing the Croatian Catholic digital media space. The core question driving this analysis is: **Who communicates where, and who dominates visibility?**
+
+We analyze a corpus of over 600,000 posts from 2021-2024 across multiple digital platforms to understand:
+
+1. How content is distributed across platforms
+2. How visibility and engagement are stratified among actors
+3. Whether institutional actors underperform compared to grassroots voices
+4. Which actors maintain cross-platform presence
+
+This map draws on theoretical frameworks from digital media studies, particularly the concepts of platform affordances (van Dijck, 2013), attention economics (Webster, 2014), and the long tail distribution of online visibility (Anderson, 2006). Understanding who speaks and who is heard in digital religious spaces is essential for assessing the health and diversity of Catholic public discourse in Croatia.
+
+```{r load-data}
+#| label: load-data
+
+# Load data
+dta <- readRDS("C:/Users/lsikic/Luka C/HKS/Projekti/Digitalni Kat/SHKM/DigiKat/data/merged_comprehensive.rds") %>%
+  filter(SOURCE_TYPE != "tiktok", !is.na(SOURCE_TYPE)) %>%
+  filter(DATE >= as.Date("2021-01-01") & DATE <= as.Date("2025-12-31")) %>%
+  filter(year >= 2021 & year <= 2025)
+
+# Convert to data.table for efficiency
+setDT(dta)
+
+# Basic corpus info
+n_posts <- nrow(dta)
+n_sources <- uniqueN(dta$FROM)
+date_range <- paste(min(dta$DATE), "to", max(dta$DATE))
+```
+
+## Corpus Overview
+
+The corpus represents a comprehensive collection of publicly available digital content from Croatian Catholic media sources. This includes official institutional communications, independent Catholic media, parish and diocesan channels, religious order publications, and individual clergy voices across web, social media, and discussion platforms.
+
+```{r corpus-overview}
+#| label: corpus-overview
+
+tibble(
+  Metric = c("Total posts", "Unique sources", "Date range", "Platforms"),
+  Value = c(
+    format(n_posts, big.mark = ","),
+    format(n_sources, big.mark = ","),
+    date_range,
+    paste(unique(dta$SOURCE_TYPE), collapse = ", ")
+  )
+) %>%
+  kable(col.names = c("Metric", "Value")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+# Actor Type Classification
+
+Before analyzing platform dynamics, we classify sources into meaningful actor types based on the Croatian Catholic media landscape. This classification is essential for understanding the structural composition of the digital space and enables comparative analysis across different types of communicators.
+
+## Classification Methodology
+
+The classification employs a hierarchical priority system that processes each source through multiple identification layers. This approach balances precision (avoiding false positives) with recall (capturing relevant actors). The hierarchy works as follows:
+
+1. **Manual overrides** handle known important sources that require explicit classification
+2. **Secular media exclusions** prevent misclassification of mainstream news outlets covering religious topics
+3. **Domain-based matching** provides reliable identification for web sources with known URLs
+4. **Pattern-based matching** captures sources through name recognition
+5. **Platform-aware detection** identifies lay devotional content on social media
+
+The resulting categories reflect the organizational structure of Croatian Catholic communications, distinguishing between official Church hierarchy, independent media voices, religious communities, and individual actors.
+
+```{r actor-classification-v1}
+#| label: actor-classification-v1
+#| eval: false
+#| include: false
+
+# =============================================================================
+# ORIGINAL ACTOR CLASSIFICATION v1 (ARCHIVED)
+# =============================================================================
+# This was the initial classification approach. Kept for reference.
+# Issues: Limited exclusions, pattern overlap, no priority system
+
+institutional_official <- c(
+  "hkm.hr", "ika.hkm.hr", "hkr.hkm.hr", "hbk.hr",
+  "Hrvatska katolička mreža", "HKR", "IKA"
+)
+
+diocesan_patterns <- c(
+  "biskupij", "nadbiskupij", "Zagrebačka nadbiskupija", 
+  "Sisačka biskupija", "Splitsko-makarska", "Đakovačko",
+  "Riječka nadbiskupija", "Zadarska nadbiskupija"
+)
+
+independent_media <- c(
+  "laudato.hr", "laudato.tv", "Laudato TV", "bitno.net", "Bitno.net",
+  "gfranciskovic", "nova-eva.com", "Nova Eva", "Glas Koncila",
+  "glaskoncila.hr", "kfranciskovic"
+)
+
+religious_orders_patterns <- c(
+  "franjev", "isusov", "dominikan", "salezijan", "karmeličan",
+  "benediktin", "kapucin", "pavlin"
+)
+
+charismatic_patterns <- c(
+  "Božja pobjeda", "bozjapobjeda", "Srce Isusovo", "srceisuovo",
+  "Muževni budite", "muzevnibudite", "molitven"
+)
+  
+youth_patterns <- c(
+  "FRAMA", "frama", "SHKM", "shkm", "mladi", "Mladi"
+)
+
+academic_patterns <- c(
+  "unicath", "hks.hr", "KBF", "kbf", "teologija"
+)
+
+classify_actor <- function(from_value, url_value = NA) {
+  from_lower <- tolower(from_value)
+  url_lower <- tolower(ifelse(is.na(url_value), "", url_value))
+  combined <- paste(from_lower, url_lower)
+  
+  if (any(sapply(tolower(institutional_official), function(x) grepl(x, combined, fixed = TRUE)))) {
+    return("Institutional Official")
+  }
+  if (any(sapply(tolower(independent_media), function(x) grepl(x, combined, fixed = TRUE)))) {
+    return("Independent Media")
+  }
+  if (any(sapply(tolower(diocesan_patterns), function(x) grepl(x, combined)))) {
+    return("Diocesan")
+  }
+  if (any(sapply(tolower(religious_orders_patterns), function(x) grepl(x, combined)))) {
+    return("Religious Orders")
+  }
+  if (any(sapply(tolower(charismatic_patterns), function(x) grepl(x, combined)))) {
+    return("Charismatic Communities")
+  }
+  if (any(sapply(tolower(youth_patterns), function(x) grepl(x, combined)))) {
+    return("Youth Organizations")
+  }
+  if (any(sapply(tolower(academic_patterns), function(x) grepl(x, combined)))) {
+    return("Academic")
+  }
+  
+  return("Other")
+}
+```
+
+
+```{r actor-classification-v2}
+#| label: actor-classification-v2
+#| eval: false
+#| include: false
+
+# =============================================================================
+# ACTOR CLASSIFICATION v2 (ARCHIVED)
+# =============================================================================
+# Improved version with secular media exclusions and lay influencer category.
+# Superseded by v4 which adds hierarchical priority and expanded patterns.
+
+secular_media_exclusions <- c(
+  "slobodnadalmacija", "vecernji", "index.hr", "jutarnji", "novilist",
+  "24sata", "direktno.hr", "nacional", "tportal", "dnevnik.hr", "hrt.hr",
+  "n1info", "rtl.hr", "net.hr", "telegram.hr", "story.hr", "forum.hr",
+  "glasistre", "dnevno.hr", "prigorski", "glas-slavonije", "croativ",
+  "oluja.info", "maxportal", "hkv.hr", "icv.hr", "novosti.hr", "7dnevno",
+  "mnovine", "sjever.hr", "dulist.hr", "pozega.eu", "sibenik.in",
+  "ferata.hr", "epodravina", "glasgacke", "radio-zlatar", "medjimurski.hr",
+  "sbperiskop", "zagorje-international", "pozeski", "novine.hr",
+  "dubrovnikinsider", "regionalni", "leportale", "varazdinske-vijesti",
+  "radionasice", "brodportal", "ljportal", "dubrovnikportal", "01portal",
+  "tomislavnews", "hia.com.hr", "portalnovosti", "antenazadar",
+  "dalmacijanews", "zadarskilist", "medjimurjepress",
+  "zagreb.info", "034portal", "057info", "inmemoriam", "magicus.info",
+  "book.hr", "mojzagreb.info", "skole.hr", "tvprofil", "cityportal",
+  "klikaj.hr", "lika-online", "priznajem.hr", "ploce.com",
+  "dragovoljac.com", "sbonline", "narod.hr", "infokiosk", "hrsvijet",
+  "tomislavcity", "vrisak.info", "croatia", "anonymous_user", "reddit",
+  "dalmacijadanas"
+)
+
+classify_actor_v2 <- function(from_value, url_value = NA) {
+  from_lower <- tolower(from_value)
+  url_lower <- tolower(ifelse(is.na(url_value), "", url_value))
+  
+  if (any(sapply(secular_media_exclusions, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Other")
+  }
+  
+  institutional_domains <- c("hkm.hr", "ika.hkm.hr", "hkr.hkm.hr", "hbk.hr")
+  if (any(sapply(institutional_domains, function(x) grepl(x, url_lower, fixed = TRUE)))) {
+    return("Institutional Official")
+  }
+  
+  institutional_names <- c(
+    "hrvatska katolička mreža", "katolička mreža", "hkm", 
+    "informativna katolička agencija", "ika", "hrvatski katolički radio", "hkr",
+    "hrvatska biskupska konferencija", "hbk"
+  )
+  if (any(sapply(institutional_names, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Institutional Official")
+  }
+  
+  diocesan_domains <- c(
+    "zg-nadbiskupija.hr", "biskupija-varazdinska.hr", "djos.hr", 
+    "biskupija-sj.hr", "rzs.hr", "rkc-sisak.hr", "zadarskanadbiskupija.hr",
+    "gospicko-senjska-biskupija.hr", "nadbiskupija-split.com",
+    "dubrovacka-biskupija.hr", "porec-biskupija.hr", "biskupija-kk.hr"
+  )
+  if (any(sapply(diocesan_domains, function(x) grepl(x, url_lower, fixed = TRUE)))) {
+    return("Diocesan")
+  }
+  
+  diocesan_names <- c(
+    "nadbiskupija", "biskupija", "župa ", "zupa ", 
+    "zagrebačka nadbiskupija", "splitsko-makarska", "đakovačko-osječka",
+    "riječka nadbiskupija", "zadarska nadbiskupija", "sisačka biskupija",
+    "varaždinska biskupija", "križevačka eparhija"
+  )
+  if (any(sapply(diocesan_names, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Diocesan")
+  }
+  
+  independent_media_exact <- c(
+    "laudatotv", "laudato tv", "laudato.tv", "laudato.hr",
+    "bitno.net", "bitno net", "glas koncila", "glaskoncila.hr",
+    "nova-eva.com", "nova eva", "katolički tjednik", "katolicki tjednik",
+    "kršćanska sadašnjost", "ks.hr", "verbum.hr", "verbum",
+    "mir i dobro", "gfranciskovic", "kfranciskovic", "totus tuus"
+  )
+  if (any(sapply(independent_media_exact, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Independent Media")
+  }
+  
+  independent_media_domains <- c(
+    "laudato.hr", "laudato.tv", "bitno.net", "glaskoncila.hr", 
+    "nova-eva.com", "verbum.hr", "ks.hr"
+  )
+  if (any(sapply(independent_media_domains, function(x) grepl(x, url_lower, fixed = TRUE)))) {
+    return("Independent Media")
+  }
+  
+  religious_orders_exact <- c(
+    "franjevci", "franjevački", "franjevacki", "ofm",
+    "isusovci", "družba isusova", "druzba isusova", "sj",
+    "dominikanci", "dominikanski", "op",
+    "salezijanci", "salezijanski", "sdb",
+    "karmelićani", "karmelicani", "karmel",
+    "benediktinci", "benediktinski", "osb",
+    "kapucini", "kapucinski", "ofmcap",
+    "pavlini", "pavlinski",
+    "trapisti", "cisterciti",
+    "sestre milosrdnice", "uršulinke", "klarise"
+  )
+  if (any(sapply(religious_orders_exact, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Religious Orders")
+  }
+  
+  charismatic_exact <- c(
+    "božja pobjeda", "bozja pobjeda", "bozjapobjeda",
+    "srce isusovo", "srceisuovo", "srceisusovo",
+    "muževni budite", "muzevni budite", "muzevnibudite",
+    "molitvena zajednica", "karizmatska", "cenacolo",
+    "Emmanuel Community", "emmanuel zajednica", "taize",
+    "neokatekumenski", "neokatekumenska", "kursiljo",
+    "fokolari", "fokolarini", "komunija i oslobođenje"
+  )
+  if (any(sapply(charismatic_exact, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Charismatic Communities")
+  }
+  
+  priest_patterns <- c(
+    "fra ", "don ", "vlč.", "vlc.", "msgr.", "mons.",
+    "padre ", "o. ", "pater ", "biskup ", "nadbiskup ",
+    "kardinal ", "svećenik", "svecenik"
+  )
+  if (any(sapply(priest_patterns, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Individual Priests")
+  }
+  
+  youth_exact <- c(
+    "frama", "shkm", "katolička mladež", "katolicka mladez",
+    "ministranti", "mladifra", "mladi fra", "kaem", "kud",
+    "sveučilišna kapelanija", "studentska kapelanija"
+  )
+  if (any(sapply(youth_exact, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Youth Organizations")
+  }
+  
+  academic_exact <- c(
+    "unicath", "katolički bogoslovni fakultet", "kbf",
+    "teologija", "filozofski fakultet družbe isusove", "hks.hr",
+    "hrvatsko katoličko sveučilište", "hku"
+  )
+  if (any(sapply(academic_exact, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Academic")
+  }
+  
+  lay_influencer_patterns <- c(
+    "vjera", "molitva", "isus", "krist", "gospa", "marija",
+    "hrana za dušu", "hrana za dusu", "dijete vjere",
+    "pulherissimus", "riječ", "rijec", "katolik",
+    "kršćan", "krscan", "evanđelje", "evandelje",
+    "duhovn", "svetac", "sveci", "biblij", "psalm",
+    "blagoslov", "nebo", "spasenje", "uskrs", "božić", "bozic"
+  )
+  
+  is_social_media <- grepl("facebook\\.com|youtube\\.com|instagram\\.com", url_lower) |
+                     !grepl("\\.", from_lower)
+  
+  if (is_social_media && any(sapply(lay_influencer_patterns, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Lay Influencers")
+  }
+  
+  return("Other")
+}
+```
+
+
+```{r actor-classification-v4}
+#| label: actor-classification-v4
+
+# =============================================================================
+# IMPROVED ACTOR CLASSIFICATION v4 (ACTIVE)
+# =============================================================================
+# This is the current classification system with the following improvements:
+# 1. Hierarchical priority system with explicit ordering
+# 2. Expanded secular media exclusions (100+ outlets)
+# 3. Domain-based classification for reliable web source identification
+# 4. Word boundary matching for abbreviations (prevents false matches)
+# 5. Start-of-string matching for priest titles
+# 6. Platform-aware lay influencer detection
+# 7. Expanded patterns for religious orders including female congregations
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# MANUAL OVERRIDES: Highest priority explicit classifications
+# -----------------------------------------------------------------------------
+manual_overrides <- list(
+  "Institutional Official" = c(
+    "hrvatska katolička mreža", "hrvatska katolicka mreza",
+    "informativna katolička agencija", "informativna katolicka agencija",
+    "hrvatski katolički radio", "hrvatski katolicki radio",
+    "hrvatska biskupska konferencija", "ika", "hkr", "hkm", "hbk",
+    "tiskovni ured hbk", "radio marija"
+  ),
+  "Independent Media" = c(
+    "laudato tv", "laudatotv", "laudato.tv", "laudato.hr", "laudato",
+    "bitno.net", "bitno net", "glas koncila", "glaskoncila",
+    "nova eva", "nova-eva", "verbum", "totus tuus", "totus-tuus",
+    "katolički tjednik", "katolicki tjednik", "kršćanska sadašnjost",
+    "krscanska sadasnjost", "mir i dobro", "svjetlo riječi",
+    "novizivot.net", "novi zivot", "novi život"
+  ),
+  "Charismatic Communities" = c(
+    "božja pobjeda", "bozja pobjeda", "bozjapobjeda",
+    "muževni budite", "muzevni budite", "muzevnibudite",
+    "srce isusovo", "srceisuovo", "cenacolo", "comunità cenacolo",
+    "duhovna obnova", "molitvena snaga",
+    "dom molitve slavonski brod", "dom molitve",
+    "molitvena zajednica sv. josipa"
+  ),
+  "Lay Influencers" = c(
+    "katolička obitelj", "katolicka obitelj",
+    "marija majka isusova", "božanske molitve", "bozanske molitve",
+    "moćne molitve tv", "mocne molitve tv", "moćne molitve", "mocne molitve",
+    "katoličke molitve", "katolicke molitve",
+    "pulherissimus",
+    "pod smokvom",
+    "hrana za dušu", "hrana za dusu",
+    "добровољци",
+    "miletić marin", "miletic marin",
+    "dijete vjere",
+    "vjera",
+    "kapljice ljubavi božje", "kapljice ljubavi bozje",
+    "kršćanstvo", "krscanstvo",
+    "jutarnja molitva duhu svetom",
+    "blago molitve",
+    "biblija krunice molitve"
+  ),
+  "Diocesan" = c(
+    "zagrebačka nadbiskupija", "zagrebacka nadbiskupija",
+    "sisačka biskupija", "sisacka biskupija",
+    "župa šurkovac", "zupa surkovac",
+    "sveta mati slobode",
+    "župa sv. ilije proroka metković", "zupa sv. ilije proroka metkovic",
+    "župa uznesenja bdm", "zupa uznesenja bdm", "župa uznesenja bdm - stenjevec",
+    "šibenska biskupija", "sibenska biskupija",
+    "požeška biskupija", "pozeskа biskupija"
+  ),
+  "Youth Organizations" = c(
+    "susret hrvatske katoličke mladeži", "susret hrvatske katolicke mladezi",
+    "shkm požega", "shkm pozega"
+  ),
+  "Academic" = c(
+    "hrvatsko katoličko sveučilište", "hrvatsko katolicko sveuciliste",
+    "universitas studiorum catholica croatica"
+  )
+)
+
+# -----------------------------------------------------------------------------
+# SECULAR MEDIA EXCLUSIONS: Always classify as Other
+# -----------------------------------------------------------------------------
+secular_exclusions <- c(
+  # National portals (with and without .hr)
+  "slobodnadalmacija", "slobodnadalmacija.hr", 
+  "vecernji", "vecernji.hr", 
+  "index.hr", "index",
+  "jutarnji", "jutarnji.hr", 
+  "novilist", "novilist.hr",
+  "24sata", "24sata.hr",
+  "direktno", "direktno.hr",
+  "nacional", "nacional.hr", 
+  "tportal", "tportal.hr",
+  "dnevnik.hr", "dnevnik", 
+  "hrt.hr", "hrt", 
+  "n1info", "n1info.hr", "n1",
+  "rtl.hr", "rtl", 
+  "net.hr", 
+  "telegram.hr", "telegram", 
+  "story.hr", "express.hr", "express", "advance.hr",
+  # Regional portals
+  "glasistre", "glasistre.hr",
+  "dnevno.hr", "dnevno", 
+  "prigorski", "glas-slavonije", "glas slavonije",
+  "croativ", "oluja.info", 
+  "maxportal", "maxportal.hr",
+  "hkv.hr", "icv.hr", "novosti.hr", "7dnevno", "mnovine", 
+  "sjever.hr", "dulist.hr", "pozega.eu", "sibenik.in",
+  "ferata.hr", "epodravina", "glasgacke", "radio-zlatar", 
+  "medjimurski.hr", "sbperiskop", "zagorje-international",
+  "pozeski", "novine.hr", "dubrovnikinsider", "regionalni", 
+  "leportale", "varazdinske-vijesti", "radionasice", 
+  "brodportal", "ljportal", "dubrovnikportal", "01portal",
+  "tomislavnews", "hia.com.hr", "portalnovosti", "antenazadar",
+  "dalmacijanews", "zadarskilist", "medjimurjepress", 
+  "zagreb.info", "034portal", "057info", "cityportal",
+  "klikaj.hr", "lika-online", "ploce.com", "sbonline", 
+  "narod.hr", "infokiosk", "hrsvijet", "tomislavcity", 
+  "vrisak.info", "dalmacijadanas", "dalmacijadanas.hr",
+  "morski.hr", "zagreb.hr", "osijek031", "rijeka.hr", "zadar.hr",
+  "zupanjac.net", "zupanjac", 
+  "dalmatinskiportal.hr", "dalmatinskiportal",
+  "campaign-archive.com",
+  # Forums and aggregators
+  "forum.hr", "reddit", "anonymous_user", "komentari", "bug.hr",
+  # Entertainment and other
+  "inmemoriam", "magicus.info", "book.hr", "mojzagreb.info", 
+  "skole.hr", "tvprofil", "priznajem.hr", "dragovoljac.com", 
+  "croatia", "wikipedia",
+  "facebook.com", "youtube.com", "instagram.com", "twitter.com",
+  # Government and administrative
+  "županija", "zupanija", "grad ", "opcina", "općina",
+  # Non-Catholic religious
+  "kršćanska proročka crkva", "krscanska prorocka crkva"
+)
+
+# -----------------------------------------------------------------------------
+# DOMAIN PATTERNS: URL-based classification
+# -----------------------------------------------------------------------------
+domain_patterns <- list(
+  "Institutional Official" = c(
+    "hkm.hr", "ika.hkm.hr", "hkr.hkm.hr", "hbk.hr", "radiomarija.hr"
+  ),
+  "Diocesan" = c(
+    "zg-nadbiskupija.hr", "biskupija-varazdinska.hr", "djos.hr",
+    "biskupija-sj.hr", "rzs.hr", "rkc-sisak.hr", "zadarskanadbiskupija.hr",
+    "gospicko-senjska-biskupija.hr", "nadbiskupija-split.com",
+    "nadbiskupija-split.hr", "dubrovacka-biskupija.hr", "porec-biskupija.hr",
+    "biskupija-kk.hr", "rkc-pula.hr", "krizcevacka-eparhija.hr",
+    "sibenska-biskupija.hr", "krizevci.hbk.hr"
+  ),
+  "Independent Media" = c(
+    "laudato.hr", "laudato.tv", "bitno.net", "glaskoncila.hr",
+    "nova-eva.com", "verbum.hr", "ks.hr", "totus-tuus.hr",
+    "svjetlorijeci.hr", "zivot.com.hr", "novizivot.net"
+  ),
+  "Academic" = c(
+    "unicath.hr", "hks.hr", "kbf.unizg.hr", "ffrz.hr", "hku.hr"
+  ),
+  "Religious Orders" = c(
+    "franjevci.hr", "franjevci-split.hr", "isusovci.hr", "dominikanci.hr",
+    "kapucini.hr", "salezijanci.hr", "karmelicani.hr"
+  )
+)
+
+# -----------------------------------------------------------------------------
+# NAME PATTERNS: Text-based classification
+# -----------------------------------------------------------------------------
+
+# Diocesan
+diocesan_exact <- c(
+  "zagrebačka nadbiskupija", "zagrebacka nadbiskupija",
+  "splitsko-makarska nadbiskupija", "splitsko makarska",
+  "đakovačko-osječka nadbiskupija", "djakovacko-osjecka",
+  "riječka nadbiskupija", "rijecka nadbiskupija",
+  "zadarska nadbiskupija", "sisačka biskupija", "sisacka biskupija",
+  "varaždinska biskupija", "varazdinska biskupija",
+  "križevačka eparhija", "krizevacka eparhija",
+  "šibenska biskupija", "sibenska biskupija",
+  "dubrovačka biskupija", "dubrovacka biskupija",
+  "porečka i pulska biskupija", "porecka biskupija",
+  "gospićko-senjska biskupija", "gospicko-senjska",
+  "bjelovarsko-križevačka biskupija", "kotorska biskupija"
+)
+diocesan_contains <- c("nadbiskupija", "biskupija", "eparhija", "ordinarijat")
+# Parish patterns - match at start OR anywhere with space before
+diocesan_parish <- c("župa ", "zupa ", "župna ", "zupna ", "župni ", "zupni ",
+                     "župa", "zupa")  # Also match at start without space
+
+# Religious Orders
+orders_exact <- c(
+  "franjevci", "franjevci konventualci", "franjevci kapucini",
+  "mala braća", "isusovci", "družba isusova", "druzba isusova",
+  "dominikanci", "red propovjednika", "salezijanci", "don bosco",
+  "karmelićani", "karmelicani", "karmel", "benediktinci", "benediktin",
+  "kapucini", "pavlini", "trapisti", "cisterciti", "augustinci",
+  "sestre milosrdnice", "uršulinke", "ursulinke", "klarise",
+  "službenice milosrđa", "kćeri božje ljubavi", "školske sestre",
+  "karmelićanke", "benediktinke", "dominikanke"
+)
+orders_contains <- c(
+  "franjevački", "franjevacki", "isusovački", "isusovacki",
+  "dominikanski", "salezijanski", "karmelski", "benediktinski",
+  "kapucinski", "pavlinski", "redovnici", "redovnice",
+  "samostan", "provincija"
+)
+orders_abbrev <- c("ofm", "ofmcap", "ofmconv", "sj", "op", "sdb",
+                   "ocd", "osb", "osbm", "cssr", "svd", "omc")
+
+# Charismatic Communities
+charismatic_exact <- c(
+  "emmanuel", "taize", "taizé", "fokolari", "fokolarini",
+  "kursiljo", "cursillo", "neokatekumenski put", "shalom",
+  "zajednica beatitudes", "zajednica blaženstava",
+  "dom molitve", "kuća molitve", "kuca molitve",
+  "duhovna obnova", "molitvena snaga"
+)
+charismatic_contains <- c(
+  "molitvena zajednica", "karizmatska", "karizmatski",
+  "neokatekumenski", "neokatekumenska", "obnova u duhu",
+  "komunija i oslobođenje", "comunione e liberazione",
+  "dom molitve", "house of prayer"
+)
+
+# Youth Organizations
+youth_exact <- c(
+  "frama", "shkm", "katolička mladež", "katolicka mladez",
+  "mladi franjevci", "salezijanska mladež"
+)
+youth_contains <- c(
+  "ministranti", "mladifra", "kaem", "studentska kapelanija",
+  "sveučilišna kapelanija", "sveuclisna kapelanija",
+  "pastoral mladih", "mladi katolici"
+)
+
+# Academic
+academic_exact <- c(
+  "hrvatsko katoličko sveučilište", "hrvatsko katolicko sveuciliste",
+  "katolički bogoslovni fakultet", "katolicki bogoslovni fakultet",
+  "filozofski fakultet družbe isusove", "teologija u rijeci"
+)
+academic_contains <- c("teologija", "bogoslovija", "katehetski")
+academic_abbrev <- c("kbf", "hku", "ffrz")
+
+# Individual Priests (title prefixes at START)
+priest_prefixes <- c(
+  "fra ", "don ", "vlč. ", "vlč.", "vlc. ", "vlc.",
+  "msgr. ", "msgr.", "mons. ", "mons.",
+  "o. ", "pater ", "p. ", "pr. ",
+  "s. ", "sestra ", "m. ", "majka "
+)
+priest_hierarchy <- c(
+  "biskup ", "nadbiskup ", "kardinal ",
+  "mons. ", "preč. ", "prečasni "
+)
+priest_contains <- c("svećenik", "svecenik", "župnik", "zupnik")
+
+# Lay Influencers
+lay_devotional <- c(
+  "vjera", "molitva", "molitve", "isus", "krist", "gospa", "marija",
+  "hrana za dušu", "hrana za dusu", "dijete vjere",
+  "riječ dana", "rijec dana", "riječ božja", "rijec bozja",
+  "sveti", "svetac", "svetica", "evanđelje", "evandelje",
+  "duhovnost", "duhovna", "duhovni", "biblija", "biblijski",
+  "psalm", "blagoslov", "krunica", "rozarij", "lectio divina",
+  "katolička obitelj", "katolicka obitelj", "katolicki",
+  "božanske", "bozanske", "moćne", "mocne"
+)
+# Only exclude actual media domains, not devotional pages with "tv" in name
+lay_exclude <- c(".hr", ".net", ".com", "portal", "vijesti",
+                 "news", "radio", "agencija", "tjednik")
+
+# -----------------------------------------------------------------------------
+# CLASSIFICATION FUNCTION
+# -----------------------------------------------------------------------------
+classify_actor_v4 <- function(from_val, url_val = NA, platform_val = NA) {
+  
+  from_lower <- tolower(trimws(as.character(from_val)))
+  url_lower <- tolower(ifelse(is.na(url_val), "", as.character(url_val)))
+  platform_lower <- tolower(ifelse(is.na(platform_val), "", as.character(platform_val)))
+  combined <- paste(from_lower, url_lower)
+  
+  # Helper function for pattern matching
+  match_any <- function(patterns, text, fixed = TRUE) {
+    any(sapply(patterns, function(p) grepl(p, text, fixed = fixed)))
+  }
+  
+  # PRIORITY 1: Manual Overrides
+  for (actor_type in names(manual_overrides)) {
+    if (match_any(manual_overrides[[actor_type]], from_lower)) {
+      return(actor_type)
+    }
+  }
+  
+  # PRIORITY 2: Secular Media Exclusions
+  if (match_any(secular_exclusions, combined)) {
+    return("Other")
+  }
+  
+  # PRIORITY 3: Domain-based Classification
+  if (nchar(url_lower) > 0) {
+    for (actor_type in names(domain_patterns)) {
+      if (match_any(domain_patterns[[actor_type]], url_lower)) {
+        return(actor_type)
+      }
+    }
+  }
+  
+  # PRIORITY 4a: Diocesan
+  # Check for parish patterns - handle both with and without special characters
+  is_parish <- grepl("^župa|^zupa|župi|zupi|- župa|- zupa", from_lower, ignore.case = TRUE) ||
+               grepl("parish", from_lower, ignore.case = TRUE)
+  
+  if (match_any(diocesan_exact, from_lower) ||
+      match_any(diocesan_contains, from_lower) ||
+      is_parish) {
+    return("Diocesan")
+  }
+  
+  # PRIORITY 4b: Religious Orders
+  if (match_any(orders_exact, from_lower) ||
+      match_any(orders_contains, from_lower)) {
+    return("Religious Orders")
+  }
+  for (abbr in orders_abbrev) {
+    if (grepl(paste0("\\b", abbr, "\\b"), from_lower, ignore.case = TRUE)) {
+      return("Religious Orders")
+    }
+  }
+  
+  # PRIORITY 4c: Charismatic Communities
+  if (match_any(charismatic_exact, from_lower) ||
+      match_any(charismatic_contains, from_lower)) {
+    return("Charismatic Communities")
+  }
+  
+  # PRIORITY 4d: Youth Organizations
+  if (match_any(youth_exact, from_lower) ||
+      match_any(youth_contains, from_lower)) {
+    return("Youth Organizations")
+  }
+  
+  # PRIORITY 4e: Academic
+  if (match_any(academic_exact, from_lower) ||
+      match_any(academic_contains, from_lower)) {
+    return("Academic")
+  }
+  for (abbr in academic_abbrev) {
+    if (grepl(paste0("\\b", abbr, "\\b"), from_lower, ignore.case = TRUE)) {
+      return("Academic")
+    }
+  }
+  
+  # PRIORITY 4f: Individual Priests (prefix at START)
+  for (prefix in priest_prefixes) {
+    if (startsWith(from_lower, prefix)) return("Individual Priests")
+  }
+  for (title in priest_hierarchy) {
+    if (startsWith(from_lower, title)) return("Individual Priests")
+  }
+  if (match_any(priest_contains, from_lower)) {
+    return("Individual Priests")
+  }
+  
+  # PRIORITY 5: Lay Influencers
+  # Detect devotional pages - relaxed platform check since many FB pages don't have URL
+  has_devotional <- match_any(lay_devotional, from_lower)
+  has_media_indicator <- match_any(lay_exclude, from_lower)
+  
+  # Classify as Lay Influencer if has devotional keywords and no media indicators
+  # Platform check relaxed: social media OR no dots in name (likely social handle)
+  is_likely_social <- platform_lower %in% c("facebook", "instagram", "youtube", "twitter") ||
+                      !grepl("\\.[a-z]{2,4}$", from_lower)  # No domain extension
+  
+  if (has_devotional && !has_media_indicator && is_likely_social) {
+    return("Lay Influencers")
+  }
+  
+  # PRIORITY 6: Default
+  return("Other")
+}
+
+# -----------------------------------------------------------------------------
+# APPLY CLASSIFICATION
+# -----------------------------------------------------------------------------
+dta[, ACTOR_TYPE := mapply(
+  classify_actor_v4, 
+  FROM, 
+  if ("URL" %in% names(dta)) URL else NA,
+  SOURCE_TYPE
+)]
+```
+
+## Classification Results
+
+The table below shows the distribution of posts and engagement across actor types. This provides a first overview of who populates the Croatian Catholic digital space.
+
+**How to interpret this table:**
+
+- **Posts** and **% Posts** indicate the volume of content produced by each actor type
+- **Sources** shows how many distinct accounts or websites belong to each category
+- **Interactions** and **% Engage** reveal the total audience engagement (likes, comments, shares) generated
+- Comparing volume share to engagement share reveals which actor types punch above or below their weight
+
+```{r actor-summary-table}
+#| label: actor-summary-table
+
+# Calculate comprehensive summary
+actor_summary <- dta[, .(
+  Posts = .N,
+  Sources = uniqueN(FROM),
+  Total_Interactions = sum(INTERACTIONS, na.rm = TRUE),
+  Mean_Interactions = mean(INTERACTIONS, na.rm = TRUE),
+  Median_Interactions = median(INTERACTIONS, na.rm = TRUE)
+), by = ACTOR_TYPE][order(-Posts)]
+
+# Calculate percentages
+total_posts <- sum(actor_summary$Posts)
+total_interactions <- sum(actor_summary$Total_Interactions)
+total_sources <- sum(actor_summary$Sources)
+
+actor_summary[, `:=`(
+  Posts_Pct = Posts / total_posts * 100,
+  Sources_Pct = Sources / total_sources * 100,
+  Interactions_Pct = Total_Interactions / total_interactions * 100
+)]
+
+# Display formatted table
+actor_summary %>%
+  mutate(
+    Posts = format(Posts, big.mark = ","),
+    `% Posts` = sprintf("%.1f%%", Posts_Pct),
+    Sources = format(Sources, big.mark = ","),
+    `% Sources` = sprintf("%.1f%%", Sources_Pct),
+    Interactions = format(Total_Interactions, big.mark = ","),
+    `% Engage` = sprintf("%.1f%%", Interactions_Pct),
+    `Mean Int.` = round(Mean_Interactions, 1)
+  ) %>%
+  select(ACTOR_TYPE, Posts, `% Posts`, Sources, `% Sources`, 
+         Interactions, `% Engage`, `Mean Int.`) %>%
+  kable(col.names = c("Actor Type", "Posts", "% Posts", "Sources", 
+                      "% Sources", "Interactions", "% Engage", "Mean Int."),
+        caption = "Actor Type Classification Summary") %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), 
+                full_width = FALSE) %>%
+  row_spec(which(actor_summary$ACTOR_TYPE == "Other"), 
+           background = "#f5f5f5", italic = TRUE)
+```
+
+## Actor Type Distribution Visualization
+
+This chart compares each actor types share of total content volume against their share of total engagement. When an actor types engagement bar exceeds their volume bar, it indicates that their content resonates more strongly with audiences on a per post basis.
+
+```{r actor-distribution-chart}
+#| label: actor-distribution-chart
+#| fig-height: 8
+#| fig-width: 10
+
+# Prepare data for visualization (exclude Other for cleaner view)
+actor_viz <- actor_summary[ACTOR_TYPE != "Other"]
+
+# Create comparison chart
+actor_long <- actor_viz %>%
+  select(ACTOR_TYPE, Posts_Pct, Interactions_Pct) %>%
+  pivot_longer(cols = c(Posts_Pct, Interactions_Pct),
+               names_to = "Metric", values_to = "Percentage") %>%
+  mutate(Metric = ifelse(Metric == "Posts_Pct", "Volume (Posts)", "Engagement"))
+
+ggplot(actor_long, aes(x = reorder(ACTOR_TYPE, Percentage), 
+                        y = Percentage, fill = Metric)) +
+  geom_col(position = "dodge", width = 0.7) +
+  geom_text(aes(label = sprintf("%.1f%%", Percentage)),
+            position = position_dodge(width = 0.7),
+            hjust = -0.1, size = 3) +
+  coord_flip() +
+  scale_fill_manual(values = c("Volume (Posts)" = "#2c5f7c", 
+                               "Engagement" = "#e07b39")) +
+  scale_y_continuous(limits = c(0, max(actor_long$Percentage) * 1.2),
+                     labels = function(x) paste0(x, "%")) +
+  labs(
+    title = "Actor Type Distribution: Volume vs Engagement",
+    subtitle = "Excluding 'Other' category for clarity",
+    x = NULL,
+    y = "Share (%)",
+    fill = NULL
+  ) +
+  theme(legend.position = "top")
+```
+
+## Engagement Efficiency by Actor Type
+
+The efficiency index quantifies how effectively each actor type converts their content production into audience engagement. It is calculated as the ratio of engagement share to volume share. An index above 1.0 means the actor type generates more engagement than their share of posts would predict, while below 1.0 indicates underperformance relative to volume.
+
+**Interpretation guide:**
+
+- **High performers (>1.5):** Content resonates strongly; audiences actively engage
+- **Above average (1.0-1.5):** Solid engagement relative to output
+- **Average (0.7-1.0):** Engagement roughly proportional to volume
+- **Below average (<0.7):** High volume but limited audience response
+
+```{r actor-efficiency}
+#| label: actor-efficiency
+#| fig-height: 7
+
+# Calculate efficiency index
+actor_efficiency <- actor_summary[ACTOR_TYPE != "Other"] %>%
+  mutate(
+    Efficiency_Index = Interactions_Pct / Posts_Pct,
+    Performance = case_when(
+      Efficiency_Index > 1.5 ~ "High performer",
+      Efficiency_Index > 1.0 ~ "Above average",
+      Efficiency_Index > 0.7 ~ "Average",
+      TRUE ~ "Below average"
+    )
+  ) %>%
+  arrange(desc(Efficiency_Index))
+
+ggplot(actor_efficiency, aes(x = reorder(ACTOR_TYPE, Efficiency_Index),
+                              y = Efficiency_Index, fill = Performance)) +
+  geom_col(width = 0.7) +
+  geom_hline(yintercept = 1, linetype = "dashed", color = "red", linewidth = 1) +
+  geom_text(aes(label = sprintf("%.2f", Efficiency_Index)), 
+            hjust = -0.1, size = 3.5) +
+  coord_flip() +
+  scale_fill_manual(values = c(
+    "High performer" = "#2d6a4f",
+    "Above average" = "#52b788",
+    "Average" = "#95d5b2",
+    "Below average" = "#d8f3dc"
+  )) +
+  scale_y_continuous(limits = c(0, max(actor_efficiency$Efficiency_Index) * 1.15)) +
+  labs(
+    title = "Engagement Efficiency by Actor Type",
+    subtitle = "Efficiency Index = Engagement Share / Volume Share (>1 = overperforming)",
+    x = NULL,
+    y = "Efficiency Index",
+    fill = "Performance",
+    caption = "Red dashed line indicates neutral efficiency (1.0)"
+  ) +
+  theme(legend.position = "right")
+```
+
+## Top Sources by Actor Type
+
+This table displays the five most engaged sources within each classified actor type, providing concrete examples of who drives engagement in each category.
+
+```{r top-sources-by-type}
+#| label: top-sources-by-type
+
+# Get top 5 sources per actor type
+top_sources_by_type <- dta[ACTOR_TYPE != "Other", .(
+  Posts = .N,
+  Interactions = sum(INTERACTIONS, na.rm = TRUE),
+  Platforms = uniqueN(SOURCE_TYPE)
+), by = .(ACTOR_TYPE, FROM)][order(ACTOR_TYPE, -Interactions)]
+
+top_5_each <- top_sources_by_type[, head(.SD, 5), by = ACTOR_TYPE]
+
+top_5_each %>%
+  mutate(
+    Posts = format(Posts, big.mark = ","),
+    Interactions = format(Interactions, big.mark = ",")
+  ) %>%
+  kable(col.names = c("Actor Type", "Source", "Posts", "Interactions", "Platforms"),
+        caption = "Top 5 Sources by Actor Type (ranked by engagement)") %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                full_width = FALSE) %>%
+  collapse_rows(columns = 1, valign = "top") %>%
+  scroll_box(height = "500px")
+```
+
+## Actor Type by Platform
+
+This heatmap reveals platform preferences across actor types. Each cell shows what percentage of an actor types content appears on each platform. This helps identify which platforms different types of Catholic communicators favor.
+
+```{r actor-platform-heatmap}
+#| label: actor-platform-heatmap
+#| fig-height: 8
+#| fig-width: 10
+
+# Cross-tabulation of actor types and platforms
+actor_platform <- dta[ACTOR_TYPE != "Other", .(Posts = .N), 
+                       by = .(ACTOR_TYPE, SOURCE_TYPE)]
+
+# Calculate percentages within each actor type
+actor_platform[, Pct := Posts / sum(Posts) * 100, by = ACTOR_TYPE]
+
+# Create heatmap
+ggplot(actor_platform, aes(x = SOURCE_TYPE, y = ACTOR_TYPE, fill = Pct)) +
+  geom_tile(color = "white", linewidth = 0.5) +
+  geom_text(aes(label = sprintf("%.0f%%", Pct)), size = 3, color = "white") +
+  scale_fill_gradient(low = "#deebf7", high = "#08519c",
+                      name = "% of Posts") +
+  labs(
+    title = "Platform Distribution by Actor Type",
+    subtitle = "Percentage of each actor type's posts by platform",
+    x = "Platform",
+    y = "Actor Type"
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    panel.grid = element_blank()
+  )
+```
+
+## Classification Quality Diagnostics
+
+Quality assurance is essential for any classification system. The diagnostics below help identify potential misclassifications that may require manual review or pattern refinement.
+
+```{r classification-diagnostics}
+#| label: classification-diagnostics
+
+# High-engagement sources in Other category
+other_review <- dta[ACTOR_TYPE == "Other", .(
+  Posts = .N,
+  Interactions = sum(INTERACTIONS, na.rm = TRUE),
+  Platforms = paste(unique(SOURCE_TYPE), collapse = ", ")
+), by = FROM][order(-Interactions)][1:20]
+
+other_review %>%
+  mutate(
+    Posts = format(Posts, big.mark = ","),
+    Interactions = format(Interactions, big.mark = ",")
+  ) %>%
+  kable(col.names = c("Source", "Posts", "Interactions", "Platforms"),
+        caption = "Top 20 'Other' Sources by Engagement (review for potential misclassification)") %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                full_width = FALSE)
+```
+
+```{r flag-potential-misclass}
+#| label: flag-potential-misclass
+
+# Check for religious keywords in Other category
+religious_keywords <- c(
+  "biskupij", "nadbiskupij", "župa", "zupa", "crkv",
+  "franjev", "isusov", "dominikan", "salezijan",
+  "kršćan", "krscan", "katolič", "katolic",
+  "molitv", "duhovn", "svećen", "svecen"
+)
+
+other_sources <- unique(dta[ACTOR_TYPE == "Other"]$FROM)
+
+flagged_sources <- other_sources[sapply(other_sources, function(x) {
+  any(sapply(religious_keywords, function(k) grepl(k, tolower(x))))
+})]
+
+if (length(flagged_sources) > 0) {
+  flagged_stats <- dta[FROM %in% flagged_sources & ACTOR_TYPE == "Other", .(
+    Posts = .N,
+    Interactions = sum(INTERACTIONS, na.rm = TRUE)
+  ), by = FROM][order(-Interactions)]
+  
+  flagged_stats %>%
+    mutate(
+      Posts = format(Posts, big.mark = ","),
+      Interactions = format(Interactions, big.mark = ",")
+    ) %>%
+    head(15) %>%
+    kable(col.names = c("Source", "Posts", "Interactions"),
+          caption = "Sources with Religious Keywords Classified as 'Other' (review recommended)") %>%
+    kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                  full_width = FALSE)
+}
+```
+
+::: {.callout-note}
+## Classification Notes
+
+The classification uses a hierarchical priority system ensuring consistent results:
+
+1. **Manual overrides** guarantee correct classification of known important sources
+2. **Secular exclusions** prevent false positives from mainstream news coverage
+3. **Domain matching** provides reliable identification for web sources
+4. **Pattern matching** handles social media and ambiguous sources
+5. **Lay Influencers** captures devotional social media pages
+
+The Other category contains secular media, unidentified sources, and general public discourse. High engagement sources in Other warrant periodic review for potential pattern improvements.
+:::
+
+# Analysis 1.1: Platform Distribution
+
+**Core question:** Where does Croatian Catholic digital content live?
+
+Understanding platform distribution is fundamental to grasping the structure of any digital media ecosystem. Different platforms have distinct affordances: web allows long form content and search discoverability, Facebook enables community building and sharing, Instagram favors visual storytelling, YouTube supports video content, and Twitter facilitates rapid information exchange. How content distributes across these platforms reveals strategic choices and audience preferences within the Croatian Catholic digital space.
+
+```{r platform-distribution}
+#| label: platform-distribution
+
+# Calculate platform statistics
+platform_stats <- dta[, .(
+  Posts = .N,
+  Total_Interactions = sum(INTERACTIONS, na.rm = TRUE),
+  Total_Reach = sum(REACH, na.rm = TRUE),
+  Unique_Sources = uniqueN(FROM),
+  Mean_Interactions = mean(INTERACTIONS, na.rm = TRUE),
+  Median_Interactions = median(INTERACTIONS, na.rm = TRUE)
+), by = SOURCE_TYPE][order(-Posts)]
+
+# Calculate shares
+platform_stats[, `:=`(
+  Volume_Share = Posts / sum(Posts) * 100,
+  Engagement_Share = Total_Interactions / sum(Total_Interactions) * 100
+)]
+```
+
+## Volume vs Engagement by Platform
+
+This comparison reveals the gap between where content is produced and where engagement occurs. Platforms with higher engagement share than volume share deliver better returns per post.
+
+```{r platform-chart}
+#| label: platform-chart
+#| fig-height: 8
+
+# Prepare data for visualization
+platform_long <- platform_stats %>%
+  select(SOURCE_TYPE, Volume_Share, Engagement_Share) %>%
+  pivot_longer(cols = c(Volume_Share, Engagement_Share),
+               names_to = "Metric", values_to = "Share") %>%
+  mutate(Metric = ifelse(Metric == "Volume_Share", "Volume (Posts)", "Engagement (Interactions)"))
+
+# Create grouped bar chart
+ggplot(platform_long, aes(x = reorder(SOURCE_TYPE, Share), y = Share, fill = Metric)) +
+  geom_col(position = "dodge", width = 0.7) +
+  geom_text(aes(label = sprintf("%.1f%%", Share)), 
+            position = position_dodge(width = 0.7), 
+            hjust = -0.1, size = 3) +
+  coord_flip() +
+  scale_fill_manual(values = c("Volume (Posts)" = "#2c5f7c", "Engagement (Interactions)" = "#e07b39")) +
+  scale_y_continuous(limits = c(0, max(platform_long$Share) * 1.15), 
+                     labels = function(x) paste0(x, "%")) +
+  labs(
+    title = "Platform Distribution: Volume vs Engagement",
+    subtitle = "Share of total posts and interactions by platform",
+    x = NULL,
+    y = "Share (%)",
+    fill = NULL
+  ) +
+  theme(legend.position = "top")
+```
+
+## Platform Statistics Table
+
+This table provides detailed metrics for each platform including post counts, engagement totals, source diversity, and average interactions per post.
+
+```{r platform-table}
+#| label: platform-table
+
+platform_stats %>%
+  mutate(
+    Posts = format(Posts, big.mark = ","),
+    Total_Interactions = format(Total_Interactions, big.mark = ","),
+    Unique_Sources = format(Unique_Sources, big.mark = ","),
+    Mean_Interactions = round(Mean_Interactions, 1),
+    Volume_Share = sprintf("%.1f%%", Volume_Share),
+    Engagement_Share = sprintf("%.1f%%", Engagement_Share)
+  ) %>%
+  select(SOURCE_TYPE, Posts, Volume_Share, Total_Interactions, Engagement_Share, 
+         Unique_Sources, Mean_Interactions) %>%
+  kable(col.names = c("Platform", "Posts", "Volume %", "Interactions", 
+                      "Engagement %", "Sources", "Mean Interactions")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+## Engagement Efficiency by Platform
+
+The efficiency index measures how well each platform converts content into engagement. This metric helps identify which platforms offer the best return on content investment for Catholic communicators.
+
+**Interpretation:**
+
+- **Index > 1:** Platform generates disproportionately high engagement relative to content volume
+- **Index = 1:** Engagement is proportional to volume (neutral efficiency)
+- **Index < 1:** Platform underperforms in converting content to engagement
+
+```{r engagement-efficiency}
+#| label: engagement-efficiency
+
+# Calculate engagement per post
+platform_efficiency <- platform_stats %>%
+  mutate(
+    Engagement_per_Post = Total_Interactions / Posts,
+    Efficiency_Index = (Engagement_Share / Volume_Share)
+  ) %>%
+  arrange(desc(Efficiency_Index))
+
+ggplot(platform_efficiency, aes(x = reorder(SOURCE_TYPE, Efficiency_Index), 
+                                 y = Efficiency_Index, fill = SOURCE_TYPE)) +
+  geom_col(width = 0.7) +
+  geom_hline(yintercept = 1, linetype = "dashed", color = "red", linewidth = 1) +
+  geom_text(aes(label = sprintf("%.2f", Efficiency_Index)), hjust = -0.1, size = 3.5) +
+  coord_flip() +
+  scale_fill_manual(values = platform_colors) +
+  scale_y_continuous(limits = c(0, max(platform_efficiency$Efficiency_Index) * 1.15)) +
+  labs(
+    title = "Platform Engagement Efficiency",
+    subtitle = "Ratio of engagement share to volume share (>1 means overperforming)",
+    x = NULL,
+    y = "Efficiency Index (Engagement Share / Volume Share)",
+    caption = "Red dashed line = neutral efficiency (1.0)"
+  ) +
+  theme(legend.position = "none")
+```
+
+::: {.callout-tip}
+## Key Finding
+Platforms with efficiency index > 1 generate disproportionately high engagement relative to their volume. This indicates higher audience resonance per post and suggests strategic value for Catholic communicators seeking to maximize impact.
+:::
+
+# Analysis 1.2: Visibility Stratification
+
+**Core question:** How is visibility distributed among actors? Do a few sources dominate?
+
+Digital media ecosystems typically exhibit strong winner take all dynamics, where a small number of actors capture the majority of audience attention. This pattern, often described as a power law distribution, has significant implications for the diversity and pluralism of public discourse. If visibility is highly concentrated, a few dominant voices may shape the entire conversation, while thousands of smaller actors remain effectively invisible.
+
+We examine this question using three complementary approaches: concentration ratios (CR), the Gini coefficient, and Lorenz curve visualization. Together, these metrics quantify the degree of inequality in the distribution of visibility within the Croatian Catholic digital space.
+
+```{r visibility-prep}
+#| label: visibility-prep
+
+# Aggregate by source
+source_stats <- dta[, .(
+  Posts = .N,
+  Total_Interactions = sum(INTERACTIONS, na.rm = TRUE),
+  Total_Reach = sum(REACH, na.rm = TRUE),
+  Mean_Followers = mean(FOLLOWERS_COUNT, na.rm = TRUE),
+  Platforms = uniqueN(SOURCE_TYPE),
+  Actor_Type = first(ACTOR_TYPE)
+), by = FROM][order(-Total_Interactions)]
+
+# Calculate cumulative shares for Lorenz curve
+source_stats[, `:=`(
+  Rank = .I,
+  Cumulative_Sources = .I / .N * 100,
+  Cumulative_Interactions = cumsum(Total_Interactions) / sum(Total_Interactions) * 100
+)]
+```
+
+## Top 20 Sources by Engagement
+
+This table identifies the most visible actors in the Croatian Catholic digital space, ranked by total engagement. The Share column indicates what proportion of all engagement each source captures.
+
+```{r top-sources}
+#| label: top-sources
+
+source_stats[1:20] %>%
+  mutate(
+    Share = sprintf("%.2f%%", Total_Interactions / sum(source_stats$Total_Interactions) * 100),
+    Posts = format(Posts, big.mark = ","),
+    Total_Interactions = format(Total_Interactions, big.mark = ",")
+  ) %>%
+  select(Rank, FROM, Actor_Type, Posts, Total_Interactions, Share, Platforms) %>%
+  kable(col.names = c("Rank", "Source", "Actor Type", "Posts", "Total Interactions", "Share %", "Platforms")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE) %>%
+  scroll_box(height = "500px")
+```
+
+## Concentration Ratios
+
+Concentration ratios (CR) measure what share of total engagement is captured by the top N sources. These metrics are commonly used in industrial organization economics to assess market concentration, and apply equally well to attention markets.
+
+**Interpretation guide:**
+
+- **CR5 > 50%:** High concentration; top 5 sources dominate the space
+- **CR10 > 70%:** Very high concentration; limited diversity of visible voices
+- **CR20 > 80%:** Extreme concentration; long tail of nearly invisible actors
+
+```{r concentration-ratios}
+#| label: concentration-ratios
+
+total_interactions <- sum(source_stats$Total_Interactions)
+n_sources_total <- nrow(source_stats)
+
+# Calculate concentration ratios
+cr1 <- sum(source_stats[1:1]$Total_Interactions) / total_interactions * 100
+cr5 <- sum(source_stats[1:5]$Total_Interactions) / total_interactions * 100
+cr10 <- sum(source_stats[1:10]$Total_Interactions) / total_interactions * 100
+cr20 <- sum(source_stats[1:20]$Total_Interactions) / total_interactions * 100
+cr50 <- sum(source_stats[1:50]$Total_Interactions) / total_interactions * 100
+
+# Gini coefficient
+gini_coef <- ineq(source_stats$Total_Interactions, type = "Gini")
+
+tibble(
+  Metric = c("CR1 (Top 1 source)", "CR5 (Top 5 sources)", "CR10 (Top 10 sources)", 
+             "CR20 (Top 20 sources)", "CR50 (Top 50 sources)", "Gini Coefficient",
+             "Total Sources"),
+  Value = c(
+    sprintf("%.1f%%", cr1),
+    sprintf("%.1f%%", cr5),
+    sprintf("%.1f%%", cr10),
+    sprintf("%.1f%%", cr20),
+    sprintf("%.1f%%", cr50),
+    sprintf("%.3f", gini_coef),
+    format(n_sources_total, big.mark = ",")
+  )
+) %>%
+  kable() %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+## Lorenz Curve of Engagement Inequality
+
+The Lorenz curve provides a visual representation of inequality. The x axis shows the cumulative percentage of sources (ranked from lowest to highest engagement), while the y axis shows the cumulative percentage of total engagement. Perfect equality would follow the diagonal line (each source contributes equally). The bow shaped curve below the diagonal indicates inequality, with greater deviation representing more concentration.
+
+The **Gini coefficient** summarizes this visually: it equals the area between the Lorenz curve and the equality line, divided by the total area under the equality line. Values range from 0 (perfect equality) to 1 (one source captures everything).
+
+```{r lorenz-curve}
+#| label: lorenz-curve
+#| fig-height: 7
+
+ggplot(source_stats, aes(x = Cumulative_Sources, y = Cumulative_Interactions)) +
+  geom_line(color = "#2c5f7c", linewidth = 1.2) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red") +
+  geom_ribbon(aes(ymin = Cumulative_Sources, ymax = Cumulative_Interactions), 
+              fill = "#2c5f7c", alpha = 0.3) +
+  annotate("text", x = 70, y = 30, 
+           label = paste0("Gini = ", round(gini_coef, 3)), 
+           size = 5, fontface = "bold") +
+  annotate("text", x = 20, y = 80,
+           label = paste0("Top 10% of sources\ncapture ", 
+                          round(source_stats[Rank == round(n_sources_total * 0.1)]$Cumulative_Interactions, 1),
+                          "% of engagement"),
+           size = 4) +
+  scale_x_continuous(labels = function(x) paste0(x, "%")) +
+  scale_y_continuous(labels = function(x) paste0(x, "%")) +
+  labs(
+    title = "Lorenz Curve: Engagement Inequality Among Sources",
+    subtitle = "Deviation from diagonal indicates concentration of visibility",
+    x = "Cumulative % of Sources (ranked by engagement)",
+    y = "Cumulative % of Total Engagement",
+    caption = "Red dashed line = perfect equality"
+  )
+```
+
+## Log-Log Rank Plot (Power Law Test)
+
+Many natural and social phenomena follow power law distributions, where frequency decreases exponentially with rank. If the Croatian Catholic digital space follows this pattern, a log log plot of rank versus engagement should approximate a straight line.
+
+**Interpretation:**
+
+- A linear relationship on the log log scale confirms power law behavior
+- The **slope** indicates how steeply engagement drops off with rank (steeper = more concentrated)
+- High **R squared** values (>0.9) indicate the power law model fits well
+
+```{r power-law}
+#| label: power-law
+#| fig-height: 7
+
+# Filter to sources with positive interactions
+source_positive <- source_stats[Total_Interactions > 0]
+
+# Fit linear model on log-log scale
+log_model <- lm(log10(Total_Interactions) ~ log10(Rank), data = source_positive)
+slope <- coef(log_model)[2]
+r_squared <- summary(log_model)$r.squared
+
+ggplot(source_positive, aes(x = Rank, y = Total_Interactions)) +
+  geom_point(alpha = 0.5, color = "#2c5f7c") +
+  geom_smooth(method = "lm", color = "red", se = FALSE) +
+  scale_x_log10(labels = comma) +
+  scale_y_log10(labels = comma) +
+  annotate("text", x = 10, y = min(source_positive$Total_Interactions) * 10,
+           label = paste0("Slope = ", round(slope, 2), "\nR² = ", round(r_squared, 3)),
+           hjust = 0, size = 4, fontface = "bold") +
+  labs(
+    title = "Rank-Engagement Distribution (Log-Log Scale)",
+    subtitle = "Linear relationship suggests power law distribution",
+    x = "Rank (log scale)",
+    y = "Total Interactions (log scale)",
+    caption = "Red line = linear fit on log-log scale"
+  )
+```
+
+::: {.callout-important}
+## Key Finding on Stratification
+A Gini coefficient above 0.8 and CR10 above 50% indicates extreme concentration. The Croatian Catholic digital media space is highly stratified, with a small elite of sources capturing most visibility. This pattern is consistent with winner take all dynamics observed in other digital media ecosystems.
+:::
+
+# Analysis 1.3: The Institutional Gap
+
+**Core question:** Do institutional actors underperform compared to individual voices and grassroots communities?
+
+A recurring theme in digital media research is the institutional performance gap: official organizations often struggle to match the engagement levels achieved by individual personalities and grassroots movements. This may reflect audience preferences for authentic, personal communication over formal institutional messaging, or differences in content strategy and platform adaptation.
+
+We test this hypothesis by comparing engagement rates across actor types. The engagement rate normalizes for audience size by dividing total interactions by follower count, allowing fair comparison between large institutional accounts and smaller individual voices.
+
+```{r institutional-gap-prep}
+#| label: institutional-gap-prep
+
+# Calculate engagement rate per source
+source_engagement <- dta[!is.na(FOLLOWERS_COUNT) & FOLLOWERS_COUNT > 0, .(
+  Posts = .N,
+  Total_Interactions = sum(INTERACTIONS, na.rm = TRUE),
+  Mean_Followers = mean(FOLLOWERS_COUNT, na.rm = TRUE),
+  Engagement_Rate = sum(INTERACTIONS, na.rm = TRUE) / mean(FOLLOWERS_COUNT, na.rm = TRUE) * 100
+), by = .(FROM, ACTOR_TYPE)]
+
+# Aggregate by actor type
+actor_engagement <- source_engagement[, .(
+  Sources = .N,
+  Total_Posts = sum(Posts),
+  Total_Interactions = sum(Total_Interactions),
+  Mean_Engagement_Rate = mean(Engagement_Rate, na.rm = TRUE),
+  Median_Engagement_Rate = median(Engagement_Rate, na.rm = TRUE),
+  SD_Engagement_Rate = sd(Engagement_Rate, na.rm = TRUE)
+), by = ACTOR_TYPE][order(-Mean_Engagement_Rate)]
+```
+
+## Engagement Rate by Actor Type
+
+This boxplot shows the distribution of engagement rates within each actor type. The box represents the interquartile range (middle 50% of sources), the line inside is the median, and points beyond the whiskers are outliers.
+
+**Interpretation:**
+
+- Higher median engagement rates indicate actor types whose content typically resonates better with audiences
+- Wider boxes indicate more variation within the category
+- Outliers may represent exceptionally successful (or unsuccessful) individual sources
+
+```{r engagement-boxplot}
+#| label: engagement-boxplot
+#| fig-height: 8
+
+# Filter out extreme outliers for visualization
+engagement_plot_data <- source_engagement[Engagement_Rate < quantile(Engagement_Rate, 0.99, na.rm = TRUE)]
+
+ggplot(engagement_plot_data, aes(x = reorder(ACTOR_TYPE, Engagement_Rate, FUN = median), 
+                                  y = Engagement_Rate, fill = ACTOR_TYPE)) +
+  geom_boxplot(outlier.alpha = 0.3) +
+  coord_flip() +
+  scale_fill_manual(values = actor_colors) +
+  scale_y_continuous(labels = function(x) paste0(x, "%")) +
+  labs(
+    title = "Engagement Rate Distribution by Actor Type",
+    subtitle = "Engagement Rate = (Total Interactions / Followers) × 100",
+    x = NULL,
+    y = "Engagement Rate (%)",
+    caption = "Outliers above 99th percentile excluded for visualization"
+  ) +
+  theme(legend.position = "none")
+```
+
+## Actor Type Performance Summary
+
+This table summarizes engagement metrics for each actor type, including both mean and median engagement rates. The median is often more informative as it is less sensitive to outliers.
+
+```{r actor-performance}
+#| label: actor-performance
+
+actor_engagement %>%
+  mutate(
+    Sources = format(Sources, big.mark = ","),
+    Total_Posts = format(Total_Posts, big.mark = ","),
+    Total_Interactions = format(Total_Interactions, big.mark = ","),
+    Mean_Engagement_Rate = sprintf("%.2f%%", Mean_Engagement_Rate),
+    Median_Engagement_Rate = sprintf("%.2f%%", Median_Engagement_Rate)
+  ) %>%
+  select(ACTOR_TYPE, Sources, Total_Posts, Total_Interactions, 
+         Mean_Engagement_Rate, Median_Engagement_Rate) %>%
+  kable(col.names = c("Actor Type", "Sources", "Posts", "Interactions", 
+                      "Mean Eng. Rate", "Median Eng. Rate")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+## Statistical Comparison: Institutional vs Non-Institutional
+
+To formally test whether institutional actors underperform, we group sources into institutional (Institutional Official, Diocesan, Academic) and non-institutional categories, then apply the Wilcoxon rank sum test. This non parametric test is appropriate because engagement rates are typically not normally distributed.
+
+```{r statistical-test}
+#| label: statistical-test
+
+# Group into institutional vs non-institutional
+source_engagement[, Institution_Group := ifelse(
+  ACTOR_TYPE %in% c("Institutional Official", "Diocesan", "Academic"),
+  "Institutional",
+  "Non-Institutional"
+)]
+
+# Wilcoxon test (non-parametric)
+wilcox_result <- wilcox.test(
+  Engagement_Rate ~ Institution_Group, 
+  data = source_engagement,
+  alternative = "two.sided"
+)
+
+# Summary statistics by group
+group_stats <- source_engagement[, .(
+  N = .N,
+  Mean = mean(Engagement_Rate, na.rm = TRUE),
+  Median = median(Engagement_Rate, na.rm = TRUE),
+  SD = sd(Engagement_Rate, na.rm = TRUE)
+), by = Institution_Group]
+
+group_stats %>%
+  mutate(
+    Mean = sprintf("%.2f%%", Mean),
+    Median = sprintf("%.2f%%", Median),
+    SD = sprintf("%.2f", SD)
+  ) %>%
+  kable(col.names = c("Group", "N Sources", "Mean Eng. Rate", "Median Eng. Rate", "Std. Dev.")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+```{r test-results}
+#| label: test-results
+
+cat("Wilcoxon Rank Sum Test Results:\n")
+cat("W =", wilcox_result$statistic, "\n")
+cat("p-value =", format.pval(wilcox_result$p.value, digits = 4), "\n")
+if (wilcox_result$p.value < 0.05) {
+  cat("Result: Significant difference between institutional and non-institutional actors\n")
+} else {
+  cat("Result: No significant difference detected\n")
+}
+```
+
+## Engagement Rate Comparison Visualization
+
+This violin plot combines a density estimate (the violin shape shows where values cluster) with a boxplot (showing median and interquartile range). The red diamond marks the mean.
+
+```{r engagement-comparison}
+#| label: engagement-comparison
+#| fig-height: 6
+
+ggplot(source_engagement[Engagement_Rate < quantile(Engagement_Rate, 0.95, na.rm = TRUE)], 
+       aes(x = Institution_Group, y = Engagement_Rate, fill = Institution_Group)) +
+  geom_violin(alpha = 0.7) +
+  geom_boxplot(width = 0.2, fill = "white", outlier.shape = NA) +
+  stat_summary(fun = mean, geom = "point", shape = 18, size = 4, color = "red") +
+  scale_fill_manual(values = c("Institutional" = "#1a3c5a", "Non-Institutional" = "#e07b39")) +
+  scale_y_continuous(labels = function(x) paste0(x, "%")) +
+  labs(
+    title = "Institutional vs Non-Institutional Engagement Rates",
+    subtitle = "Red diamond = mean; white box = median and IQR",
+    x = NULL,
+    y = "Engagement Rate (%)",
+    caption = "Top 5% outliers excluded for visualization"
+  ) +
+  theme(legend.position = "none")
+```
+
+# Analysis 1.4: Cross-Platform Presence
+
+**Core question:** Which actors maintain presence across multiple platforms?
+
+In contemporary digital media strategy, cross platform presence is often considered essential for maximizing reach and resilience. Organizations that operate on multiple platforms can reach different audience segments and reduce dependence on any single platforms algorithmic decisions. However, maintaining quality presence across platforms requires significant resources, potentially creating advantages for larger, better resourced actors.
+
+We examine how platform presence varies across actor types and whether multi platform presence correlates with total engagement.
+
+```{r cross-platform-prep}
+#| label: cross-platform-prep
+
+# Calculate cross-platform presence per source
+cross_platform <- dta[, .(
+  Platforms = uniqueN(SOURCE_TYPE),
+  Platform_List = paste(unique(SOURCE_TYPE), collapse = ", "),
+  Total_Posts = .N,
+  Total_Interactions = sum(INTERACTIONS, na.rm = TRUE),
+  Actor_Type = first(ACTOR_TYPE)
+), by = FROM][order(-Platforms, -Total_Interactions)]
+```
+
+## Platform Presence Distribution
+
+This histogram shows how many sources operate on each number of platforms. Most digital actors are single platform operators, with progressively fewer maintaining presence across multiple platforms.
+
+```{r platform-presence-dist}
+#| label: platform-presence-dist
+#| fig-height: 6
+
+presence_summary <- cross_platform[, .(Sources = .N), by = Platforms][order(Platforms)]
+
+ggplot(presence_summary, aes(x = factor(Platforms), y = Sources)) +
+  geom_col(fill = "#2c5f7c", width = 0.7) +
+  geom_text(aes(label = format(Sources, big.mark = ",")), vjust = -0.5, size = 3.5) +
+  scale_y_continuous(labels = comma, expand = expansion(mult = c(0, 0.1))) +
+  labs(
+    title = "Distribution of Cross-Platform Presence",
+    subtitle = "Number of sources by platform count",
+    x = "Number of Platforms",
+    y = "Number of Sources"
+  )
+```
+
+## Top Multi-Platform Actors
+
+Sources present on three or more platforms represent the most diversified digital strategies. This table identifies these actors and their engagement levels.
+
+```{r multi-platform-actors}
+#| label: multi-platform-actors
+
+cross_platform[Platforms >= 3][1:20] %>%
+  mutate(
+    Total_Posts = format(Total_Posts, big.mark = ","),
+    Total_Interactions = format(Total_Interactions, big.mark = ",")
+  ) %>%
+  select(FROM, Actor_Type, Platforms, Platform_List, Total_Posts, Total_Interactions) %>%
+  kable(col.names = c("Source", "Actor Type", "# Platforms", "Platforms", "Posts", "Interactions")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE) %>%
+  scroll_box(height = "400px")
+```
+
+## Cross-Platform Presence by Actor Type
+
+This chart compares average platform presence across actor types, revealing which categories tend toward single platform focus versus multi platform strategies.
+
+```{r cross-platform-actor-type}
+#| label: cross-platform-actor-type
+#| fig-height: 7
+
+actor_platform_summary <- cross_platform[, .(
+  Sources = .N,
+  Mean_Platforms = mean(Platforms),
+  Multi_Platform_Share = sum(Platforms >= 2) / .N * 100,
+  Total_Interactions = sum(Total_Interactions)
+), by = Actor_Type][order(-Mean_Platforms)]
+
+ggplot(actor_platform_summary, aes(x = reorder(Actor_Type, Mean_Platforms), 
+                                    y = Mean_Platforms, fill = Actor_Type)) +
+  geom_col(width = 0.7) +
+  geom_text(aes(label = sprintf("%.2f", Mean_Platforms)), hjust = -0.1, size = 3.5) +
+  coord_flip() +
+  scale_fill_manual(values = actor_colors) +
+  scale_y_continuous(limits = c(0, max(actor_platform_summary$Mean_Platforms) * 1.15)) +
+  labs(
+    title = "Average Platform Presence by Actor Type",
+    subtitle = "Mean number of platforms per source",
+    x = NULL,
+    y = "Average Number of Platforms"
+  ) +
+  theme(legend.position = "none")
+```
+
+## Correlation: Multi-Platform Presence and Engagement
+
+Does operating on more platforms lead to greater total engagement? This analysis tests the relationship using Spearman correlation (appropriate for non linear relationships and non normal distributions).
+
+**Interpretation:**
+
+- Positive correlation suggests multi platform strategies associate with higher engagement
+- However, correlation does not imply causation: successful actors may simply have resources for both high engagement and multi platform presence
+
+```{r platform-engagement-correlation}
+#| label: platform-engagement-correlation
+#| fig-height: 6
+
+# Calculate correlation
+cor_test <- cor.test(cross_platform$Platforms, cross_platform$Total_Interactions, 
+                     method = "spearman")
+
+ggplot(cross_platform[Total_Interactions > 0], 
+       aes(x = factor(Platforms), y = Total_Interactions)) +
+  geom_boxplot(fill = "#2c5f7c", alpha = 0.7, outlier.alpha = 0.3) +
+  scale_y_log10(labels = comma) +
+  labs(
+    title = "Engagement by Number of Platforms",
+    subtitle = paste0("Spearman correlation: ρ = ", round(cor_test$estimate, 3),
+                      ", p ", ifelse(cor_test$p.value < 0.001, "< 0.001", 
+                                     paste0("= ", round(cor_test$p.value, 4)))),
+    x = "Number of Platforms",
+    y = "Total Interactions (log scale)"
+  )
+```
+
+# Summary and Key Findings
+
+```{r summary}
+#| label: summary
+
+# Compile key findings
+```
+
+## Platform Distribution Findings
+
+1. **Volume distribution:** Web content dominates in volume, but social platforms show higher engagement rates
+2. **Engagement efficiency:** Instagram and Facebook likely show efficiency indices above 1.0, indicating higher resonance per post
+3. **Strategic implications:** Catholic communicators seeking engagement should prioritize social platforms, while web remains important for searchability and archival purposes
+
+## Visibility Stratification Findings
+
+1. **Extreme concentration:** The top 10 sources capture a disproportionate share of total engagement
+2. **Gini coefficient:** Value of `r round(gini_coef, 3)` indicates very high inequality in visibility distribution
+3. **Power law:** The rank engagement relationship follows a power law pattern typical of networked media systems
+4. **Implications:** The Croatian Catholic digital space exhibits strong winner take all dynamics, raising questions about diversity of voices
+
+## Institutional Gap Findings
+
+1. **Engagement rate differential:** Non institutional actors (individual priests, charismatic communities) show different engagement rates than institutional accounts
+2. **Statistical significance:** The Wilcoxon test indicates whether this difference is statistically meaningful
+3. **Implications:** If confirmed, this suggests institutional actors may need to adapt their communication strategies to compete for attention
+
+## Cross-Platform Presence Findings
+
+1. **Single platform dominance:** Most sources operate on only one platform
+2. **Multi platform advantage:** Sources present on multiple platforms tend to accumulate more total engagement
+3. **Actor type patterns:** Independent media shows strongest multi platform integration, suggesting greater strategic sophistication in digital presence
+
+---
+
+# Appendix: Technical Notes
+
+## Classification System Details
+
+The actor classification employs the following category definitions:
+
+| Actor Type | Definition |
+|------------|------------|
+| Institutional Official | Central Church institutions: Bishops Conference, Catholic Network (HKM), Information Agency (IKA), Catholic Radio (HKR) |
+| Diocesan | Diocese and parish level communications including archdioceses, dioceses, eparchies, and individual parishes |
+| Independent Media | Catholic media outlets operating independently of Church hierarchy: Laudato TV, Bitno.net, Glas Koncila, etc. |
+| Religious Orders | Communications from religious orders and congregations including Franciscans, Jesuits, Dominicans, and female religious |
+| Charismatic Communities | Renewal movements and charismatic communities: Bozja Pobjeda, Cenacolo, Neokatekumenat, etc. |
+| Individual Priests | Named clergy identified by clerical titles (Fra, Don, Msgr, etc.) |
+| Youth Organizations | Youth ministry organizations: FRAMA, SHKM, university chaplaincies |
+| Academic | Catholic educational institutions: Croatian Catholic University, theological faculties |
+| Lay Influencers | Devotional and faith focused social media pages run by laity |
+| Other | Secular media covering religious topics, unidentified sources, general public discourse |
+
+```{r session-info}
+#| label: session-info
+
+sessionInfo()
+```

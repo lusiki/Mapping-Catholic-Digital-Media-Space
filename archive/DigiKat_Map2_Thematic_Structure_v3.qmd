@@ -1,0 +1,1516 @@
+---
+title: "DigiKat Map 2: Thematic Structure"
+subtitle: "What is Croatian Catholic Digital Media About?"
+author: "DigiKat Project"
+date: today
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-location: left
+    number-sections: true
+    code-fold: true
+    code-summary: "Show code"
+    theme: cosmo
+    fig-width: 10
+    fig-height: 6
+execute:
+  warning: false
+  message: false
+params:
+  sample_pct: 0.05
+  num_topics: 35
+  run_stm: false
+  run_lda: false
+  run_nmf: false
+  run_bertopic: true
+  embedding_model: "classla/bcms-bertic"
+  selected_model: "bertopic"
+---
+
+```{r config}
+#| label: config
+#| echo: true
+
+# ============================================================================
+# CONFIGURATION PANEL
+# ============================================================================
+# Adjust these parameters to control model runs and sample size
+# ============================================================================
+
+# SAMPLE SIZE: Percentage of data to use (0.01 = 1%, 0.05 = 5%, 0.10 = 10%, 1.0 = 100%)
+SAMPLE_PCT <- params$sample_pct
+
+# NUMBER OF TOPICS: How many topics to extract (for STM/LDA/NMF; BERTopic auto detects)
+NUM_TOPICS <- params$num_topics
+
+# MODEL SELECTION: Which models to run (set TRUE/FALSE)
+RUN_STM <- params$run_stm
+RUN_LDA <- params$run_lda
+RUN_NMF <- params$run_nmf
+RUN_BERTOPIC <- params$run_bertopic
+
+# EMBEDDING MODEL FOR BERTOPIC: Which transformer model to use
+# Options:
+#   "classla/bcms-bertic"                                    - Best for Croatian (RECOMMENDED)
+#   "EMBEDDIA/crosloengual-bert"                             - Croatian + Slovenian + English
+#   "intfloat/multilingual-e5-base"                          - Good general multilingual
+#   "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2" - Fast multilingual
+#   "sentence-transformers/LaBSE"                            - Language agnostic, 109 languages
+EMBEDDING_MODEL <- params$embedding_model
+
+# SELECTED MODEL: Which model to use for downstream analysis
+# Options: "stm", "lda", "nmf", "bertopic"
+SELECTED_MODEL <- params$selected_model
+
+# Print configuration
+cat("
+╔══════════════════════════════════════════════════════════════════╗
+║                    CONFIGURATION SUMMARY                          ║
+╠══════════════════════════════════════════════════════════════════╣
+")
+cat(sprintf("║  Sample percentage:
+║  Number of topics:
+║  
+║  Models to run:
+║    - STM:
+║    - LDA:
+║    - NMF:
+║    - BERTopic:
+║  
+║  BERTopic embedding:
+║  Selected model:
+╚══════════════════════════════════════════════════════════════════╝
+",
+SAMPLE_PCT * 100,
+NUM_TOPICS,
+RUN_STM,
+RUN_LDA,
+RUN_NMF,
+RUN_BERTOPIC,
+EMBEDDING_MODEL,
+toupper(SELECTED_MODEL)
+))
+```
+
+```{r setup}
+#| label: setup
+#| include: false
+
+library(tidyverse)
+library(data.table)
+library(scales)
+library(ggplot2)
+library(knitr)
+library(kableExtra)
+library(quanteda)
+library(quanteda.textstats)
+library(quanteda.textplots)
+library(tidytext)
+library(ggrepel)
+library(viridis)
+library(pheatmap)
+library(RColorBrewer)
+
+if (RUN_STM) library(stm)
+if (RUN_LDA) library(topicmodels)
+if (RUN_NMF) library(NMF)
+if (RUN_BERTOPIC) library(reticulate)
+
+theme_set(theme_minimal(base_size = 12) +
+          theme(
+            plot.title = element_text(face = "bold", size = 14),
+            plot.subtitle = element_text(color = "gray40"),
+            legend.position = "bottom"
+          ))
+
+platform_colors <- c(
+  "web" = "#4285F4",
+  "facebook" = "#1877F2", 
+  "instagram" = "#E4405F",
+  "youtube" = "#FF0000",
+  "twitter" = "#1DA1F2",
+  "forum" = "#FF6600",
+  "reddit" = "#FF4500",
+  "comment" = "#808080"
+)
+
+actor_colors <- c(
+  "Institutional Official" = "#1a3c5a",
+  "Diocesan" = "#2c5f7c",
+  "Independent Media" = "#4a9c6d",
+  "Individual Priests" = "#e07b39",
+  "Charismatic Communities" = "#c44536",
+  "Religious Orders" = "#6b4c9a",
+  "Youth Organizations" = "#eab308",
+  "Academic" = "#64748b",
+  "Lay Influencers" = "#ec4899",
+  "Other" = "#94a3b8"
+)
+
+topic_category_colors <- c(
+  "Liturgical/Sacramental" = "#7b3294",
+  "Devotional" = "#c2a5cf",
+  "Institutional" = "#008837",
+  "Social/Ethical" = "#a6dba0",
+  "Political" = "#d7191c",
+  "Youth/Community" = "#fdae61",
+  "Educational" = "#2c7bb6"
+)
+
+K <- NUM_TOPICS
+```
+
+```{r python-setup}
+#| label: python-setup
+#| eval: !expr RUN_BERTOPIC
+#| include: false
+
+# Configure Python environment
+# Uncomment and modify if you need to specify a conda environment
+# use_condaenv("bertopic_env", required = TRUE)
+
+# Check if required Python packages are available
+py_packages_check <- tryCatch({
+  py_module_available("bertopic") && 
+  py_module_available("sentence_transformers") &&
+  py_module_available("torch")
+}, error = function(e) FALSE)
+
+if (!py_packages_check && RUN_BERTOPIC) {
+  message("
+╔══════════════════════════════════════════════════════════════════╗
+║  PYTHON SETUP REQUIRED FOR BERTOPIC                              ║
+╠══════════════════════════════════════════════════════════════════╣
+║  Run these commands in terminal:                                 ║
+║                                                                  ║
+║  pip install bertopic sentence-transformers torch umap-learn     ║
+║  pip install hdbscan scikit-learn                                ║
+║                                                                  ║
+║  Or with conda:                                                  ║
+║  conda create -n bertopic_env python=3.10                        ║
+║  conda activate bertopic_env                                     ║
+║  pip install bertopic sentence-transformers torch                ║
+╚══════════════════════════════════════════════════════════════════╝
+")
+  RUN_BERTOPIC <- FALSE
+}
+```
+
+# Introduction
+
+This document presents **Map 2: Thematic Structure** of the DigiKat project. The core question driving this analysis is: **What is Croatian Catholic digital media about, and who specializes in what?**
+
+We use topic modeling to discover the thematic landscape of the corpus and then examine how different actors and platforms specialize in particular topics.
+
+## Available Embedding Models for BERTopic
+
+| Model | HuggingFace ID | Best For | Speed |
+|-------|----------------|----------|-------|
+| **BERTić** | `classla/bcms-bertic` | Croatian/Serbian/Bosnian | Medium |
+| **CroSloEngual** | `EMBEDDIA/crosloengual-bert` | Croatian + Slovenian | Medium |
+| **Multilingual E5** | `intfloat/multilingual-e5-base` | General multilingual | Medium |
+| **Paraphrase Mini** | `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` | Fast prototyping | Fast |
+| **LaBSE** | `sentence-transformers/LaBSE` | 109 languages | Slow |
+
+```{r load-data}
+#| label: load-data
+
+dta <- readRDS("../../data/merged_comprehensive.rds") %>%
+  filter(SOURCE_TYPE != "tiktok", !is.na(SOURCE_TYPE)) %>%
+  filter(DATE >= as.Date("2021-01-01") & DATE <= as.Date("2024-12-31")) %>%
+  filter(year >= 2021 & year <= 2024)
+setDT(dta)
+
+n_posts <- nrow(dta)
+n_with_text <- sum(!is.na(dta$FULL_TEXT) & nchar(dta$FULL_TEXT) > 50, na.rm = TRUE)
+```
+
+```{r actor-classification}
+#| label: actor-classification
+
+secular_media_exclusions <- c(
+  "slobodnadalmacija", "vecernji", "index.hr", "jutarnji", "novilist",
+  "24sata", "direktno.hr", "nacional", "tportal", "dnevnik.hr", "hrt.hr",
+  "n1info", "rtl.hr", "net.hr", "telegram.hr", "story.hr", "forum.hr",
+  "glasistre", "dnevno.hr", "prigorski", "glas-slavonije", "croativ",
+  "oluja.info", "maxportal", "hkv.hr", "icv.hr", "novosti.hr", "7dnevno",
+  "mnovine", "sjever.hr", "dulist.hr", "pozega.eu", "sibenik.in",
+  "ferata.hr", "epodravina", "glasgacke", "radio-zlatar", "medjimurski.hr",
+  "sbperiskop", "zagorje-international", "pozeski", "novine.hr",
+  "dubrovnikinsider", "regionalni", "leportale", "varazdinske-vijesti",
+  "radionasice", "brodportal", "ljportal", "dubrovnikportal", "01portal",
+  "tomislavnews", "hia.com.hr", "portalnovosti", "antenazadar",
+  "dalmacijanews", "zadarskilist", "medjimurjepress",
+  "zagreb.info", "034portal", "057info", "inmemoriam", "magicus.info",
+  "book.hr", "mojzagreb.info", "skole.hr", "tvprofil", "cityportal",
+  "klikaj.hr", "lika-online", "priznajem.hr", "ploce.com",
+  "dragovoljac.com", "sbonline", "narod.hr", "infokiosk", "hrsvijet",
+  "tomislavcity", "vrisak.info", "croatia", "anonymous_user", "reddit",
+  "dalmacijadanas"
+)
+
+classify_actor_v2 <- function(from_value, url_value = NA) {
+  from_lower <- tolower(from_value)
+  url_lower <- tolower(ifelse(is.na(url_value), "", url_value))
+  
+  if (any(sapply(secular_media_exclusions, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Other")
+  }
+  
+  institutional_domains <- c("hkm.hr", "ika.hkm.hr", "hkr.hkm.hr", "hbk.hr")
+  if (any(sapply(institutional_domains, function(x) grepl(x, url_lower, fixed = TRUE)))) {
+    return("Institutional Official")
+  }
+  
+  institutional_names <- c(
+    "hrvatska katolička mreža", "katolička mreža", "hkm", 
+    "informativna katolička agencija", "ika", "hrvatski katolički radio", "hkr",
+    "hrvatska biskupska konferencija", "hbk"
+  )
+  if (any(sapply(institutional_names, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Institutional Official")
+  }
+  
+  diocesan_domains <- c(
+    "zg-nadbiskupija.hr", "biskupija-varazdinska.hr", "djos.hr", 
+    "biskupija-sj.hr", "rzs.hr", "rkc-sisak.hr", "zadarskanadbiskupija.hr",
+    "gospicko-senjska-biskupija.hr", "nadbiskupija-split.com",
+    "dubrovacka-biskupija.hr", "porec-biskupija.hr", "biskupija-kk.hr"
+  )
+  if (any(sapply(diocesan_domains, function(x) grepl(x, url_lower, fixed = TRUE)))) {
+    return("Diocesan")
+  }
+  
+  diocesan_names <- c(
+    "nadbiskupija", "biskupija", "župa ", "zupa ", 
+    "zagrebačka nadbiskupija", "splitsko-makarska", "đakovačko-osječka",
+    "riječka nadbiskupija", "zadarska nadbiskupija", "sisačka biskupija",
+    "varaždinska biskupija", "križevačka eparhija"
+  )
+  if (any(sapply(diocesan_names, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Diocesan")
+  }
+  
+  independent_media_exact <- c(
+    "laudatotv", "laudato tv", "laudato.tv", "laudato.hr",
+    "bitno.net", "bitno net", "glas koncila", "glaskoncila.hr",
+    "nova-eva.com", "nova eva", "katolički tjednik", "katolicki tjednik",
+    "kršćanska sadašnjost", "ks.hr", "verbum.hr", "verbum",
+    "mir i dobro", "gfranciskovic", "kfranciskovic", "totus tuus"
+  )
+  if (any(sapply(independent_media_exact, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Independent Media")
+  }
+  
+  independent_media_domains <- c(
+    "laudato.hr", "laudato.tv", "bitno.net", "glaskoncila.hr", 
+    "nova-eva.com", "verbum.hr", "ks.hr"
+  )
+  if (any(sapply(independent_media_domains, function(x) grepl(x, url_lower, fixed = TRUE)))) {
+    return("Independent Media")
+  }
+  
+  religious_orders_exact <- c(
+    "franjevci", "franjevački", "franjevacki", "ofm",
+    "isusovci", "družba isusova", "druzba isusova", "sj",
+    "dominikanci", "dominikanski", "op",
+    "salezijanci", "salezijanski", "sdb",
+    "karmelićani", "karmelicani", "karmel",
+    "benediktinci", "benediktinski", "osb",
+    "kapucini", "kapucinski", "ofmcap",
+    "pavlini", "pavlinski",
+    "trapisti", "cisterciti",
+    "sestre milosrdnice", "uršulinke", "klarise"
+  )
+  if (any(sapply(religious_orders_exact, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Religious Orders")
+  }
+  
+  charismatic_exact <- c(
+    "božja pobjeda", "bozja pobjeda", "bozjapobjeda",
+    "srce isusovo", "srceisuovo", "srceisusovo",
+    "muževni budite", "muzevni budite", "muzevnibudite",
+    "molitvena zajednica", "karizmatska", "cenacolo",
+    "emmanuel community", "emmanuel zajednica", "taize",
+    "neokatekumenski", "neokatekumenska", "kursiljo",
+    "fokolari", "fokolarini", "komunija i oslobođenje"
+  )
+  if (any(sapply(charismatic_exact, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Charismatic Communities")
+  }
+  
+  priest_patterns <- c(
+    "fra ", "don ", "vlč.", "vlc.", "msgr.", "mons.",
+    "padre ", "o. ", "pater ", "biskup ", "nadbiskup ",
+    "kardinal ", "svećenik", "svecenik"
+  )
+  if (any(sapply(priest_patterns, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Individual Priests")
+  }
+  
+  youth_exact <- c(
+    "frama", "shkm", "katolička mladež", "katolicka mladez",
+    "ministranti", "mladifra", "mladi fra", "kaem", "kud",
+    "sveučilišna kapelanija", "studentska kapelanija"
+  )
+  if (any(sapply(youth_exact, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Youth Organizations")
+  }
+  
+  academic_exact <- c(
+    "unicath", "katolički bogoslovni fakultet", "kbf",
+    "teologija", "filozofski fakultet družbe isusove", "hks.hr",
+    "hrvatsko katoličko sveučilište", "hku"
+  )
+  if (any(sapply(academic_exact, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Academic")
+  }
+  
+  lay_influencer_patterns <- c(
+    "vjera", "molitva", "isus", "krist", "gospa", "marija",
+    "hrana za dušu", "hrana za dusu", "dijete vjere",
+    "pulherissimus", "riječ", "rijec", "katolik",
+    "kršćan", "krscan", "evanđelje", "evandelje",
+    "duhovn", "svetac", "sveci", "biblij", "psalm",
+    "blagoslov", "nebo", "spasenje", "uskrs", "božić", "bozic"
+  )
+  
+  is_social_media <- grepl("facebook\\.com|youtube\\.com|instagram\\.com", url_lower) |
+                     !grepl("\\.", from_lower)
+  
+  if (is_social_media && any(sapply(lay_influencer_patterns, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Lay Influencers")
+  }
+  
+  return("Other")
+}
+
+dta[, ACTOR_TYPE := mapply(classify_actor_v2, FROM, URL)]
+```
+
+## Corpus Overview
+
+```{r corpus-overview}
+#| label: corpus-overview
+
+tibble(
+  Metric = c("Total posts", "Posts with sufficient text (>50 chars)", "Unique sources", 
+             "Date range", "Platforms"),
+  Value = c(
+    format(n_posts, big.mark = ","),
+    format(n_with_text, big.mark = ","),
+    format(uniqueN(dta$FROM), big.mark = ","),
+    paste(min(dta$DATE), "to", max(dta$DATE)),
+    paste(unique(dta$SOURCE_TYPE), collapse = ", ")
+  )
+) %>%
+  kable(col.names = c("Metric", "Value")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+# Analysis 2.1: Topic Discovery
+
+```{r text-preprocessing}
+#| label: text-preprocessing
+
+croatian_stopwords <- unique(c(
+  "i", "pa", "te", "ni", "niti", "a", "ali", "nego", "no", "već", "vec",
+  "ili", "da", "dok", "jer", "ako", "mada", "premda", "iako", "kako",
+  "neka", "kad", "kada", "cim", "čim", "zato",
+  "u", "na", "s", "sa", "o", "po", "za", "uz", "iz", "do", "od", "pri",
+  "k", "ka", "bez", "blizu", "osim", "među", "medju", "poput", "putem",
+  "prema", "pored", "pokraj", "kroz", "nad", "pod", "pred", "oko", "okolo",
+  "niz", "uzduž", "duž", "vrh", "dno", "kraj", "krajem", "usprkos", "glede",
+  "nasuprot", "ispod", "iznad", "između", "izmedju", "iza", "unutar", "van",
+  "sam", "si", "je", "smo", "ste", "su", "jesam", "jesi", "jest", "jesmo", "jeste", "jesu",
+  "budem", "budeš", "budes", "bude", "budemo", "budete", "budu",
+  "bio", "bila", "bilo", "bili", "bile",
+  "nisam", "nisi", "nije", "nismo", "niste", "nisu",
+  "ne", "nemoj",
+  "biti", "bit",
+  "ću", "cu", "ćeš", "ces", "će", "ce", "ćemo", "cemo", "ćete", "cete",
+  "hoću", "hocu", "hoćeš", "hoces", "hoće", "hoce", "hoćemo", "hocemo", "hoćete", "hocete",
+  "bih", "bi", "bismo", "biste", "htio", "htjela", "htjelo", "htjeli", "htjele",
+  "neću", "necu", "nećeš", "neces", "neće", "nece", "nećemo", "necemo", "nećete", "necete",
+  "mogu", "možeš", "mozes", "može", "moze", "možemo", "mozemo", "možete", "mozete",
+  "mogao", "mogla", "moglo", "mogli", "mogle", "moći", "moci",
+  "imam", "imaš", "imas", "ima", "imamo", "imate", "imaju", "imao", "imala", "imalo", "imali", "imati",
+  "ja", "mene", "meni", "me", "mnom", "mnome",
+  "mi", "nas", "nama", "nam",
+  "ti", "tebe", "tebi", "te", "tobom", "tobome",
+  "vi", "vas", "vama", "vam",
+  "on", "njega", "njemu", "ga", "nj", "njim", "njime",
+  "ona", "nje", "njoj", "ju", "njom", "njome",
+  "ono",
+  "oni", "one", "njih", "njima", "ih",
+  "sebe", "sebi", "se", "sobom",
+  "taj", "ta", "to", "tog", "toga", "tom", "tome", "tomu", "tim", "tima", "toj",
+  "ovaj", "ova", "ovo", "ovog", "ovoga", "ovom", "ovome", "ovim", "ovima", "ovoj", "ove",
+  "onaj", "onog", "onoga", "onom", "onome", "onim", "onima", "onoj",
+  "moj", "moja", "moje", "mojeg", "mojega", "mom", "mome", "mojem", "mojemu", "mojim", "mojima", "mojih",
+  "tvoj", "tvoja", "tvoje", "tvojeg", "tvojim",
+  "naš", "naša", "nasa", "naše", "nase", "našeg", "naseg", "našem", "nasem", "našim", "nasim",
+  "vaš", "vaša", "vasa", "vaše", "vase", "vašeg", "vaseg", "vašem", "vasem", "vašim", "vasim",
+  "njegov", "njegova", "njegovo", "njen", "njezin", "njihov", "njihova", "njihovo",
+  "tko", "što", "sto", "kog", "koga", "kom", "kome", "čemu", "cemu", "čim", "cim", "čime", "cime",
+  "koji", "koja", "koje", "kojeg", "kojega", "kojem", "kojemu", "kojim", "kojima", "kojih",
+  "kakav", "kakva", "kakvo", "svaki", "svaka", "svako", "sva", "sve", "svi", "svih", "svima",
+  "neki", "neka", "neko", "nekog", "nekom", "nekim",
+  "sav",
+  "netko", "nešto", "nesto", "nitko", "ništa", "nista", "svatko",
+  "gdje", "kamo", "kuda", "odakle", "zašto", "zasto",
+  "ovdje", "tamo", "tu", "negdje", "nigdje",
+  "jučer", "jucer", "danas", "sutra", "sada", "sad", "tada", "onda", "uvijek", "nikad", "nikada",
+  "mnogo", "puno", "malo", "više", "vise", "manje",
+  "jako", "vrlo", "baš", "bas", "čak", "cak",
+  "dakle", "međutim", "medjutim", "naprosto", "naime", "vjerojatno", "naravno", "sigurno", "zaista", "doista",
+  "jedan", "jedna", "jedno", "dva", "tri", "četiri", "cetiri", "pet", "šest", "sest", "sedam", "osam", "devet", "deset",
+  "prvi", "prva", "prvo", "drugi", "druga", "drugo", "treći", "treci",
+  "http", "https", "www", "com", "hr", "org", "net", "foto", "video", "slika", "clanak", "članak"
+))
+
+dta_text <- dta[!is.na(FULL_TEXT) & nchar(FULL_TEXT) > 100]
+
+set.seed(42)
+sample_size <- ceiling(nrow(dta_text) * SAMPLE_PCT)
+sample_idx <- sample(1:nrow(dta_text), sample_size)
+dta_sample <- dta_text[sample_idx]
+
+cat("Using", SAMPLE_PCT * 100, "% sample:", sample_size, "documents\n")
+
+dta_sample[, doc_id := .I]
+dta_sample[, clean_text := FULL_TEXT]
+dta_sample[, clean_text := gsub("https?://\\S+", "", clean_text)]
+dta_sample[, clean_text := gsub("www\\.\\S+", "", clean_text)]
+dta_sample[, clean_text := gsub("[^[:alpha:][:space:]]", " ", clean_text)]
+dta_sample[, clean_text := tolower(clean_text)]
+dta_sample[, clean_text := gsub("\\s+", " ", clean_text)]
+dta_sample[, clean_text := trimws(clean_text)]
+
+cat("Sample size for topic modeling:", nrow(dta_sample), 
+    "(", round(nrow(dta_sample) / nrow(dta_text) * 100, 1), "% of texts with >100 chars)\n")
+```
+
+```{r create-dfm}
+#| label: create-dfm
+#| eval: !expr RUN_STM || RUN_LDA || RUN_NMF
+
+corpus_cath <- corpus(dta_sample, text_field = "clean_text", docid_field = "doc_id")
+
+docvars(corpus_cath, "actor_type") <- dta_sample$ACTOR_TYPE
+docvars(corpus_cath, "platform") <- dta_sample$SOURCE_TYPE
+docvars(corpus_cath, "year") <- dta_sample$year
+
+tokens_cath <- tokens(corpus_cath, 
+                      remove_punct = TRUE,
+                      remove_numbers = TRUE,
+                      remove_symbols = TRUE) %>%
+  tokens_tolower() %>%
+  tokens_remove(pattern = croatian_stopwords) %>%
+  tokens_remove(pattern = stopwords("en")) %>%
+  tokens_keep(min_nchar = 3)
+
+dfm_cath <- dfm(tokens_cath) %>%
+  dfm_trim(min_termfreq = 10, min_docfreq = 5)
+
+cat("Documents:", ndoc(dfm_cath), "\n")
+cat("Features:", nfeat(dfm_cath), "\n")
+```
+
+# Topic Models
+
+## BERTopic Model (Transformer Embeddings)
+
+```{r bertopic-model}
+#| label: bertopic-model
+#| eval: !expr RUN_BERTOPIC
+#| cache: true
+
+cat("
+╔══════════════════════════════════════════════════════════════════╗
+║  Running BERTopic with:", EMBEDDING_MODEL, "
+╚══════════════════════════════════════════════════════════════════╝
+")
+
+# Python code for BERTopic
+py_run_string("
+import numpy as np
+from bertopic import BERTopic
+from sentence_transformers import SentenceTransformer
+from sklearn.feature_extraction.text import CountVectorizer
+from umap import UMAP
+from hdbscan import HDBSCAN
+import warnings
+warnings.filterwarnings('ignore')
+")
+
+# Pass data to Python
+py$docs <- dta_sample$clean_text
+py$embedding_model_name <- EMBEDDING_MODEL
+py$croatian_stopwords <- croatian_stopwords
+py$nr_topics <- as.integer(NUM_TOPICS)
+
+# Run BERTopic in Python
+py_run_string("
+print('Loading embedding model...')
+embedding_model = SentenceTransformer(embedding_model_name)
+
+print('Creating embeddings...')
+embeddings = embedding_model.encode(docs, show_progress_bar=True)
+
+# Croatian vectorizer
+vectorizer_model = CountVectorizer(
+    stop_words=list(croatian_stopwords),
+    min_df=5,
+    ngram_range=(1, 2)
+)
+
+# UMAP for dimensionality reduction
+umap_model = UMAP(
+    n_neighbors=15,
+    n_components=5,
+    min_dist=0.0,
+    metric='cosine',
+    random_state=42
+)
+
+# HDBSCAN for clustering
+hdbscan_model = HDBSCAN(
+    min_cluster_size=15,
+    metric='euclidean',
+    cluster_selection_method='eom',
+    prediction_data=True
+)
+
+print('Fitting BERTopic model...')
+topic_model = BERTopic(
+    embedding_model=embedding_model,
+    umap_model=umap_model,
+    hdbscan_model=hdbscan_model,
+    vectorizer_model=vectorizer_model,
+    nr_topics=nr_topics if nr_topics > 0 else 'auto',
+    verbose=True
+)
+
+topics, probs = topic_model.fit_transform(docs, embeddings)
+
+print('Extracting topic info...')
+topic_info = topic_model.get_topic_info()
+doc_info = topic_model.get_document_info(docs)
+
+# Get topic word distributions
+topic_words_dict = {}
+for topic_id in topic_info['Topic'].tolist():
+    if topic_id != -1:
+        words = topic_model.get_topic(topic_id)
+        topic_words_dict[topic_id] = words
+
+print(f'Found {len(topic_info) - 1} topics (excluding outlier topic -1)')
+")
+
+# Extract results back to R
+bertopic_topics <- py$topics
+bertopic_probs <- py$probs
+bertopic_topic_info <- py$topic_info
+bertopic_doc_info <- py$doc_info
+bertopic_topic_words <- py$topic_words_dict
+
+# Convert to R friendly format
+n_bertopic_topics <- length(unique(bertopic_topics[bertopic_topics != -1]))
+cat("BERTopic found", n_bertopic_topics, "topics\n")
+
+# Create document topic matrix (using probabilities if available)
+if (!is.null(bertopic_probs) && length(dim(bertopic_probs)) == 2) {
+  bertopic_theta <- as.matrix(bertopic_probs)
+} else {
+  # Create one hot encoding if probs not available
+  unique_topics <- sort(unique(bertopic_topics[bertopic_topics != -1]))
+  bertopic_theta <- matrix(0, nrow = length(bertopic_topics), ncol = length(unique_topics))
+  for (i in seq_along(bertopic_topics)) {
+    if (bertopic_topics[i] != -1) {
+      col_idx <- which(unique_topics == bertopic_topics[i])
+      bertopic_theta[i, col_idx] <- 1
+    }
+  }
+}
+
+# Update K to match BERTopic results
+K_bertopic <- ncol(bertopic_theta)
+```
+
+```{r bertopic-results}
+#| label: bertopic-results
+#| eval: !expr RUN_BERTOPIC
+
+# Create topic words dataframe
+bertopic_topic_df <- data.frame(
+  Topic = integer(),
+  Top_Words = character(),
+  FREX_Words = character(),
+  stringsAsFactors = FALSE
+)
+
+topic_ids <- as.integer(names(bertopic_topic_words))
+topic_ids <- topic_ids[topic_ids != -1]
+
+for (tid in sort(topic_ids)) {
+  words_scores <- bertopic_topic_words[[as.character(tid)]]
+  if (!is.null(words_scores)) {
+    words <- sapply(words_scores, function(x) x[[1]])
+    top_words <- paste(head(words, 10), collapse = ", ")
+    bertopic_topic_df <- rbind(bertopic_topic_df, data.frame(
+      Topic = tid + 1,  # Convert to 1 indexed
+      Top_Words = top_words,
+      FREX_Words = top_words,
+      stringsAsFactors = FALSE
+    ))
+  }
+}
+
+cat("BERTopic topic words extracted for", nrow(bertopic_topic_df), "topics\n")
+```
+
+## STM Model (Structural Topic Model)
+
+```{r stm-model}
+#| label: stm-model
+#| eval: !expr RUN_STM
+#| cache: true
+
+stm_dfm <- convert(dfm_cath, to = "stm")
+
+stm_model <- stm(
+  documents = stm_dfm$documents,
+  vocab = stm_dfm$vocab,
+  K = K,
+  prevalence = ~ actor_type + platform,
+  data = stm_dfm$meta,
+  init.type = "Spectral",
+  max.em.its = 50,
+  verbose = TRUE,
+  seed = 42
+)
+
+cat("STM model fitted with", K, "topics\n")
+
+stm_theta <- stm_model$theta
+stm_beta <- exp(stm_model$beta$logbeta[[1]])
+rownames(stm_beta) <- paste0("Topic_", 1:K)
+colnames(stm_beta) <- stm_model$vocab
+```
+
+## LDA Model (Latent Dirichlet Allocation)
+
+```{r lda-model}
+#| label: lda-model
+#| eval: !expr RUN_LDA
+#| cache: true
+
+lda_dfm <- convert(dfm_cath, to = "topicmodels")
+
+lda_model <- LDA(
+  lda_dfm, 
+  k = K, 
+  method = "Gibbs",
+  control = list(
+    seed = 42,
+    burnin = 1000,
+    iter = 2000,
+    thin = 100,
+    verbose = 100
+  )
+)
+
+cat("LDA model fitted with", K, "topics\n")
+
+lda_theta <- posterior(lda_model)$topics
+lda_beta <- posterior(lda_model)$terms
+```
+
+## NMF Model (Non-negative Matrix Factorization)
+
+```{r nmf-model}
+#| label: nmf-model
+#| eval: !expr RUN_NMF
+#| cache: true
+
+library(NMF)
+
+nmf_matrix <- as.matrix(dfm_cath)
+nmf_matrix <- nmf_matrix + 0.001
+
+nmf_model <- nmf(
+  nmf_matrix,
+  rank = K,
+  method = "brunet",
+  seed = 42,
+  nrun = 1
+)
+
+cat("NMF model fitted with", K, "topics\n")
+
+nmf_theta <- basis(nmf_model)
+nmf_theta <- nmf_theta / rowSums(nmf_theta)
+nmf_beta <- coef(nmf_model)
+nmf_beta <- nmf_beta / rowSums(nmf_beta)
+colnames(nmf_beta) <- featnames(dfm_cath)
+rownames(nmf_beta) <- paste0("Topic_", 1:K)
+```
+
+## Select Model for Analysis
+
+```{r select-model}
+#| label: select-model
+
+if (SELECTED_MODEL == "bertopic" && RUN_BERTOPIC) {
+  
+  doc_topics <- bertopic_theta
+  K <- ncol(doc_topics)
+  colnames(doc_topics) <- paste0("Topic_", 1:K)
+  
+  doc_meta <- data.frame(
+    actor_type = dta_sample$ACTOR_TYPE,
+    platform = dta_sample$SOURCE_TYPE,
+    year = dta_sample$year
+  )
+  
+  topic_df <- bertopic_topic_df
+  if (nrow(topic_df) < K) {
+    for (i in (nrow(topic_df) + 1):K) {
+      topic_df <- rbind(topic_df, data.frame(
+        Topic = i, Top_Words = "NA", FREX_Words = "NA"
+      ))
+    }
+  }
+  
+  cat("Using BERTopic model with", EMBEDDING_MODEL, "for downstream analysis\n")
+  cat("Number of topics:", K, "\n")
+  
+} else if (SELECTED_MODEL == "stm" && RUN_STM) {
+  
+  doc_topics <- stm_theta
+  K <- ncol(doc_topics)
+  colnames(doc_topics) <- paste0("Topic_", 1:K)
+  doc_meta <- stm_dfm$meta
+  
+  topic_words <- labelTopics(stm_model, n = 10)
+  topic_df <- data.frame(
+    Topic = 1:K,
+    Top_Words = apply(topic_words$prob, 1, paste, collapse = ", "),
+    FREX_Words = apply(topic_words$frex, 1, paste, collapse = ", ")
+  )
+  
+  cat("Using STM model for downstream analysis\n")
+  
+} else if (SELECTED_MODEL == "lda" && RUN_LDA) {
+  
+  doc_topics <- lda_theta
+  K <- ncol(doc_topics)
+  colnames(doc_topics) <- paste0("Topic_", 1:K)
+  
+  doc_meta <- data.frame(
+    actor_type = dta_sample$ACTOR_TYPE[as.numeric(rownames(lda_theta))],
+    platform = dta_sample$SOURCE_TYPE[as.numeric(rownames(lda_theta))],
+    year = dta_sample$year[as.numeric(rownames(lda_theta))]
+  )
+  
+  lda_terms <- terms(lda_model, 10)
+  topic_df <- data.frame(
+    Topic = 1:K,
+    Top_Words = apply(lda_terms, 2, paste, collapse = ", "),
+    FREX_Words = apply(lda_terms, 2, paste, collapse = ", ")
+  )
+  
+  cat("Using LDA model for downstream analysis\n")
+  
+} else if (SELECTED_MODEL == "nmf" && RUN_NMF) {
+  
+  doc_topics <- nmf_theta
+  K <- ncol(doc_topics)
+  colnames(doc_topics) <- paste0("Topic_", 1:K)
+  
+  doc_meta <- data.frame(
+    actor_type = dta_sample$ACTOR_TYPE,
+    platform = dta_sample$SOURCE_TYPE,
+    year = dta_sample$year
+  )
+  
+  get_top_words <- function(beta_row, vocab, n = 10) {
+    top_idx <- order(beta_row, decreasing = TRUE)[1:n]
+    vocab[top_idx]
+  }
+  nmf_terms <- t(apply(nmf_beta, 1, function(x) get_top_words(x, colnames(nmf_beta), 10)))
+  topic_df <- data.frame(
+    Topic = 1:K,
+    Top_Words = apply(nmf_terms, 1, paste, collapse = ", "),
+    FREX_Words = apply(nmf_terms, 1, paste, collapse = ", ")
+  )
+  
+  cat("Using NMF model for downstream analysis\n")
+  
+} else {
+  stop("Selected model '", SELECTED_MODEL, "' was not run. Set the corresponding RUN_* parameter to TRUE.")
+}
+
+cat("Final K =", K, "topics\n")
+```
+
+## Topic Labels and Top Words
+
+```{r topic-words}
+#| label: topic-words
+
+topic_df %>%
+  kable(col.names = c("Topic", "Top Words (Probability)", "FREX/Distinctive Words")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = TRUE) %>%
+  scroll_box(height = "600px")
+```
+
+## Topic Prevalence Overview
+
+```{r topic-prevalence}
+#| label: topic-prevalence
+#| fig-height: 10
+
+topic_proportions <- colMeans(doc_topics, na.rm = TRUE)
+
+topic_prev_df <- data.frame(
+  Topic = factor(1:K),
+  Prevalence = topic_proportions * 100
+) %>%
+  arrange(desc(Prevalence)) %>%
+  mutate(Topic = factor(Topic, levels = Topic))
+
+ggplot(topic_prev_df, aes(x = Topic, y = Prevalence)) +
+  geom_col(fill = "#2c5f7c", width = 0.7) +
+  geom_text(aes(label = sprintf("%.1f%%", Prevalence)), 
+            hjust = -0.1, size = 3) +
+  coord_flip() +
+  scale_y_continuous(limits = c(0, max(topic_prev_df$Prevalence) * 1.15),
+                     labels = function(x) paste0(x, "%")) +
+  labs(
+    title = paste("Topic Prevalence in Corpus (", toupper(SELECTED_MODEL), ")", sep = ""),
+    subtitle = paste("Distribution across", K, "topics"),
+    x = "Topic",
+    y = "Prevalence (%)"
+  )
+```
+
+## Topic Word Clouds (STM only)
+
+```{r topic-wordclouds}
+#| label: topic-wordclouds
+#| eval: !expr SELECTED_MODEL == "stm" && RUN_STM
+#| fig-height: 12
+#| fig-width: 14
+
+par(mfrow = c(5, 7), mar = c(0.5, 0.5, 1.5, 0.5))
+
+for (i in 1:min(K, 35)) {
+  cloud(stm_model, topic = i, max.words = 30, 
+        colors = brewer.pal(8, "Dark2"),
+        main = paste("Topic", i))
+}
+
+par(mfrow = c(1, 1))
+```
+
+# Analysis 2.2: Topic Taxonomy
+
+Group discovered topics into higher order thematic categories based on manual inspection of top words.
+
+```{r topic-taxonomy}
+#| label: topic-taxonomy
+
+topic_taxonomy <- data.frame(
+  Topic = 1:K,
+  stringsAsFactors = FALSE
+)
+
+topic_taxonomy$Category <- NA
+topic_taxonomy$Label <- NA
+
+topic_words_list <- lapply(1:K, function(i) {
+  if (i <= nrow(topic_df)) {
+    unlist(strsplit(topic_df$Top_Words[i], ", "))
+  } else {
+    character(0)
+  }
+})
+
+liturgical_keywords <- c("misa", "mise", "nedjelja", "svetkovina", "liturgi", 
+                         "sakrament", "euharistij", "krizm", "krst", "pričest",
+                         "uskrs", "božić", "advent", "korizma", "vazmeni")
+devotional_keywords <- c("molitva", "molit", "gospa", "marij", "svetac", "sveti",
+                         "duhov", "vjera", "krist", "isus", "srce", "ljubav",
+                         "blagoslov", "zahval")
+institutional_keywords <- c("biskupij", "nadbiskup", "biskup", "papa", "vatikan",
+                            "hbk", "kardinal", "dekret", "imenovan", "župnik")
+social_keywords <- c("obitelj", "život", "djeca", "brak", "pobačaj", "caritas",
+                     "siromašn", "pomoć", "društv", "socijal", "rad", "posao")
+political_keywords <- c("vlada", "izborn", "politič", "zakon", "država", "nacija",
+                        "hrvat", "rat", "povijes", "domovina", "domoljub")
+youth_keywords <- c("mladi", "škola", "student", "frama", "shkm", "ministran",
+                    "kamp", "susret", "zajednic", "program", "aktivnost")
+educational_keywords <- c("kateh", "teolog", "biblij", "evanđelj", "pouka",
+                          "učenj", "knjiga", "čitanj", "znanje", "obrazov")
+
+assign_category <- function(words, topic_num) {
+  if (length(words) == 0) return("Other")
+  words_str <- tolower(paste(words, collapse = " "))
+  
+  scores <- c(
+    Liturgical = sum(sapply(liturgical_keywords, function(k) grepl(k, words_str))),
+    Devotional = sum(sapply(devotional_keywords, function(k) grepl(k, words_str))),
+    Institutional = sum(sapply(institutional_keywords, function(k) grepl(k, words_str))),
+    "Social/Ethical" = sum(sapply(social_keywords, function(k) grepl(k, words_str))),
+    Political = sum(sapply(political_keywords, function(k) grepl(k, words_str))),
+    "Youth/Community" = sum(sapply(youth_keywords, function(k) grepl(k, words_str))),
+    Educational = sum(sapply(educational_keywords, function(k) grepl(k, words_str)))
+  )
+  
+  if (max(scores) == 0) return("Other")
+  names(which.max(scores))
+}
+
+for (i in 1:K) {
+  topic_taxonomy$Category[i] <- assign_category(topic_words_list[[i]], i)
+  if (length(topic_words_list[[i]]) >= 3) {
+    top_3_words <- paste(topic_words_list[[i]][1:3], collapse = ", ")
+  } else {
+    top_3_words <- paste(topic_words_list[[i]], collapse = ", ")
+  }
+  topic_taxonomy$Label[i] <- paste0("Topic ", i, ": ", top_3_words)
+}
+
+topic_taxonomy %>%
+  arrange(Category, Topic) %>%
+  left_join(topic_prev_df %>% select(Topic, Prevalence) %>% 
+              mutate(Topic = as.numeric(as.character(Topic))), by = "Topic") %>%
+  kable(col.names = c("Topic", "Category", "Label", "Prevalence (%)")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE) %>%
+  scroll_box(height = "500px")
+```
+
+## Category Distribution
+
+```{r category-distribution}
+#| label: category-distribution
+#| fig-height: 7
+
+category_prevalence <- topic_taxonomy %>%
+  left_join(topic_prev_df %>% 
+              mutate(Topic = as.numeric(as.character(Topic))), by = "Topic") %>%
+  group_by(Category) %>%
+  summarise(
+    Topics = n(),
+    Total_Prevalence = sum(Prevalence, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  arrange(desc(Total_Prevalence))
+
+ggplot(category_prevalence, aes(x = reorder(Category, Total_Prevalence), 
+                                 y = Total_Prevalence, fill = Category)) +
+  geom_col(width = 0.7) +
+  geom_text(aes(label = sprintf("%.1f%%\n(%d topics)", Total_Prevalence, Topics)),
+            hjust = -0.1, size = 3.5) +
+  coord_flip() +
+  scale_fill_brewer(palette = "Set2") +
+  scale_y_continuous(limits = c(0, max(category_prevalence$Total_Prevalence) * 1.25),
+                     labels = function(x) paste0(x, "%")) +
+  labs(
+    title = "Thematic Category Distribution",
+    subtitle = "Aggregated prevalence by topic category",
+    x = NULL,
+    y = "Total Prevalence (%)"
+  ) +
+  theme(legend.position = "none")
+```
+
+# Analysis 2.3: Topic by Actor Mapping
+
+Examine how different actor types specialize in particular topics.
+
+```{r topic-actor-prep}
+#| label: topic-actor-prep
+
+doc_meta <- cbind(doc_meta, doc_topics)
+
+actor_topic_means <- doc_meta %>%
+  group_by(actor_type) %>%
+  summarise(across(starts_with("Topic_"), mean, na.rm = TRUE), .groups = "drop")
+
+actor_topic_long <- actor_topic_means %>%
+  pivot_longer(cols = starts_with("Topic_"),
+               names_to = "Topic",
+               values_to = "Proportion") %>%
+  mutate(Topic_Num = as.numeric(gsub("Topic_", "", Topic)))
+```
+
+## Topic Proportions by Actor Type Heatmap
+
+```{r actor-topic-heatmap}
+#| label: actor-topic-heatmap
+#| fig-height: 10
+#| fig-width: 12
+
+actor_topic_matrix <- actor_topic_means %>%
+  column_to_rownames("actor_type") %>%
+  as.matrix()
+
+colnames(actor_topic_matrix) <- 1:K
+
+pheatmap(
+  t(actor_topic_matrix) * 100,
+  cluster_rows = TRUE,
+  cluster_cols = TRUE,
+  color = colorRampPalette(c("white", "#2c5f7c", "#1a3c5a"))(100),
+  main = paste("Topic Proportions by Actor Type (%) -", toupper(SELECTED_MODEL)),
+  fontsize = 10,
+  fontsize_row = 8,
+  fontsize_col = 9,
+  angle_col = 45,
+  display_numbers = FALSE,
+  border_color = "grey90"
+)
+```
+
+## Actor Specialization Index
+
+```{r actor-specialization}
+#| label: actor-specialization
+#| fig-height: 8
+
+corpus_avg <- colMeans(doc_topics, na.rm = TRUE)
+
+specialization_df <- actor_topic_long %>%
+  left_join(tibble(Topic_Num = 1:K, Corpus_Avg = corpus_avg), by = "Topic_Num") %>%
+  mutate(
+    Lift = Proportion / Corpus_Avg,
+    Log_Lift = log2(Lift)
+  ) %>%
+  left_join(topic_taxonomy %>% select(Topic, Category, Label) %>%
+              rename(Topic_Num = Topic), by = "Topic_Num")
+
+top_specializations <- specialization_df %>%
+  filter(is.finite(Log_Lift)) %>%
+  group_by(actor_type) %>%
+  slice_max(Log_Lift, n = 3) %>%
+  ungroup()
+
+top_specializations %>%
+  select(actor_type, Label, Category, Lift) %>%
+  mutate(Lift = sprintf("%.2fx", Lift)) %>%
+  arrange(actor_type) %>%
+  kable(col.names = c("Actor Type", "Topic", "Category", "Lift vs Corpus")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE) %>%
+  scroll_box(height = "500px")
+```
+
+## Actor Type Topic Profiles
+
+```{r actor-profiles}
+#| label: actor-profiles
+#| fig-height: 12
+#| fig-width: 14
+
+category_by_actor <- specialization_df %>%
+  group_by(actor_type, Category) %>%
+  summarise(Category_Proportion = sum(Proportion, na.rm = TRUE), .groups = "drop")
+
+ggplot(category_by_actor, aes(x = Category, y = Category_Proportion, fill = Category)) +
+  geom_col(width = 0.7) +
+  facet_wrap(~actor_type, scales = "free_y", ncol = 3) +
+  scale_fill_brewer(palette = "Set2") +
+  scale_y_continuous(labels = function(x) paste0(round(x * 100, 1), "%")) +
+  labs(
+    title = "Thematic Category Profiles by Actor Type",
+    subtitle = "What each actor type talks about",
+    x = NULL,
+    y = "Proportion of Content"
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 8),
+    legend.position = "none",
+    strip.text = element_text(face = "bold")
+  )
+```
+
+# Analysis 2.4: Topic by Platform Mapping
+
+```{r platform-topic-prep}
+#| label: platform-topic-prep
+
+platform_topic_means <- doc_meta %>%
+  group_by(platform) %>%
+  summarise(across(starts_with("Topic_"), mean, na.rm = TRUE), .groups = "drop")
+
+platform_topic_long <- platform_topic_means %>%
+  pivot_longer(cols = starts_with("Topic_"),
+               names_to = "Topic",
+               values_to = "Proportion") %>%
+  mutate(Topic_Num = as.numeric(gsub("Topic_", "", Topic))) %>%
+  left_join(topic_taxonomy %>% select(Topic, Category, Label) %>%
+              rename(Topic_Num = Topic), by = "Topic_Num")
+```
+
+## Platform Topic Heatmap
+
+```{r platform-topic-heatmap}
+#| label: platform-topic-heatmap
+#| fig-height: 8
+#| fig-width: 12
+
+platform_topic_matrix <- platform_topic_means %>%
+  column_to_rownames("platform") %>%
+  as.matrix()
+
+colnames(platform_topic_matrix) <- 1:K
+
+pheatmap(
+  t(platform_topic_matrix) * 100,
+  cluster_rows = TRUE,
+  cluster_cols = TRUE,
+  color = colorRampPalette(c("white", "#e07b39", "#c44536"))(100),
+  main = "Topic Proportions by Platform (%)",
+  fontsize = 10,
+  fontsize_row = 8,
+  fontsize_col = 10,
+  angle_col = 45,
+  display_numbers = FALSE,
+  border_color = "grey90"
+)
+```
+
+## Platform Category Profiles
+
+```{r platform-profiles}
+#| label: platform-profiles
+#| fig-height: 8
+
+category_by_platform <- platform_topic_long %>%
+  group_by(platform, Category) %>%
+  summarise(Category_Proportion = sum(Proportion, na.rm = TRUE), .groups = "drop")
+
+ggplot(category_by_platform, aes(x = reorder(platform, Category_Proportion), 
+                                  y = Category_Proportion, fill = Category)) +
+  geom_col(position = "fill", width = 0.8) +
+  coord_flip() +
+  scale_fill_brewer(palette = "Set2") +
+  scale_y_continuous(labels = percent) +
+  labs(
+    title = "Thematic Composition by Platform",
+    subtitle = "Relative distribution of topic categories",
+    x = NULL,
+    y = "Proportion",
+    fill = "Category"
+  ) +
+  theme(legend.position = "right")
+```
+
+## Platform Specialization
+
+```{r platform-specialization}
+#| label: platform-specialization
+#| fig-height: 7
+
+platform_spec <- platform_topic_long %>%
+  left_join(tibble(Topic_Num = 1:K, Corpus_Avg = corpus_avg), by = "Topic_Num") %>%
+  mutate(Lift = Proportion / Corpus_Avg) %>%
+  group_by(platform) %>%
+  slice_max(Lift, n = 5) %>%
+  ungroup()
+
+platform_spec %>%
+  select(platform, Label, Category, Lift) %>%
+  mutate(Lift = sprintf("%.2fx", Lift)) %>%
+  arrange(platform, desc(as.numeric(gsub("x", "", Lift)))) %>%
+  kable(col.names = c("Platform", "Topic", "Category", "Lift")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE) %>%
+  scroll_box(height = "400px")
+```
+
+# Analysis 2.5: Topic Engagement Differential
+
+```{r engagement-prep}
+#| label: engagement-prep
+
+doc_engagement <- dta_sample[, .(doc_id, INTERACTIONS, REACH)]
+
+doc_meta_with_id <- doc_meta |>
+  mutate(row_id = row_number())
+
+doc_engagement_with_id <- doc_engagement |>
+  mutate(row_id = row_number())
+
+doc_meta_eng <- doc_meta_with_id |>
+  left_join(doc_engagement_with_id, by = "row_id", suffix = c("", "_y"))
+
+topic_engagement <- lapply(1:K, function(t) {
+  topic_col <- paste0("Topic_", t)
+  if (topic_col %in% names(doc_meta_eng)) {
+    doc_meta_eng |>
+      mutate(weight = .data[[topic_col]]) |>
+      summarise(
+        Topic = t,
+        Weighted_Mean_Engagement = weighted.mean(INTERACTIONS, weight, na.rm = TRUE),
+        Mean_Engagement = mean(INTERACTIONS[.data[[topic_col]] > 0.1], na.rm = TRUE),
+        Total_Engagement = sum(INTERACTIONS * weight, na.rm = TRUE),
+        Document_Count = sum(.data[[topic_col]] > 0.1)
+      )
+  } else {
+    data.frame(Topic = t, Weighted_Mean_Engagement = NA, Mean_Engagement = NA,
+               Total_Engagement = NA, Document_Count = NA)
+  }
+}) |> bind_rows()
+
+topic_engagement <- topic_engagement |>
+  left_join(topic_taxonomy, by = "Topic") |>
+  left_join(topic_prev_df |> 
+              mutate(Topic = as.numeric(as.character(Topic))), by = "Topic")
+```
+
+## Topic Engagement Ranking
+
+```{r topic-engagement-chart}
+#| label: topic-engagement-chart
+#| fig-height: 10
+
+ggplot(topic_engagement %>% filter(!is.na(Weighted_Mean_Engagement)), 
+       aes(x = reorder(factor(Topic), Weighted_Mean_Engagement),
+           y = Weighted_Mean_Engagement, fill = Category)) +
+  geom_col(width = 0.7) +
+  geom_text(aes(label = round(Weighted_Mean_Engagement, 0)), 
+            hjust = -0.1, size = 3) +
+  coord_flip() +
+  scale_fill_brewer(palette = "Set2") +
+  scale_y_continuous(limits = c(0, max(topic_engagement$Weighted_Mean_Engagement, na.rm = TRUE) * 1.15)) +
+  labs(
+    title = "Average Engagement by Topic",
+    subtitle = "Weighted mean interactions per document",
+    x = "Topic",
+    y = "Weighted Mean Engagement",
+    fill = "Category"
+  )
+```
+
+## Volume vs Engagement Comparison
+
+```{r volume-vs-engagement}
+#| label: volume-vs-engagement
+#| fig-height: 8
+
+topic_engagement <- topic_engagement %>%
+  filter(!is.na(Prevalence) & !is.na(Weighted_Mean_Engagement)) %>%
+  mutate(
+    Prevalence_Rank = rank(-Prevalence),
+    Engagement_Rank = rank(-Weighted_Mean_Engagement),
+    Engagement_Efficiency = Engagement_Rank - Prevalence_Rank
+  )
+
+ggplot(topic_engagement, aes(x = Prevalence, y = Weighted_Mean_Engagement)) +
+  geom_point(aes(color = Category, size = Total_Engagement), alpha = 0.7) +
+  geom_text_repel(aes(label = Topic), size = 3, max.overlaps = 15) +
+  geom_smooth(method = "lm", se = TRUE, linetype = "dashed", color = "gray50") +
+  scale_color_brewer(palette = "Set2") +
+  scale_size_continuous(range = c(3, 12), labels = comma) +
+  labs(
+    title = "Topic Prevalence vs Engagement",
+    subtitle = "Points above the trend line are engagement overperformers",
+    x = "Prevalence (%)",
+    y = "Weighted Mean Engagement",
+    color = "Category",
+    size = "Total Engagement"
+  )
+```
+
+## Engagement Efficiency by Category
+
+```{r category-engagement}
+#| label: category-engagement
+#| fig-height: 6
+
+category_engagement <- topic_engagement %>%
+  group_by(Category) %>%
+  summarise(
+    Mean_Engagement = mean(Weighted_Mean_Engagement, na.rm = TRUE),
+    Total_Prevalence = sum(Prevalence, na.rm = TRUE),
+    Engagement_per_Prevalence = Mean_Engagement / Total_Prevalence,
+    .groups = "drop"
+  ) %>%
+  arrange(desc(Engagement_per_Prevalence))
+
+ggplot(category_engagement, aes(x = Total_Prevalence, y = Mean_Engagement)) +
+  geom_point(aes(color = Category), size = 8) +
+  geom_text_repel(aes(label = Category), size = 4) +
+  scale_color_brewer(palette = "Set2") +
+  labs(
+    title = "Category Prevalence vs Engagement",
+    subtitle = "Which thematic categories punch above their weight?",
+    x = "Total Prevalence (%)",
+    y = "Mean Engagement per Topic"
+  ) +
+  theme(legend.position = "none")
+```
+
+::: {.callout-important}
+## Key Finding on Engagement Differential
+Topics in the Political and Social/Ethical categories often generate disproportionately high engagement relative to their prevalence, supporting the hypothesis that controversial content attracts more attention.
+:::
+
+# Analysis 2.6: Temporal Topic Trends
+
+```{r temporal-topics}
+#| label: temporal-topics
+#| fig-height: 10
+
+yearly_topics <- doc_meta %>%
+  group_by(year) %>%
+  summarise(across(starts_with("Topic_"), mean, na.rm = TRUE), .groups = "drop") %>%
+  pivot_longer(cols = starts_with("Topic_"),
+               names_to = "Topic",
+               values_to = "Proportion") %>%
+  mutate(Topic_Num = as.numeric(gsub("Topic_", "", Topic))) %>%
+  left_join(topic_taxonomy %>% select(Topic, Category) %>%
+              rename(Topic_Num = Topic), by = "Topic_Num")
+
+category_yearly <- yearly_topics %>%
+  group_by(year, Category) %>%
+  summarise(Proportion = sum(Proportion, na.rm = TRUE), .groups = "drop")
+
+ggplot(category_yearly, aes(x = year, y = Proportion, fill = Category)) +
+  geom_area(alpha = 0.8) +
+  scale_fill_brewer(palette = "Set2") +
+  scale_y_continuous(labels = percent) +
+  labs(
+    title = "Thematic Evolution Over Time",
+    subtitle = "Category proportions by year",
+    x = "Year",
+    y = "Proportion",
+    fill = "Category"
+  )
+```
+
+## Top Growing and Declining Topics
+
+```{r topic-trends}
+#| label: topic-trends
+
+yearly_wide <- doc_meta %>%
+  group_by(year) %>%
+  summarise(across(starts_with("Topic_"), mean, na.rm = TRUE), .groups = "drop")
+
+if (nrow(yearly_wide) >= 2) {
+  first_year <- yearly_wide$year[1]
+  last_year <- yearly_wide$year[nrow(yearly_wide)]
+  
+  topic_cols <- paste0("Topic_", 1:K)
+  available_cols <- intersect(topic_cols, names(yearly_wide))
+  
+  topic_trends <- data.frame(
+    Topic = as.numeric(gsub("Topic_", "", available_cols)),
+    Start = as.numeric(yearly_wide[1, available_cols]),
+    End = as.numeric(yearly_wide[nrow(yearly_wide), available_cols])
+  ) %>%
+    mutate(
+      Change = End - Start,
+      Pct_Change = (End - Start) / Start * 100
+    ) %>%
+    left_join(topic_taxonomy, by = "Topic") %>%
+    arrange(desc(Change))
+  
+  cat("Top 5 Growing Topics:\n")
+  print(head(topic_trends %>% select(Topic, Label, Category, Change, Pct_Change), 5))
+  
+  cat("\nTop 5 Declining Topics:\n")
+  print(tail(topic_trends %>% select(Topic, Label, Category, Change, Pct_Change), 5))
+}
+```
+
+# Summary and Key Findings
+
+```{r summary-stats}
+#| label: summary-stats
+
+category_summary <- category_prevalence %>%
+  left_join(category_engagement, by = "Category")
+
+top_category <- category_summary %>% slice_max(Total_Prevalence, n = 1)
+top_engagement_cat <- category_summary %>% 
+  filter(!is.na(Mean_Engagement)) %>%
+  slice_max(Mean_Engagement, n = 1)
+```
+
+## Thematic Structure Findings
+
+1. **Model used:** `r toupper(SELECTED_MODEL)` `r if(SELECTED_MODEL == "bertopic") paste0("with ", EMBEDDING_MODEL)`
+
+2. **Dominant themes:** The corpus is dominated by `r top_category$Category` content (`r round(top_category$Total_Prevalence, 1)`% prevalence)
+
+3. **Engagement patterns:** `r top_engagement_cat$Category` content generates the highest average engagement
+
+4. **Actor specialization:** Clear patterns emerge in what different actors talk about
+   
+5. **Platform differences:** Web platforms show more institutional/news content while social platforms show more devotional and community content
+
+## Topic Model Summary Table
+
+```{r final-summary}
+#| label: final-summary
+
+topic_engagement %>%
+  select(Topic, Label, Category, Prevalence, Weighted_Mean_Engagement) %>%
+  arrange(desc(Prevalence)) %>%
+  head(15) %>%
+  mutate(
+    Prevalence = sprintf("%.1f%%", Prevalence),
+    Weighted_Mean_Engagement = round(Weighted_Mean_Engagement, 0)
+  ) %>%
+  kable(col.names = c("Topic", "Label", "Category", "Prevalence", "Mean Engagement")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+## Hypotheses Testing Summary
+
+| Hypothesis | Finding |
+|------------|---------|
+| H7: Devotional/liturgical content dominates volume | Examine category prevalence results above |
+| H8: Political/social content generates disproportionate engagement | Compare engagement efficiency by category |
+| H9: Individual priests concentrate on social/political topics | See actor specialization patterns |
+
+---
+
+# Appendix: Model Configuration
+
+```{r model-diagnostics}
+#| label: model-diagnostics
+
+cat("
+╔══════════════════════════════════════════════════════════════════╗
+║                    FINAL MODEL SUMMARY                           ║
+╠══════════════════════════════════════════════════════════════════╣
+")
+cat(sprintf("║  Selected model: %s
+║  Number of topics: %d
+║  Documents analyzed: %d
+║  Sample percentage: %.1f%%
+",
+toupper(SELECTED_MODEL),
+K,
+nrow(doc_topics),
+SAMPLE_PCT * 100
+))
+
+if (SELECTED_MODEL == "bertopic") {
+  cat(sprintf("║  Embedding model: %s\n", EMBEDDING_MODEL))
+}
+
+cat("╚══════════════════════════════════════════════════════════════════╝\n")
+```
+
+```{r session-info}
+#| label: session-info
+
+sessionInfo()
+```

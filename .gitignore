@@ -1,0 +1,31 @@
+# Data files (too large / private)
+*.rds
+*.RData
+*.rdb
+*.rdx
+
+# Quarto cache
+*_cache/
+.quarto/
+
+# Generated HTML support files (can be regenerated)
+*_files/
+
+# R environment
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+*.Rproj
+
+# Temporary files
+*.tmp
+*.temp
+~$*

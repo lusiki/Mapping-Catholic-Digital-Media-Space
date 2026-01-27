@@ -1,0 +1,1193 @@
+---
+title: "DigiKat Map 3: Emotional Structure"
+subtitle: "Mapping Sentiment and Controversy in Croatian Catholic Digital Media"
+author: "DigiKat Project"
+date: today
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-location: left
+    number-sections: true
+    code-fold: true
+    code-summary: "Show code"
+    theme: cosmo
+    fig-width: 10
+    fig-height: 6
+execute:
+  warning: false
+  message: false
+---
+
+```{r setup}
+library(tidyverse)
+library(data.table)
+library(scales)
+library(ggplot2)
+library(knitr)
+library(kableExtra)
+library(fmsb)
+library(viridis)
+library(ggridges)
+library(tidytext)
+library(patchwork)
+library(DT)
+
+theme_set(theme_minimal(base_size = 12) +
+          theme(
+            plot.title = element_text(face = "bold", size = 14),
+            plot.subtitle = element_text(color = "gray40"),
+            legend.position = "bottom"
+          ))
+
+platform_colors <- c(
+  "web" = "#4285F4",
+  "facebook" = "#1877F2", 
+  "instagram" = "#E4405F",
+  "youtube" = "#FF0000",
+  "twitter" = "#1DA1F2",
+  "forum" = "#FF6600",
+  "reddit" = "#FF4500",
+  "comment" = "#808080"
+)
+
+actor_colors <- c(
+  "Institutional Official" = "#1a3c5a",
+  "Diocesan" = "#2c5f7c",
+  "Independent Media" = "#4a9c6d",
+  "Individual Priests" = "#e07b39",
+  "Charismatic Communities" = "#c44536",
+  "Religious Orders" = "#6b4c9a",
+  "Youth Organizations" = "#eab308",
+  "Academic" = "#64748b",
+  "Lay Influencers" = "#ec4899",
+  "Other" = "#94a3b8"
+)
+
+sentiment_colors <- c(
+  "positive" = "#22c55e",
+  "Positive" = "#22c55e",
+  "Pozitivno" = "#22c55e",
+  "neutral" = "#64748b",
+  "Neutral" = "#64748b",
+  "Neutralno" = "#64748b",
+  "negative" = "#ef4444",
+  "Negative" = "#ef4444",
+  "Negativno" = "#ef4444"
+)
+
+nrc_emotion_colors <- c(
+  "Ljutnja" = "#ef4444",
+  "Iščekivanje" = "#f59e0b",
+  "Gađenje" = "#84cc16",
+  "Strah" = "#6366f1",
+  "Zadovoljstvo" = "#22c55e",
+  "Tuga" = "#3b82f6",
+  "Iznenađenje" = "#ec4899",
+  "Povjerenje" = "#14b8a6"
+)
+```
+
+# Introduction
+
+This document presents **Map 3 of the DigiKat project**, analyzing the emotional structure of Croatian Catholic digital media. The core question driving this analysis is **What emotional register characterizes Croatian Catholic digital communication, and where does controversy emerge?**
+
+This enhanced version incorporates multiple sentiment analysis approaches:
+
+1. **CroSentilex Gold** lexicon based sentiment analysis (Croatian sentiment lexicon)
+2. **LilaHR/NRC** emotion lexicon providing 8 emotion categories plus positive/negative classification
+3. **Manual/Subjective sentiment** coding where available
+
+Understanding the emotional landscape of religious digital communication reveals how faith communities express themselves online, which content generates strong emotional responses, and where conflict and controversy arise.
+
+```{r load-data}
+#| label: load-data
+
+# Load main dataset
+dta <- readRDS("C:/Users/lsikic/Luka C/HKS/Projekti/Digitalni Kat/SHKM/DigiKat/data/merged_comprehensive.rds") %>%
+  filter(SOURCE_TYPE != "tiktok", !is.na(SOURCE_TYPE)) %>%
+  filter(DATE >= as.Date("2021-01-01") & DATE <= as.Date("2025-12-31")) %>%
+  filter(year >= 2022 & year <= 2023)
+
+setDT(dta)
+
+n_posts <- nrow(dta)
+n_sources <- uniqueN(dta$FROM)
+date_range <- paste(min(dta$DATE), "to", max(dta$DATE))
+```
+
+```{r load-lexicons}
+#| label: load-lexicons
+
+# Load CroSentilex Gold lexicon
+CroSentilex_Gold <- read.delim2(
+  "C:/Users/Lukas/Dropbox/Mislav@Luka/gs-sentiment-annotations.txt",
+  header = FALSE,
+  sep = " ",
+  stringsAsFactors = FALSE
+) %>%
+  rename(word = "V1", sentiment = "V2")
+
+Encoding(CroSentilex_Gold$word) <- "UTF-8"
+CroSentilex_Gold[1, 1] <- "dati"
+CroSentilex_Gold$sentiment <- str_replace(CroSentilex_Gold$sentiment, "-", "1")
+CroSentilex_Gold$sentiment <- str_replace(CroSentilex_Gold$sentiment, "\\+", "2")
+CroSentilex_Gold$sentiment <- as.numeric(unlist(CroSentilex_Gold$sentiment))
+
+# Load LilaHR (NRC translated to Croatian)
+LilaHR_long <- read_excel(
+  "C:/Users/Lukas/Dropbox/Mislav@Luka/lilaHR_clean_long.xlsx", 
+  sheet = "Sheet1"
+) %>% 
+  select(-"...1")
+
+# Create NRC positive/negative subset
+NRCpn <- LilaHR_long %>% 
+  rename("word" = "rijec") %>%
+  filter(Emotion %in% c("Positive", "Negative")) %>%
+  mutate(Emotion = recode(Emotion,
+                          "Positive" = "Pozitivno",
+                          "Negative" = "Negativno"))
+
+# Create full NRC emotion subset
+NRC <- LilaHR_long %>% 
+  rename("word" = "rijec") %>%
+  filter(Emotion %in% c("Anger", "Anticipation", "Disgust", "Fear", 
+                        "Joy", "Sadness", "Surprise", "Trust")) %>%
+  mutate(Emotion = recode(Emotion,
+                          "Anger" = "Ljutnja",
+                          "Anticipation" = "Iščekivanje",
+                          "Disgust" = "Gađenje",
+                          "Fear" = "Strah",
+                          "Joy" = "Zadovoljstvo",
+                          "Sadness" = "Tuga",
+                          "Surprise" = "Iznenađenje",
+                          "Trust" = "Povjerenje"))
+
+# Create stop words corpus
+stopwords_cro <- get_stopwords(language = "hr", source = "stopwords-iso")
+
+my_stop_words <- tibble(
+  word = c(
+    "jedan", "mjera", "može", "možete", "mogu", "kad", "sada", "treba", "ima", "osoba",
+    "e", "prvi", "dva", "dvije", "drugi", "tri", "treći", "pet", "kod",
+    "ove", "ova", "ovo", "bez", "kod", "evo", "oko", "om", "ek",
+    "mil", "tko", "šest", "sedam", "osam", "čim", "zbog",
+    "prema", "dok", "zato", "koji", "im", "čak", "među", "tek",
+    "koliko", "tko", "kod", "poput", "baš", "dakle", "osim", "svih",
+    "svoju", "odnosno", "gdje", "kojoj", "ovi", "toga",
+    "kaže", "rekao", "19", "ae", "bit.ly", "https", "one", "the"
+  ),
+  lexicon = "custom"
+)
+
+cro_sw_full_d <- tibble(
+  word = c("a", "ako", "ali", "baš", "bez", "bi", "bih", "bila", "bili", "bilo", 
+           "bio", "bismo", "bit", "biti", "bolje", "bude", "čak", "čega", "čemu", 
+           "često", "četiri", "čime", "čini", "će", "ćemo", "ćete", "ću", "da", 
+           "dakle", "dalje", "dan", "dana", "danas", "dio", "do", "dobro", "dok", 
+           "dosta", "dva", "dvije", "eto", "evo", "ga", "gdje", "god", "godina", 
+           "godine", "gotovo", "grada", "i", "iako", "ići", "ih", "ili", "im", 
+           "ima", "imaju", "imali", "imam", "imao", "imati", "inače", "ipak", 
+           "isto", "iz", "iza", "između", "ja", "jako", "je", "jedan", "jedna", 
+           "jednog", "jednom", "jednostavno", "jednu", "jer", "joj", "još", "ju", 
+           "ka", "kad", "kada", "kaj", "kako", "kao", "kaže", "kod", "koja", 
+           "koje", "kojeg", "kojem", "koji", "kojih", "kojim", "kojima", "kojoj", 
+           "kojom", "koju", "koliko", "kraju", "kroz", "li", "malo", "manje", 
+           "me", "među", "međutim", "mene", "meni", "mi", "milijuna", "mislim", 
+           "mjesto", "mnogo", "mogao", "mogli", "mogu", "moj", "mora", "možda", 
+           "može", "možemo", "možete", "mu", "na", "način", "nad", "naime", 
+           "nakon", "nam", "naravno", "nas", "ne", "neće", "nego", "neka", 
+           "neke", "neki", "nekog", "nekoliko", "neku", "nema", "nešto", "netko", 
+           "ni", "nije", "nikad", "nisam", "nisu", "ništa", "niti", "no", "njih", 
+           "o", "od", "odmah", "odnosno", "oko", "on", "ona", "onda", "oni", 
+           "onih", "ono", "opet", "osim", "ova", "ovaj", "ovdje", "ove", "ovim", 
+           "ovo", "ovog", "ovom", "ovu", "pa", "pak", "par", "po", "pod", "poput", 
+           "posto", "postoji", "pred", "preko", "prema", "pri", "prije", "protiv", 
+           "prvi", "puno", "put", "radi", "reći", "s", "sa", "sad", "sada", "sam", 
+           "samo", "sati", "se", "sebe", "si", "smo", "ste", "stoga", "strane", 
+           "su", "svaki", "sve", "svi", "svih", "svoj", "svoje", "svoju", "što", 
+           "ta", "tada", "taj", "tako", "također", "tamo", "te", "tek", "teško", 
+           "ti", "tih", "tijekom", "time", "tko", "to", "tog", "toga", "toj", 
+           "toliko", "tom", "tome", "treba", "tu", "u", "uopće", "upravo", 
+           "uvijek", "uz", "vam", "vas", "već", "vi", "više", "vrijeme", "vrlo", 
+           "za", "zapravo", "zar", "zato", "zbog", "zna", "znači"),
+  lexicon = "boras"
+)
+
+stop_corpus <- bind_rows(my_stop_words, stopwords_cro, cro_sw_full_d)
+```
+
+```{r actor-classification}
+#| label: actor-classification
+
+secular_media_exclusions <- c(
+  "slobodnadalmacija", "vecernji", "index.hr", "jutarnji", "novilist",
+  "24sata", "direktno.hr", "nacional", "tportal", "dnevnik.hr", "hrt.hr",
+  "n1info", "rtl.hr", "net.hr", "telegram.hr", "story.hr", "forum.hr",
+  "glasistre", "dnevno.hr", "prigorski", "glas-slavonije", "croativ",
+  "oluja.info", "maxportal", "hkv.hr", "icv.hr", "novosti.hr", "7dnevno",
+  "mnovine", "sjever.hr", "dulist.hr", "pozega.eu", "sibenik.in",
+  "ferata.hr", "epodravina", "glasgacke", "radio-zlatar", "medjimurski.hr",
+  "sbperiskop", "zagorje-international", "pozeski", "novine.hr",
+  "dubrovnikinsider", "regionalni", "leportale", "varazdinske-vijesti",
+  "radionasice", "brodportal", "ljportal", "dubrovnikportal", "01portal",
+  "tomislavnews", "hia.com.hr", "portalnovosti", "antenazadar",
+  "dalmacijanews", "zadarskilist", "medjimurjepress",
+  "zagreb.info", "034portal", "057info", "inmemoriam", "magicus.info",
+  "book.hr", "mojzagreb.info", "skole.hr", "tvprofil", "cityportal",
+  "klikaj.hr", "lika-online", "priznajem.hr", "ploce.com",
+  "dragovoljac.com", "sbonline", "narod.hr", "infokiosk", "hrsvijet",
+  "tomislavcity", "vrisak.info", "croatia", "anonymous_user", "reddit",
+  "dalmacijadanas"
+)
+
+classify_actor_v2 <- function(from_value, url_value = NA) {
+  from_lower <- tolower(from_value)
+  url_lower <- tolower(ifelse(is.na(url_value), "", url_value))
+  
+  if (any(sapply(secular_media_exclusions, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Other")
+  }
+  
+  institutional_domains <- c("hkm.hr", "ika.hkm.hr", "hkr.hkm.hr", "hbk.hr")
+  if (any(sapply(institutional_domains, function(x) grepl(x, url_lower, fixed = TRUE)))) {
+    return("Institutional Official")
+  }
+  
+  institutional_names <- c(
+    "hrvatska katolička mreža", "katolička mreža", "hkm", 
+    "informativna katolička agencija", "ika", "hrvatski katolički radio", "hkr",
+    "hrvatska biskupska konferencija", "hbk"
+  )
+  if (any(sapply(institutional_names, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Institutional Official")
+  }
+  
+  diocesan_domains <- c(
+    "zg-nadbiskupija.hr", "biskupija-varazdinska.hr", "djos.hr", 
+    "biskupija-sj.hr", "rzs.hr", "rkc-sisak.hr", "zadarskanadbiskupija.hr",
+    "gospicko-senjska-biskupija.hr", "nadbiskupija-split.com",
+    "dubrovacka-biskupija.hr", "porec-biskupija.hr", "biskupija-kk.hr"
+  )
+  if (any(sapply(diocesan_domains, function(x) grepl(x, url_lower, fixed = TRUE)))) {
+    return("Diocesan")
+  }
+  
+  diocesan_names <- c(
+    "nadbiskupija", "biskupija", "župa ", "zupa ", 
+    "zagrebačka nadbiskupija", "splitsko-makarska", "đakovačko-osječka",
+    "riječka nadbiskupija", "zadarska nadbiskupija", "sisačka biskupija",
+    "varaždinska biskupija", "križevačka eparhija"
+  )
+  if (any(sapply(diocesan_names, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Diocesan")
+  }
+  
+  independent_media_exact <- c(
+    "laudatotv", "laudato tv", "laudato.tv", "laudato.hr",
+    "bitno.net", "bitno net", "glas koncila", "glaskoncila.hr",
+    "nova-eva.com", "nova eva", "katolički tjednik", "katolicki tjednik",
+    "kršćanska sadašnjost", "ks.hr", "verbum.hr", "verbum",
+    "mir i dobro", "gfranciskovic", "kfranciskovic", "totus tuus"
+  )
+  if (any(sapply(independent_media_exact, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Independent Media")
+  }
+  
+  independent_media_domains <- c(
+    "laudato.hr", "laudato.tv", "bitno.net", "glaskoncila.hr", 
+    "nova-eva.com", "verbum.hr", "ks.hr"
+  )
+  if (any(sapply(independent_media_domains, function(x) grepl(x, url_lower, fixed = TRUE)))) {
+    return("Independent Media")
+  }
+  
+  religious_orders_exact <- c(
+    "franjevci", "franjevački", "franjevacki", "ofm",
+    "isusovci", "družba isusova", "druzba isusova", "sj",
+    "dominikanci", "dominikanski", "op",
+    "salezijanci", "salezijanski", "sdb",
+    "karmelićani", "karmelicani", "karmel",
+    "benediktinci", "benediktinski", "osb",
+    "kapucini", "kapucinski", "ofmcap",
+    "pavlini", "pavlinski",
+    "trapisti", "cisterciti",
+    "sestre milosrdnice", "uršulinke", "klarise"
+  )
+  if (any(sapply(religious_orders_exact, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Religious Orders")
+  }
+  
+  charismatic_exact <- c(
+    "božja pobjeda", "bozja pobjeda", "bozjapobjeda",
+    "srce isusovo", "srceisuovo", "srceisusovo",
+    "muževni budite", "muzevni budite", "muzevnibudite",
+    "molitvena zajednica", "karizmatska", "cenacolo",
+    "emmanuel community", "emmanuel zajednica", "taize",
+    "neokatekumenski", "neokatekumenska", "kursiljo",
+    "fokolari", "fokolarini", "komunija i oslobođenje"
+  )
+  if (any(sapply(charismatic_exact, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Charismatic Communities")
+  }
+  
+  priest_patterns <- c(
+    "fra ", "don ", "vlč.", "vlc.", "msgr.", "mons.",
+    "padre ", "o. ", "pater ", "biskup ", "nadbiskup ",
+    "kardinal ", "svećenik", "svecenik"
+  )
+  if (any(sapply(priest_patterns, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Individual Priests")
+  }
+  
+  youth_exact <- c(
+    "frama", "shkm", "katolička mladež", "katolicka mladez",
+    "ministranti", "mladifra", "mladi fra", "kaem", "kud",
+    "sveučilišna kapelanija", "studentska kapelanija"
+  )
+  if (any(sapply(youth_exact, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Youth Organizations")
+  }
+  
+  academic_exact <- c(
+    "unicath", "katolički bogoslovni fakultet", "kbf",
+    "teologija", "filozofski fakultet družbe isusove", "hks.hr",
+    "hrvatsko katoličko sveučilište", "hku"
+  )
+  if (any(sapply(academic_exact, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Academic")
+  }
+  
+  lay_influencer_patterns <- c(
+    "vjera", "molitva", "isus", "krist", "gospa", "marija",
+    "hrana za dušu", "hrana za dusu", "dijete vjere",
+    "pulherissimus", "riječ", "rijec", "katolik",
+    "kršćan", "krscan", "evanđelje", "evandelje",
+    "duhovn", "svetac", "sveci", "biblij", "psalm",
+    "blagoslov", "nebo", "spasenje", "uskrs", "božić", "bozic"
+  )
+  
+  is_social_media <- grepl("facebook\\.com|youtube\\.com|instagram\\.com", url_lower) |
+                     !grepl("\\.", from_lower)
+  
+  if (is_social_media && any(sapply(lay_influencer_patterns, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Lay Influencers")
+  }
+  
+  return("Other")
+}
+
+dta[, ACTOR_TYPE := mapply(classify_actor_v2, FROM, URL)]
+```
+
+## Corpus Overview
+
+```{r corpus-overview}
+#| label: corpus-overview
+
+tibble(
+  Metric = c("Total posts", "Unique sources", "Date range", "Platforms",
+             "Posts with text content"),
+  Value = c(
+    format(n_posts, big.mark = ","),
+    format(n_sources, big.mark = ","),
+    date_range,
+    paste(unique(dta$SOURCE_TYPE), collapse = ", "),
+    format(sum(!is.na(dta$TITLE) | !is.na(dta$SNIPPET)), big.mark = ",")
+  )
+) %>%
+  kable(col.names = c("Metric", "Value")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+# Analysis 3.1 Lexicon Based Sentiment Analysis
+
+This section implements sentiment analysis using the **CroSentilex Gold** lexicon, a Croatian sentiment resource providing word level sentiment annotations. Unlike automated classification, lexicon based approaches offer transparency and linguistic grounding specific to Croatian language.
+
+## Text Tokenization and Preparation
+
+```{r tokenize-text}
+#| label: tokenize-text
+
+# Combine title and snippet for text analysis
+dta[, TEXT_COMBINED := paste(
+  ifelse(is.na(TITLE), "", TITLE),
+  ifelse(is.na(SNIPPET), "", SNIPPET),
+  sep = " "
+)]
+
+# Tokenize the text
+tokens_tidy <- dta %>%
+  as_tibble() %>%
+  select(URL, FROM, ACTOR_TYPE, SOURCE_TYPE, DATE, TEXT_COMBINED) %>%
+  unnest_tokens(word, TEXT_COMBINED) %>%
+  anti_join(stop_corpus, by = "word") %>%
+  mutate(word = gsub("\\d+", NA, word)) %>%
+  mutate(word = gsub("^[a-zA-Z]$", NA, word)) %>%
+  filter(!is.na(word))
+
+n_tokens <- nrow(tokens_tidy)
+n_unique_words <- n_distinct(tokens_tidy$word)
+```
+
+The tokenization process extracted **`r format(n_tokens, big.mark = ",")`** word tokens from **`r format(n_unique_words, big.mark = ",")`** unique word forms after removing stop words.
+
+## CroSentilex Sentiment Distribution
+
+```{r crosentilex-sentiment}
+#| label: crosentilex-sentiment
+#| fig-height: 7
+
+# Join tokens with CroSentilex lexicon
+tokens_sentiment <- tokens_tidy %>%
+  inner_join(CroSentilex_Gold, by = "word") %>%
+  mutate(sentiment_label = case_when(
+    sentiment == 0 ~ "Neutralno",
+    sentiment == 1 ~ "Negativno",
+    sentiment == 2 ~ "Pozitivno"
+  ))
+
+# Overall sentiment distribution
+sentiment_dist <- tokens_sentiment %>%
+  count(sentiment_label) %>%
+  mutate(Percentage = n / sum(n) * 100)
+
+ggplot(sentiment_dist, aes(x = reorder(sentiment_label, -n), y = n, fill = sentiment_label)) +
+  geom_col(width = 0.7) +
+  geom_text(aes(label = sprintf("%s\n(%.1f%%)", format(n, big.mark = ","), Percentage)), 
+            vjust = -0.3, size = 4) +
+  scale_fill_manual(values = sentiment_colors) +
+  scale_y_continuous(labels = comma, expand = expansion(mult = c(0, 0.15))) +
+  labs(
+    title = "CroSentilex Sentiment Distribution",
+    subtitle = "Word level sentiment classification across corpus",
+    x = NULL,
+    y = "Number of Word Tokens"
+  ) +
+  theme(legend.position = "none")
+```
+
+## Words Contributing Most to Each Sentiment
+
+```{r sentiment-word-contribution}
+#| label: sentiment-word-contribution
+#| fig-height: 10
+#| fig-width: 12
+
+doprinos_sentimentu <- tokens_sentiment %>%
+  count(word, sentiment_label, sort = TRUE) %>%
+  group_by(sentiment_label) %>%
+  slice_head(n = 20) %>%
+  ungroup() %>%
+  mutate(word = reorder_within(word, n, sentiment_label))
+
+ggplot(doprinos_sentimentu, aes(x = word, y = n, fill = sentiment_label)) +
+  geom_col(show.legend = FALSE) +
+  scale_x_reordered() +
+  facet_wrap(~ sentiment_label, scales = "free") +
+  coord_flip() +
+  scale_fill_manual(values = sentiment_colors) +
+  labs(
+    title = "Top 20 Words Contributing to Each Sentiment Category",
+    subtitle = "Based on CroSentilex Gold lexicon",
+    x = NULL,
+    y = "Frequency"
+  ) +
+  theme_minimal() +
+  theme(
+    panel.grid.major.y = element_blank(),
+    strip.text = element_text(face = "bold", size = 12)
+  )
+```
+
+## Sentiment by Actor Type
+
+```{r sentiment-by-actor-crosentilex}
+#| label: sentiment-by-actor-crosentilex
+#| fig-height: 9
+
+sentiment_actor <- tokens_sentiment %>%
+  count(ACTOR_TYPE, sentiment_label) %>%
+  group_by(ACTOR_TYPE) %>%
+  mutate(
+    Total = sum(n),
+    Percentage = n / Total * 100
+  ) %>%
+  ungroup()
+
+actor_order <- sentiment_actor %>%
+  filter(sentiment_label == "Pozitivno") %>%
+  arrange(desc(Percentage)) %>%
+  pull(ACTOR_TYPE)
+
+ggplot(sentiment_actor, aes(x = factor(ACTOR_TYPE, levels = rev(actor_order)), 
+                            y = Percentage, fill = sentiment_label)) +
+  geom_col(position = "stack", width = 0.7) +
+  coord_flip() +
+  scale_fill_manual(values = sentiment_colors) +
+  labs(
+    title = "CroSentilex Sentiment Distribution by Actor Type",
+    subtitle = "Ordered by share of positive sentiment words",
+    x = NULL,
+    y = "Percentage of Sentiment Words",
+    fill = "Sentiment"
+  ) +
+  theme(legend.position = "top")
+```
+
+## Sentiment by Platform
+
+```{r sentiment-by-platform-crosentilex}
+#| label: sentiment-by-platform-crosentilex
+#| fig-height: 7
+
+sentiment_platform <- tokens_sentiment %>%
+  count(SOURCE_TYPE, sentiment_label) %>%
+  group_by(SOURCE_TYPE) %>%
+  mutate(
+    Total = sum(n),
+    Percentage = n / Total * 100
+  ) %>%
+  ungroup()
+
+ggplot(sentiment_platform, aes(x = reorder(SOURCE_TYPE, Total), 
+                               y = Percentage, fill = sentiment_label)) +
+  geom_col(position = "stack", width = 0.7) +
+  coord_flip() +
+  scale_fill_manual(values = sentiment_colors) +
+  labs(
+    title = "CroSentilex Sentiment Distribution by Platform",
+    subtitle = "Share of positive, neutral, and negative words per platform",
+    x = NULL,
+    y = "Percentage of Sentiment Words",
+    fill = "Sentiment"
+  ) +
+  theme(legend.position = "top")
+```
+
+## Document Level Sentiment Score
+
+```{r document-sentiment-score}
+#| label: document-sentiment-score
+#| fig-height: 8
+
+# Calculate document level sentiment scores
+doc_sentiment <- tokens_sentiment %>%
+  group_by(URL, ACTOR_TYPE, SOURCE_TYPE) %>%
+  summarise(
+    n_words = n(),
+    n_positive = sum(sentiment == 2),
+    n_negative = sum(sentiment == 1),
+    n_neutral = sum(sentiment == 0),
+    sentiment_score = (n_positive - n_negative) / n_words,
+    positivity_ratio = n_positive / (n_negative + 0.1),
+    .groups = "drop"
+  )
+
+# Sentiment score distribution by actor
+ggplot(doc_sentiment, aes(x = ACTOR_TYPE, y = sentiment_score, fill = ACTOR_TYPE)) +
+  geom_violin(alpha = 0.7) +
+  geom_boxplot(width = 0.15, fill = "white", outlier.shape = NA) +
+  coord_flip() +
+  scale_fill_manual(values = actor_colors) +
+  labs(
+    title = "Document Level Sentiment Score Distribution",
+    subtitle = "Score = (Positive - Negative) / Total sentiment words",
+    x = NULL,
+    y = "Sentiment Score"
+  ) +
+  theme(legend.position = "none")
+```
+
+# Analysis 3.2 NRC Emotion Analysis
+
+The NRC emotion lexicon (translated to Croatian as LilaHR) provides a more nuanced emotional classification with eight distinct emotion categories: Anger (Ljutnja), Anticipation (Iščekivanje), Disgust (Gađenje), Fear (Strah), Joy (Zadovoljstvo), Sadness (Tuga), Surprise (Iznenađenje), and Trust (Povjerenje).
+
+## NRC Positive/Negative Distribution
+
+```{r nrc-posneg}
+#| label: nrc-posneg
+#| fig-height: 8
+
+tokens_nrc_pn <- tokens_tidy %>%
+  inner_join(NRCpn, by = "word")
+
+nrc_pn_dist <- tokens_nrc_pn %>%
+  count(Emotion) %>%
+  mutate(Percentage = n / sum(n) * 100)
+
+ggplot(nrc_pn_dist, aes(x = Emotion, y = n, fill = Emotion)) +
+  geom_col(width = 0.6) +
+  geom_text(aes(label = sprintf("%s\n(%.1f%%)", format(n, big.mark = ","), Percentage)),
+            vjust = -0.3, size = 4) +
+  scale_fill_manual(values = c("Pozitivno" = "#22c55e", "Negativno" = "#ef4444")) +
+  scale_y_continuous(labels = comma, expand = expansion(mult = c(0, 0.15))) +
+  labs(
+    title = "NRC Positive/Negative Sentiment Distribution",
+    subtitle = "Based on LilaHR (Croatian NRC translation)",
+    x = NULL,
+    y = "Number of Word Tokens"
+  ) +
+  theme(legend.position = "none")
+```
+
+## Words Contributing to NRC Positive/Negative
+
+```{r nrc-pn-words}
+#| label: nrc-pn-words
+#| fig-height: 8
+#| fig-width: 10
+
+nrc_pn_words <- tokens_nrc_pn %>%
+  count(word, Emotion, sort = TRUE) %>%
+  group_by(Emotion) %>%
+  slice_head(n = 20) %>%
+  ungroup() %>%
+  mutate(word = reorder_within(word, n, Emotion))
+
+ggplot(nrc_pn_words, aes(x = word, y = n, fill = Emotion)) +
+  geom_col(show.legend = FALSE) +
+  scale_x_reordered() +
+  facet_wrap(~ Emotion, scales = "free") +
+  coord_flip() +
+  scale_fill_manual(values = c("Pozitivno" = "#22c55e", "Negativno" = "#ef4444")) +
+  labs(
+    title = "Top 20 Words Contributing to NRC Positive/Negative",
+    subtitle = "Based on LilaHR lexicon",
+    x = NULL,
+    y = "Frequency"
+  ) +
+  theme_minimal() +
+  theme(
+    panel.grid.major.y = element_blank(),
+    strip.text = element_text(face = "bold", size = 12)
+  )
+```
+
+## Full NRC Emotion Distribution
+
+```{r nrc-full-emotions}
+#| label: nrc-full-emotions
+#| fig-height: 7
+
+tokens_nrc <- tokens_tidy %>%
+  inner_join(NRC, by = "word")
+
+nrc_emotion_dist <- tokens_nrc %>%
+  count(Emotion) %>%
+  mutate(Percentage = n / sum(n) * 100) %>%
+  arrange(desc(n))
+
+ggplot(nrc_emotion_dist, aes(x = reorder(Emotion, -n), y = n, fill = Emotion)) +
+  geom_col(width = 0.7) +
+  geom_text(aes(label = sprintf("%.1f%%", Percentage)), vjust = -0.3, size = 3.5) +
+  scale_fill_manual(values = nrc_emotion_colors) +
+  scale_y_continuous(labels = comma, expand = expansion(mult = c(0, 0.1))) +
+  labs(
+    title = "NRC Eight Emotion Distribution",
+    subtitle = "Emotional categories in Croatian Catholic digital content",
+    x = NULL,
+    y = "Number of Word Tokens"
+  ) +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+```
+
+## Words Contributing to Each Emotion
+
+```{r nrc-emotion-words}
+#| label: nrc-emotion-words
+#| fig-height: 16
+#| fig-width: 14
+
+nrc_emotion_words <- tokens_nrc %>%
+  count(word, Emotion, sort = TRUE) %>%
+  group_by(Emotion) %>%
+  slice_head(n = 15) %>%
+  ungroup() %>%
+  mutate(word = reorder_within(word, n, Emotion))
+
+ggplot(nrc_emotion_words, aes(x = word, y = n, fill = Emotion)) +
+  geom_col(show.legend = FALSE) +
+  scale_x_reordered() +
+  facet_wrap(~ Emotion, scales = "free", ncol = 2) +
+  coord_flip() +
+  scale_fill_manual(values = nrc_emotion_colors) +
+  labs(
+    title = "Top 15 Words Contributing to Each NRC Emotion",
+    subtitle = "Based on LilaHR (Croatian NRC translation)",
+    x = NULL,
+    y = "Frequency"
+  ) +
+  theme_minimal() +
+  theme(
+    panel.grid.major.y = element_blank(),
+    strip.text = element_text(face = "bold", size = 11)
+  )
+```
+
+## Emotion Profile by Actor Type
+
+```{r emotion-by-actor}
+#| label: emotion-by-actor
+#| fig-height: 12
+#| fig-width: 14
+
+emotion_actor <- tokens_nrc %>%
+  count(ACTOR_TYPE, Emotion) %>%
+  group_by(ACTOR_TYPE) %>%
+  mutate(
+    Total = sum(n),
+    Percentage = n / Total * 100
+  ) %>%
+  ungroup()
+
+ggplot(emotion_actor, aes(x = Emotion, y = Percentage, fill = Emotion)) +
+  geom_col(width = 0.7, show.legend = FALSE) +
+  facet_wrap(~ ACTOR_TYPE, ncol = 3, scales = "free_y") +
+  scale_fill_manual(values = nrc_emotion_colors) +
+  labs(
+    title = "Emotional Fingerprints by Actor Type",
+    subtitle = "NRC emotion distribution per actor category",
+    x = NULL,
+    y = "Percentage of Emotion Words"
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    strip.text = element_text(face = "bold")
+  )
+```
+
+## Emotion Heatmap by Actor Type
+
+```{r emotion-heatmap-actor}
+#| label: emotion-heatmap-actor
+#| fig-height: 9
+
+emotion_matrix <- emotion_actor %>%
+  select(ACTOR_TYPE, Emotion, Percentage)
+
+ggplot(emotion_matrix, aes(x = Emotion, y = ACTOR_TYPE, fill = Percentage)) +
+  geom_tile(color = "white", linewidth = 0.5) +
+  geom_text(aes(label = sprintf("%.1f%%", Percentage)), size = 3) +
+  scale_fill_viridis(option = "plasma", direction = -1) +
+  labs(
+    title = "Emotion Profile Heatmap by Actor Type",
+    subtitle = "Percentage of each emotion category per actor",
+    x = NULL,
+    y = NULL,
+    fill = "Share %"
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    panel.grid = element_blank()
+  )
+```
+
+# Analysis 3.3 Controversy Detection
+
+Controversy represents a specific emotional pattern where content contains high levels of negative sentiment relative to positive sentiment. We define a text based controversy index using the ratio of negative to positive words from our lexicon analysis.
+
+```{r controversy-index}
+#| label: controversy-index
+
+# Text based controversy (ratio of negative to positive words)
+doc_controversy <- doc_sentiment %>%
+  mutate(
+    Text_Controversy = n_negative / (n_positive + 0.1),
+    Negativity_Score = n_negative / n_words,
+    High_Negative = Text_Controversy > quantile(Text_Controversy, 0.90, na.rm = TRUE)
+  )
+
+controversy_threshold <- quantile(doc_controversy$Text_Controversy, 0.90, na.rm = TRUE)
+```
+
+## Controversy Index Distribution
+
+```{r controversy-distribution}
+#| label: controversy-distribution
+#| fig-height: 6
+
+ggplot(doc_controversy[doc_controversy$Text_Controversy > 0, ], aes(x = Text_Controversy)) +
+  geom_histogram(bins = 50, fill = "#ef4444", alpha = 0.7, color = "white") +
+  geom_vline(xintercept = controversy_threshold, linetype = "dashed", color = "darkred", linewidth = 1) +
+  annotate("text", x = controversy_threshold * 1.2, y = Inf, vjust = 2,
+           label = sprintf("90th percentile threshold\n(%.2f)", controversy_threshold),
+           size = 3.5) +
+  scale_x_log10() +
+  scale_y_continuous(labels = comma) +
+  labs(
+    title = "Text Based Controversy Index Distribution",
+    subtitle = "Controversy Index = Negative Words / (Positive Words + 0.1)",
+    x = "Controversy Index (log scale)",
+    y = "Number of Documents"
+  )
+```
+
+## Most Controversial Documents
+
+```{r top-controversial}
+#| label: top-controversial
+
+# Join back with original data for display
+doc_controversy_display <- doc_controversy %>%
+  left_join(
+    dta %>% as_tibble() %>% select(URL, FROM, DATE, TITLE),
+    by = "URL"
+  ) %>%
+  arrange(desc(Text_Controversy)) %>%
+  head(30) %>%
+  mutate(
+    Rank = row_number(),
+    TITLE_SHORT = substr(TITLE, 1, 60)
+  ) %>%
+  select(Rank, FROM, ACTOR_TYPE, DATE, TITLE_SHORT, n_positive, n_negative, Text_Controversy)
+
+doc_controversy_display %>%
+  mutate(
+    Text_Controversy = sprintf("%.2f", Text_Controversy)
+  ) %>%
+  kable(col.names = c("Rank", "Source", "Actor Type", "Date", "Title", 
+                      "Positive", "Negative", "Controversy Index")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE) %>%
+  scroll_box(height = "500px")
+```
+
+## Controversy by Actor Type
+
+```{r controversy-by-actor}
+#| label: controversy-by-actor
+#| fig-height: 8
+
+controversy_actor <- doc_controversy %>%
+  group_by(ACTOR_TYPE) %>%
+  summarise(
+    Mean_Controversy = mean(Text_Controversy, na.rm = TRUE),
+    Median_Controversy = median(Text_Controversy, na.rm = TRUE),
+    Max_Controversy = max(Text_Controversy, na.rm = TRUE),
+    Controversial_Docs = sum(High_Negative, na.rm = TRUE),
+    Total_Docs = n(),
+    Controversy_Rate = sum(High_Negative, na.rm = TRUE) / n() * 100,
+    .groups = "drop"
+  ) %>%
+  arrange(desc(Mean_Controversy))
+
+ggplot(controversy_actor, aes(x = reorder(ACTOR_TYPE, Mean_Controversy), 
+                               y = Mean_Controversy, fill = ACTOR_TYPE)) +
+  geom_col(width = 0.7) +
+  geom_text(aes(label = sprintf("%.2f", Mean_Controversy)), hjust = -0.1, size = 3.5) +
+  coord_flip() +
+  scale_fill_manual(values = actor_colors) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.2))) +
+  labs(
+    title = "Mean Text Controversy Index by Actor Type",
+    subtitle = "Higher values indicate more negative relative to positive words",
+    x = NULL,
+    y = "Mean Controversy Index"
+  ) +
+  theme(legend.position = "none")
+```
+
+## Controversy Rate by Actor Type
+
+```{r controversy-rate}
+#| label: controversy-rate
+#| fig-height: 8
+
+ggplot(controversy_actor, aes(x = reorder(ACTOR_TYPE, Controversy_Rate), 
+                               y = Controversy_Rate, fill = ACTOR_TYPE)) +
+  geom_col(width = 0.7) +
+  geom_text(aes(label = sprintf("%.1f%%", Controversy_Rate)), hjust = -0.1, size = 3.5) +
+  coord_flip() +
+  scale_fill_manual(values = actor_colors) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.2))) +
+  labs(
+    title = "Controversy Rate by Actor Type",
+    subtitle = "Percentage of documents exceeding 90th percentile controversy threshold",
+    x = NULL,
+    y = "Controversy Rate (%)"
+  ) +
+  theme(legend.position = "none")
+```
+
+## Negativity Score Distribution by Actor
+
+```{r negativity-by-actor}
+#| label: negativity-by-actor
+#| fig-height: 8
+
+ggplot(doc_controversy, aes(x = ACTOR_TYPE, y = Negativity_Score, fill = ACTOR_TYPE)) +
+  geom_violin(alpha = 0.7) +
+  geom_boxplot(width = 0.15, fill = "white", outlier.shape = NA) +
+  coord_flip() +
+  scale_fill_manual(values = actor_colors) +
+  labs(
+    title = "Negativity Score Distribution by Actor Type",
+    subtitle = "Negativity Score = Negative Words / Total Sentiment Words",
+    x = NULL,
+    y = "Negativity Score"
+  ) +
+  theme(legend.position = "none")
+```
+
+# Analysis 3.4 Comparing Sentiment Measures
+
+This section compares the different sentiment measurement approaches to assess convergence and divergence.
+
+## CroSentilex vs NRC Comparison
+
+```{r sentiment-comparison}
+#| label: sentiment-comparison
+#| fig-height: 7
+
+# Aggregate document level sentiment from both lexicons
+doc_crosentilex <- tokens_sentiment %>%
+  group_by(URL) %>%
+  summarise(
+    crsl_positive = sum(sentiment == 2),
+    crsl_negative = sum(sentiment == 1),
+    crsl_score = (crsl_positive - crsl_negative) / n(),
+    .groups = "drop"
+  )
+
+doc_nrc <- tokens_nrc_pn %>%
+  group_by(URL) %>%
+  summarise(
+    nrc_positive = sum(Emotion == "Pozitivno"),
+    nrc_negative = sum(Emotion == "Negativno"),
+    nrc_score = (nrc_positive - nrc_negative) / n(),
+    .groups = "drop"
+  )
+
+# Merge the two
+doc_comparison <- doc_crosentilex %>%
+  inner_join(doc_nrc, by = "URL")
+
+# Correlation
+cor_value <- cor(doc_comparison$crsl_score, doc_comparison$nrc_score, use = "complete.obs")
+
+ggplot(doc_comparison, aes(x = crsl_score, y = nrc_score)) +
+  geom_point(alpha = 0.3, size = 1) +
+  geom_smooth(method = "lm", color = "#3b82f6", se = TRUE) +
+  annotate("text", x = Inf, y = Inf, hjust = 1.1, vjust = 1.5,
+           label = sprintf("r = %.3f", cor_value), size = 5, fontface = "bold") +
+  labs(
+    title = "CroSentilex vs NRC Sentiment Score Comparison",
+    subtitle = "Document level sentiment scores from two lexicons",
+    x = "CroSentilex Sentiment Score",
+    y = "NRC Sentiment Score"
+  ) +
+  theme_minimal()
+```
+
+## Sentiment Method Agreement Summary
+
+```{r sentiment-agreement}
+#| label: sentiment-agreement
+
+# Create agreement table
+agreement_summary <- tibble(
+  Comparison = c(
+    "CroSentilex vs NRC Correlation",
+    "Documents with positive CroSentilex score",
+    "Documents with positive NRC score",
+    "Agreement on positive/negative direction"
+  ),
+  Value = c(
+    sprintf("%.3f", cor_value),
+    sprintf("%.1f%%", mean(doc_comparison$crsl_score > 0, na.rm = TRUE) * 100),
+    sprintf("%.1f%%", mean(doc_comparison$nrc_score > 0, na.rm = TRUE) * 100),
+    sprintf("%.1f%%", mean(
+      (doc_comparison$crsl_score > 0 & doc_comparison$nrc_score > 0) |
+      (doc_comparison$crsl_score < 0 & doc_comparison$nrc_score < 0) |
+      (doc_comparison$crsl_score == 0 & doc_comparison$nrc_score == 0),
+      na.rm = TRUE
+    ) * 100)
+  )
+)
+
+kable(agreement_summary, col.names = c("Metric", "Value")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+# Analysis 3.5 Temporal Patterns
+
+This section examines how emotional patterns vary over time.
+
+## Sentiment Over Time
+
+```{r sentiment-temporal}
+#| label: sentiment-temporal
+#| fig-height: 8
+
+# Monthly sentiment trends from CroSentilex
+monthly_sentiment <- tokens_sentiment %>%
+  mutate(Month = floor_date(DATE, "month")) %>%
+  group_by(Month, sentiment_label) %>%
+  summarise(n = n(), .groups = "drop") %>%
+  group_by(Month) %>%
+  mutate(Percentage = n / sum(n) * 100) %>%
+  ungroup()
+
+ggplot(monthly_sentiment[!is.na(monthly_sentiment$Month), ], 
+       aes(x = Month, y = Percentage, color = sentiment_label)) +
+  geom_line(linewidth = 1) +
+  geom_smooth(method = "loess", se = FALSE, linetype = "dashed", linewidth = 0.7) +
+  scale_color_manual(values = sentiment_colors) +
+  scale_x_date(date_labels = "%Y-%m", date_breaks = "3 months") +
+  labs(
+    title = "CroSentilex Sentiment Trends Over Time",
+    subtitle = "Monthly share of positive, neutral, and negative words",
+    x = NULL,
+    y = "Share of Sentiment Words (%)",
+    color = "Sentiment"
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "top"
+  )
+```
+
+## Emotion Trends Over Time
+
+```{r emotion-temporal}
+#| label: emotion-temporal
+#| fig-height: 8
+
+monthly_emotion <- tokens_nrc %>%
+  mutate(Month = floor_date(DATE, "month")) %>%
+  group_by(Month, Emotion) %>%
+  summarise(n = n(), .groups = "drop") %>%
+  group_by(Month) %>%
+  mutate(Percentage = n / sum(n) * 100) %>%
+  ungroup()
+
+# Focus on key emotions
+key_emotions <- c("Povjerenje", "Strah", "Zadovoljstvo", "Ljutnja")
+
+ggplot(monthly_emotion[monthly_emotion$Emotion %in% key_emotions & !is.na(monthly_emotion$Month), ], 
+       aes(x = Month, y = Percentage, color = Emotion)) +
+  geom_line(linewidth = 1) +
+  geom_smooth(method = "loess", se = FALSE, linetype = "dashed", linewidth = 0.7) +
+  scale_color_manual(values = nrc_emotion_colors) +
+  scale_x_date(date_labels = "%Y-%m", date_breaks = "3 months") +
+  labs(
+    title = "Key NRC Emotion Trends Over Time",
+    subtitle = "Trust, Fear, Joy, and Anger patterns",
+    x = NULL,
+    y = "Share of Emotion Words (%)",
+    color = "Emotion"
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "top"
+  )
+```
+
+# Summary and Key Findings
+
+```{r summary-stats}
+#| label: summary-stats
+
+# Calculate summary statistics
+total_tokens_analyzed <- nrow(tokens_tidy)
+tokens_with_crosentilex <- nrow(tokens_sentiment)
+tokens_with_nrc <- nrow(tokens_nrc)
+tokens_with_nrc_pn <- nrow(tokens_nrc_pn)
+
+# CroSentilex summary
+crsl_positive_pct <- sum(tokens_sentiment$sentiment == 2) / nrow(tokens_sentiment) * 100
+crsl_negative_pct <- sum(tokens_sentiment$sentiment == 1) / nrow(tokens_sentiment) * 100
+
+# NRC summary
+nrc_positive_pct <- sum(tokens_nrc_pn$Emotion == "Pozitivno") / nrow(tokens_nrc_pn) * 100
+nrc_negative_pct <- sum(tokens_nrc_pn$Emotion == "Negativno") / nrow(tokens_nrc_pn) * 100
+
+# Top emotions
+top_emotion <- nrc_emotion_dist$Emotion[1]
+```
+
+## Summary of Sentiment Analysis Approaches
+
+This analysis employed two complementary lexicon based sentiment measurement approaches:
+
+**1. CroSentilex Gold Lexicon**
+
+The Croatian sentiment lexicon classified **`r format(tokens_with_crosentilex, big.mark = ",")`** word tokens into positive, neutral, and negative categories. This approach revealed that **`r sprintf("%.1f%%", crsl_positive_pct)`** of sentiment bearing words were positive and **`r sprintf("%.1f%%", crsl_negative_pct)`** were negative.
+
+**2. NRC/LilaHR Emotion Lexicon**
+
+The NRC lexicon translated to Croatian provided nuanced emotional classification across eight categories. Among **`r format(tokens_with_nrc, big.mark = ",")`** emotion bearing tokens, the most prevalent emotion was **`r top_emotion`**.
+
+## Final Summary Table
+
+```{r final-summary}
+#| label: final-summary
+
+# Calculate controversy stats
+n_controversial <- sum(doc_controversy$High_Negative, na.rm = TRUE)
+
+tibble(
+  Finding = c(
+    "Total word tokens analyzed",
+    "Tokens matched to CroSentilex",
+    "Tokens matched to NRC emotions",
+    "CroSentilex positive share",
+    "CroSentilex negative share",
+    "NRC positive share",
+    "NRC negative share",
+    "Lexicon correlation (CroSentilex vs NRC)",
+    "Documents exceeding controversy threshold"
+  ),
+  Value = c(
+    format(total_tokens_analyzed, big.mark = ","),
+    format(tokens_with_crosentilex, big.mark = ","),
+    format(tokens_with_nrc, big.mark = ","),
+    sprintf("%.1f%%", crsl_positive_pct),
+    sprintf("%.1f%%", crsl_negative_pct),
+    sprintf("%.1f%%", nrc_positive_pct),
+    sprintf("%.1f%%", nrc_negative_pct),
+    sprintf("%.3f", cor_value),
+    format(n_controversial, big.mark = ",")
+  )
+) %>%
+  kable(col.names = c("Finding", "Value")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+# Appendix A Technical Notes
+
+## Sentiment Lexicons Used
+
+**CroSentilex Gold**: A manually annotated Croatian sentiment lexicon containing word level sentiment annotations. Each word is classified as positive (+), negative (-), or neutral (0). The lexicon provides transparent, linguistically grounded sentiment analysis specific to Croatian.
+
+**LilaHR (NRC Translation)**: The NRC Emotion Lexicon translated to Croatian. Provides eight emotion categories (Anger, Anticipation, Disgust, Fear, Joy, Sadness, Surprise, Trust) plus positive/negative classification.
+
+## Controversy Index Formula
+
+The text based controversy index is calculated as follows
+
+$$
+\text{Controversy Index} = \frac{N_{negative}}{N_{positive} + 0.1}
+$$
+
+This formula calculates the ratio of negative to positive sentiment words in each document. A small constant (0.1) is added to the denominator to prevent division by zero for documents with no positive words. Higher values indicate more controversial or negatively toned content.
+
+## Document Level Sentiment Score
+
+For each document, we calculate a sentiment score from lexicon matches
+
+$$
+\text{Sentiment Score} = \frac{N_{positive} - N_{negative}}{N_{total}}
+$$
+
+where $N_{positive}$, $N_{negative}$, and $N_{total}$ represent counts of positive words, negative words, and total sentiment bearing words respectively.
+
+```{r session-info}
+#| label: session-info
+
+sessionInfo()
+```

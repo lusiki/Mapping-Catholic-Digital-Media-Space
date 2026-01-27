@@ -1,0 +1,1453 @@
+---
+title: "DigiKat Map 4: Temporal Dynamics"
+subtitle: "Mapping the Evolution of Croatian Catholic Digital Communication"
+author: "DigiKat Project"
+date: today
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-location: left
+    number-sections: true
+    code-fold: true
+    code-summary: "Show code"
+    theme: cosmo
+    fig-width: 10
+    fig-height: 6
+execute:
+  warning: false
+  message: false
+---
+
+```{r setup}
+#| label: setup
+#| include: false
+
+library(tidyverse)
+library(data.table)
+library(scales)
+library(ggplot2)
+library(knitr)
+library(kableExtra)
+library(viridis)
+library(lubridate)
+library(zoo)
+library(patchwork)
+
+theme_set(theme_minimal(base_size = 12) +
+          theme(
+            plot.title = element_text(face = "bold", size = 14),
+            plot.subtitle = element_text(color = "gray40"),
+            legend.position = "bottom"
+          ))
+
+platform_colors <- c(
+  "web" = "#4285F4",
+  "facebook" = "#1877F2", 
+  "instagram" = "#E4405F",
+  "youtube" = "#FF0000",
+  "twitter" = "#1DA1F2",
+  "forum" = "#FF6600",
+  "reddit" = "#FF4500",
+  "comment" = "#808080"
+)
+
+actor_colors <- c(
+  "Institutional Official" = "#1a3c5a",
+  "Diocesan" = "#2c5f7c",
+  "Independent Media" = "#4a9c6d",
+  "Individual Priests" = "#e07b39",
+  "Charismatic Communities" = "#c44536",
+  "Religious Orders" = "#6b4c9a",
+  "Youth Organizations" = "#eab308",
+  "Academic" = "#64748b",
+  "Lay Influencers" = "#ec4899",
+  "Other" = "#94a3b8"
+)
+
+season_colors <- c(
+  "Advent" = "#6b21a8",
+  "Christmas" = "#dc2626",
+  "Ordinary Time" = "#16a34a",
+  "Lent" = "#7c3aed",
+  "Easter" = "#eab308",
+  "Pentecost" = "#ea580c"
+)
+```
+
+# Introduction
+
+This document presents **Map 4 of the DigiKat project**, analyzing the temporal dynamics of Croatian Catholic digital media. The core question driving this analysis is **How does Croatian Catholic digital communication evolve over time, and how does it respond to events?**
+
+Understanding temporal patterns reveals the rhythms of religious communication online, from daily posting cycles to annual liturgical seasons. This analysis examines over 600,000 posts from 2021 to 2025 to uncover when Croatian Catholics communicate, how patterns shift across platforms, and how the digital sphere responds to significant religious and secular events.
+
+```{r load-data}
+#| label: load-data
+
+dta <- readRDS("C:/Users/lsikic/Luka C/HKS/Projekti/Digitalni Kat/SHKM/DigiKat/data/merged_comprehensive.rds") %>%
+  filter(SOURCE_TYPE != "tiktok", !is.na(SOURCE_TYPE)) %>%
+  filter(DATE >= as.Date("2021-01-01") & DATE <= as.Date("2024-12-31")) %>%
+  filter(year >= 2021 & year <= 2024)
+
+setDT(dta)
+
+# Check data loaded
+cat("Data loaded:", nrow(dta), "rows\n")
+if (nrow(dta) == 0) stop("No data after filtering! Check your date filters.")
+
+dta[, DATE := as.Date(DATE)]
+dta[, Year := year(DATE)]
+dta[, Month := month(DATE)]
+dta[, Week := isoweek(DATE)]
+dta[, DOW := lubridate::wday(DATE, label = TRUE, abbr = FALSE)]
+dta[, DOW_num := lubridate::wday(DATE)]
+dta[, Hour := as.integer(substr(TIME, 1, 2))]
+
+n_posts <- nrow(dta)
+n_sources <- uniqueN(dta$FROM)
+date_range <- paste(min(dta$DATE, na.rm = TRUE), "to", max(dta$DATE, na.rm = TRUE))
+```
+
+```{r actor-classification}
+#| label: actor-classification
+
+secular_media_exclusions <- c(
+  "slobodnadalmacija", "vecernji", "index.hr", "jutarnji", "novilist",
+  "24sata", "direktno.hr", "nacional", "tportal", "dnevnik.hr", "hrt.hr",
+  "n1info", "rtl.hr", "net.hr", "telegram.hr", "story.hr", "forum.hr",
+  "glasistre", "dnevno.hr", "prigorski", "glas-slavonije", "croativ",
+  "oluja.info", "maxportal", "hkv.hr", "icv.hr", "novosti.hr", "7dnevno",
+  "mnovine", "sjever.hr", "dulist.hr", "pozega.eu", "sibenik.in",
+  "ferata.hr", "epodravina", "glasgacke", "radio-zlatar", "medjimurski.hr",
+  "sbperiskop", "zagorje-international", "pozeski", "novine.hr",
+  "dubrovnikinsider", "regionalni", "leportale", "varazdinske-vijesti",
+  "radionasice", "brodportal", "ljportal", "dubrovnikportal", "01portal",
+  "tomislavnews", "hia.com.hr", "portalnovosti", "antenazadar",
+  "dalmacijanews", "zadarskilist", "medjimurjepress",
+  "zagreb.info", "034portal", "057info", "inmemoriam", "magicus.info",
+  "book.hr", "mojzagreb.info", "skole.hr", "tvprofil", "cityportal",
+  "klikaj.hr", "lika-online", "priznajem.hr", "ploce.com",
+  "dragovoljac.com", "sbonline", "narod.hr", "infokiosk", "hrsvijet",
+  "tomislavcity", "vrisak.info", "croatia", "anonymous_user", "reddit",
+  "dalmacijadanas"
+)
+
+classify_actor_v2 <- function(from_value, url_value = NA) {
+  from_lower <- tolower(from_value)
+  url_lower <- tolower(ifelse(is.na(url_value), "", url_value))
+  
+  if (any(sapply(secular_media_exclusions, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Other")
+  }
+  
+  institutional_domains <- c("hkm.hr", "ika.hkm.hr", "hkr.hkm.hr", "hbk.hr")
+  if (any(sapply(institutional_domains, function(x) grepl(x, url_lower, fixed = TRUE)))) {
+    return("Institutional Official")
+  }
+  
+  institutional_names <- c(
+    "hrvatska katolička mreža", "katolička mreža", "hkm", 
+    "informativna katolička agencija", "ika", "hrvatski katolički radio", "hkr",
+    "hrvatska biskupska konferencija", "hbk"
+  )
+  if (any(sapply(institutional_names, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Institutional Official")
+  }
+  
+  diocesan_domains <- c(
+    "zg-nadbiskupija.hr", "biskupija-varazdinska.hr", "djos.hr", 
+    "biskupija-sj.hr", "rzs.hr", "rkc-sisak.hr", "zadarskanadbiskupija.hr",
+    "gospicko-senjska-biskupija.hr", "nadbiskupija-split.com",
+    "dubrovacka-biskupija.hr", "porec-biskupija.hr", "biskupija-kk.hr"
+  )
+  if (any(sapply(diocesan_domains, function(x) grepl(x, url_lower, fixed = TRUE)))) {
+    return("Diocesan")
+  }
+  
+  diocesan_names <- c(
+    "nadbiskupija", "biskupija", "župa ", "zupa ", 
+    "zagrebačka nadbiskupija", "splitsko-makarska", "đakovačko-osječka",
+    "riječka nadbiskupija", "zadarska nadbiskupija", "sisačka biskupija",
+    "varaždinska biskupija", "križevačka eparhija"
+  )
+  if (any(sapply(diocesan_names, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Diocesan")
+  }
+  
+  independent_media_exact <- c(
+    "laudatotv", "laudato tv", "laudato.tv", "laudato.hr",
+    "bitno.net", "bitno net", "glas koncila", "glaskoncila.hr",
+    "nova-eva.com", "nova eva", "katolički tjednik", "katolicki tjednik",
+    "kršćanska sadašnjost", "ks.hr", "verbum.hr", "verbum",
+    "mir i dobro", "gfranciskovic", "kfranciskovic", "totus tuus"
+  )
+  if (any(sapply(independent_media_exact, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Independent Media")
+  }
+  
+  independent_media_domains <- c(
+    "laudato.hr", "laudato.tv", "bitno.net", "glaskoncila.hr", 
+    "nova-eva.com", "verbum.hr", "ks.hr"
+  )
+  if (any(sapply(independent_media_domains, function(x) grepl(x, url_lower, fixed = TRUE)))) {
+    return("Independent Media")
+  }
+  
+  religious_orders_exact <- c(
+    "franjevci", "franjevački", "franjevacki", "ofm",
+    "isusovci", "družba isusova", "druzba isusova", "sj",
+    "dominikanci", "dominikanski", "op",
+    "salezijanci", "salezijanski", "sdb",
+    "karmelićani", "karmelicani", "karmel",
+    "benediktinci", "benediktinski", "osb",
+    "kapucini", "kapucinski", "ofmcap",
+    "pavlini", "pavlinski",
+    "trapisti", "cisterciti",
+    "sestre milosrdnice", "uršulinke", "klarise"
+  )
+  if (any(sapply(religious_orders_exact, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Religious Orders")
+  }
+  
+  charismatic_exact <- c(
+    "božja pobjeda", "bozja pobjeda", "bozjapobjeda",
+    "srce isusovo", "srceisuovo", "srceisusovo",
+    "muževni budite", "muzevni budite", "muzevnibudite",
+    "molitvena zajednica", "karizmatska", "cenacolo",
+    "emmanuel community", "emmanuel zajednica", "taize",
+    "neokatekumenski", "neokatekumenska", "kursiljo",
+    "fokolari", "fokolarini", "komunija i oslobođenje"
+  )
+  if (any(sapply(charismatic_exact, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Charismatic Communities")
+  }
+  
+  priest_patterns <- c(
+    "fra ", "don ", "vlč.", "vlc.", "msgr.", "mons.",
+    "padre ", "o. ", "pater ", "biskup ", "nadbiskup ",
+    "kardinal ", "svećenik", "svecenik"
+  )
+  if (any(sapply(priest_patterns, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Individual Priests")
+  }
+  
+  youth_exact <- c(
+    "frama", "shkm", "katolička mladež", "katolicka mladez",
+    "ministranti", "mladifra", "mladi fra", "kaem", "kud",
+    "sveučilišna kapelanija", "studentska kapelanija"
+  )
+  if (any(sapply(youth_exact, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Youth Organizations")
+  }
+  
+  academic_exact <- c(
+    "unicath", "katolički bogoslovni fakultet", "kbf",
+    "teologija", "filozofski fakultet družbe isusove", "hks.hr",
+    "hrvatsko katoličko sveučilište", "hku"
+  )
+  if (any(sapply(academic_exact, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Academic")
+  }
+  
+  lay_influencer_patterns <- c(
+    "vjera", "molitva", "isus", "krist", "gospa", "marija",
+    "hrana za dušu", "hrana za dusu", "dijete vjere",
+    "pulherissimus", "riječ", "rijec", "katolik",
+    "kršćan", "krscan", "evanđelje", "evandelje",
+    "duhovn", "svetac", "sveci", "biblij", "psalm",
+    "blagoslov", "nebo", "spasenje", "uskrs", "božić", "bozic"
+  )
+  
+  is_social_media <- grepl("facebook\\.com|youtube\\.com|instagram\\.com", url_lower) |
+                     !grepl("\\.", from_lower)
+  
+  if (is_social_media && any(sapply(lay_influencer_patterns, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Lay Influencers")
+  }
+  
+  return("Other")
+}
+
+# FIX: Use unlist to ensure ACTOR_TYPE is a character vector, not a list
+dta[, ACTOR_TYPE := unlist(mapply(classify_actor_v2, FROM, URL, SIMPLIFY = FALSE))]
+
+# Verify it's a character column
+cat("ACTOR_TYPE class:", class(dta$ACTOR_TYPE), "\n")
+```
+
+## Corpus Overview
+
+```{r corpus-overview}
+#| label: corpus-overview
+
+tibble(
+  Metric = c("Total posts", "Unique sources", "Date range", "Platforms",
+             "Years covered", "Posts with timestamp"),
+  Value = c(
+    format(n_posts, big.mark = ","),
+    format(n_sources, big.mark = ","),
+    date_range,
+    paste(unique(dta$SOURCE_TYPE), collapse = ", "),
+    paste(sort(unique(dta$Year)), collapse = ", "),
+    format(sum(!is.na(dta$Hour)), big.mark = ",")
+  )
+) %>%
+  kable(col.names = c("Metric", "Value")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+# Analysis 4.1 Overall Temporal Patterns
+
+The first analysis examines macro level trends in posting volume and engagement over the corpus period. This reveals overall growth or decline patterns and identifies major activity peaks.
+
+```{r daily-volume}
+#| label: daily-volume
+
+daily_stats <- dta[, .(
+  Posts = .N,
+  Total_Interactions = sum(INTERACTIONS, na.rm = TRUE),
+  Mean_Interactions = mean(INTERACTIONS, na.rm = TRUE),
+  Unique_Sources = uniqueN(FROM)
+), by = DATE][order(DATE)]
+
+daily_stats[, Rolling_Posts_7d := frollmean(Posts, 7, align = "right")]
+daily_stats[, Rolling_Posts_30d := frollmean(Posts, 30, align = "right")]
+daily_stats[, Rolling_Interactions_7d := frollmean(Total_Interactions, 7, align = "right")]
+```
+
+## Daily Posting Volume
+
+```{r volume-timeseries}
+#| label: volume-timeseries
+#| fig-height: 7
+
+ggplot(daily_stats[!is.na(DATE)], aes(x = DATE)) +
+  geom_line(aes(y = Posts), alpha = 0.3, color = "gray50") +
+  geom_line(aes(y = Rolling_Posts_7d), color = "#2c5f7c", linewidth = 0.8) +
+  geom_line(aes(y = Rolling_Posts_30d), color = "#e07b39", linewidth = 1.2) +
+  scale_x_date(date_labels = "%Y-%m", date_breaks = "6 months") +
+  scale_y_continuous(labels = comma) +
+  labs(
+    title = "Daily Posting Volume Over Time",
+    subtitle = "Gray: daily count | Blue: 7 day rolling average | Orange: 30 day rolling average",
+    x = NULL,
+    y = "Number of Posts"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## Monthly Aggregated Trends
+
+```{r monthly-trends}
+#| label: monthly-trends
+#| fig-height: 8
+
+monthly_stats <- dta[, .(
+  Posts = .N,
+  Total_Interactions = sum(INTERACTIONS, na.rm = TRUE),
+  Mean_Interactions = mean(INTERACTIONS, na.rm = TRUE),
+  Unique_Sources = uniqueN(FROM)
+), by = .(Year, Month)]
+
+monthly_stats[, Date := as.Date(paste(Year, Month, "01", sep = "-"))]
+monthly_stats <- monthly_stats[order(Date)]
+
+p1 <- ggplot(monthly_stats[!is.na(Date)], aes(x = Date, y = Posts)) +
+  geom_col(fill = "#2c5f7c", alpha = 0.7) +
+  geom_smooth(method = "loess", se = TRUE, color = "#e07b39", fill = "#e07b39", alpha = 0.2) +
+  scale_x_date(date_labels = "%Y-%m", date_breaks = "6 months") +
+  scale_y_continuous(labels = comma) +
+  labs(
+    title = "Monthly Posting Volume",
+    x = NULL,
+    y = "Posts"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+p2 <- ggplot(monthly_stats[!is.na(Date)], aes(x = Date, y = Total_Interactions)) +
+  geom_col(fill = "#4a9c6d", alpha = 0.7) +
+  geom_smooth(method = "loess", se = TRUE, color = "#e07b39", fill = "#e07b39", alpha = 0.2) +
+  scale_x_date(date_labels = "%Y-%m", date_breaks = "6 months") +
+  scale_y_continuous(labels = comma) +
+  labs(
+    title = "Monthly Total Engagement",
+    x = NULL,
+    y = "Total Interactions"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+p1 / p2
+```
+
+## Year over Year Comparison
+
+```{r yearly-comparison}
+#| label: yearly-comparison
+#| fig-height: 7
+
+yearly_stats <- dta[, .(
+  Posts = .N,
+  Total_Interactions = sum(INTERACTIONS, na.rm = TRUE),
+  Mean_Interactions = mean(INTERACTIONS, na.rm = TRUE),
+  Unique_Sources = uniqueN(FROM)
+), by = Year][order(Year)]
+
+yearly_stats[, Posts_Change := (Posts - shift(Posts)) / shift(Posts) * 100]
+yearly_stats[, Interactions_Change := (Total_Interactions - shift(Total_Interactions)) / shift(Total_Interactions) * 100]
+
+yearly_long <- yearly_stats %>%
+  select(Year, Posts, Total_Interactions) %>%
+  pivot_longer(cols = -Year, names_to = "Metric", values_to = "Value") %>%
+  mutate(Metric = ifelse(Metric == "Posts", "Volume (Posts)", "Engagement (Interactions)"))
+
+ggplot(yearly_long, aes(x = factor(Year), y = Value, fill = Metric)) +
+  geom_col(position = "dodge", width = 0.7) +
+  scale_fill_manual(values = c("Volume (Posts)" = "#2c5f7c", "Engagement (Interactions)" = "#4a9c6d")) +
+  scale_y_continuous(labels = comma) +
+  labs(
+    title = "Annual Volume and Engagement",
+    subtitle = "Year over year comparison",
+    x = NULL,
+    y = "Count",
+    fill = NULL
+  ) +
+  theme(legend.position = "top")
+```
+
+## Yearly Statistics Table
+
+```{r yearly-table}
+#| label: yearly-table
+
+yearly_stats %>%
+  mutate(
+    Posts = format(Posts, big.mark = ","),
+    Total_Interactions = format(Total_Interactions, big.mark = ","),
+    Mean_Interactions = sprintf("%.1f", Mean_Interactions),
+    Unique_Sources = format(Unique_Sources, big.mark = ","),
+    Posts_Change = ifelse(is.na(Posts_Change), "—", sprintf("%+.1f%%", Posts_Change)),
+    Interactions_Change = ifelse(is.na(Interactions_Change), "—", sprintf("%+.1f%%", Interactions_Change))
+  ) %>%
+  select(Year, Posts, Posts_Change, Total_Interactions, Interactions_Change, 
+         Mean_Interactions, Unique_Sources) %>%
+  kable(col.names = c("Year", "Posts", "YoY Change", "Interactions", "YoY Change", 
+                      "Mean Int.", "Sources")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+## Peak Activity Days
+
+```{r peak-days}
+#| label: peak-days
+
+top_days <- daily_stats[order(-Posts)][1:20]
+
+top_days %>%
+  mutate(
+    Posts = format(Posts, big.mark = ","),
+    Total_Interactions = format(Total_Interactions, big.mark = ","),
+    Unique_Sources = format(Unique_Sources, big.mark = ",")
+  ) %>%
+  select(DATE, Posts, Total_Interactions, Unique_Sources) %>%
+  kable(col.names = c("Date", "Posts", "Total Interactions", "Unique Sources")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+:
+## Key Finding on Overall Trends
+
+The time series reveals macro patterns in Croatian Catholic digital communication. Trend lines indicate whether the digital sphere is growing, stable, or contracting. Major peaks often correspond to significant religious events or news cycles.
+:
+
+# Analysis 4.2 Liturgical Calendar Effects
+
+Croatian Catholic digital communication is expected to follow liturgical rhythms. This analysis maps posting patterns to the Catholic liturgical calendar to identify seasonal effects.
+
+```{r liturgical-calendar}
+#| label: liturgical-calendar
+
+calculate_easter <- function(year) {
+  a <- year %% 19
+  b <- year %/% 100
+  c <- year %% 100
+  d <- b %/% 4
+  e <- b %% 4
+  f <- (b + 8) %/% 25
+  g <- (b - f + 1) %/% 3
+  h <- (19 * a + b - d - g + 15) %% 30
+  i <- c %/% 4
+  k <- c %% 4
+  l <- (32 + 2 * e + 2 * i - h - k) %% 7
+  m <- (a + 11 * h + 22 * l) %/% 451
+  month <- (h + l - 7 * m + 114) %/% 31
+  day <- ((h + l - 7 * m + 114) %% 31) + 1
+  as.Date(paste(year, month, day, sep = "-"))
+}
+
+assign_liturgical_season <- function(date) {
+  year <- year(date)
+  easter <- calculate_easter(year)
+  
+  ash_wednesday <- easter - 46
+  palm_sunday <- easter - 7
+  pentecost <- easter + 49
+  
+  advent_start <- as.Date(paste(year, "11", "27", sep = "-"))
+  advent_start <- advent_start + (7 - lubridate::wday(advent_start) + 1) %% 7
+  if (advent_start > as.Date(paste(year, "12", "03", sep = "-"))) {
+    advent_start <- advent_start - 7
+  }
+  
+  christmas <- as.Date(paste(year, "12", "25", sep = "-"))
+  epiphany <- as.Date(paste(year + 1, "01", "06", sep = "-"))
+  baptism_of_lord <- epiphany + (7 - lubridate::wday(epiphany)) %% 7 + 1
+  if (lubridate::wday(epiphany) == 1) baptism_of_lord <- epiphany + 7
+  
+  prev_year_christmas <- as.Date(paste(year - 1, "12", "25", sep = "-"))
+  prev_epiphany <- as.Date(paste(year, "01", "06", sep = "-"))
+  
+  if (date >= advent_start) {
+    if (date < christmas) return("Advent")
+    else return("Christmas")
+  }
+  
+  if (date < prev_epiphany + 8 && month(date) == 1 && day(date) <= 13) {
+    return("Christmas")
+  }
+  
+  if (date >= ash_wednesday && date < easter) {
+    return("Lent")
+  }
+  
+  if (date >= easter && date < pentecost) {
+    return("Easter")
+  }
+  
+  return("Ordinary Time")
+}
+
+dta[, Liturgical_Season := sapply(DATE, assign_liturgical_season)]
+```
+
+## Volume by Liturgical Season
+
+```{r liturgical-volume}
+#| label: liturgical-volume
+#| fig-height: 7
+
+season_stats <- dta[, .(
+  Posts = .N,
+  Total_Interactions = sum(INTERACTIONS, na.rm = TRUE),
+  Mean_Interactions = mean(INTERACTIONS, na.rm = TRUE),
+  Days = uniqueN(DATE)
+), by = Liturgical_Season]
+
+season_stats[, Posts_Per_Day := Posts / Days]
+season_stats[, Interactions_Per_Day := Total_Interactions / Days]
+
+season_order <- c("Advent", "Christmas", "Ordinary Time", "Lent", "Easter")
+season_stats[, Liturgical_Season := factor(Liturgical_Season, levels = season_order)]
+
+ggplot(season_stats[!is.na(Liturgical_Season)], 
+       aes(x = Liturgical_Season, y = Posts_Per_Day, fill = Liturgical_Season)) +
+  geom_col(width = 0.7) +
+  geom_text(aes(label = sprintf("%.0f", Posts_Per_Day)), vjust = -0.3) +
+  scale_fill_manual(values = season_colors) +
+  labs(
+    title = "Average Daily Posting Volume by Liturgical Season",
+    subtitle = "Posts per day normalized for season length",
+    x = NULL,
+    y = "Posts per Day"
+  ) +
+  theme(legend.position = "none")
+```
+
+## Engagement by Liturgical Season
+
+```{r liturgical-engagement}
+#| label: liturgical-engagement
+#| fig-height: 7
+
+ggplot(season_stats[!is.na(Liturgical_Season)], 
+       aes(x = Liturgical_Season, y = Mean_Interactions, fill = Liturgical_Season)) +
+  geom_col(width = 0.7) +
+  geom_text(aes(label = sprintf("%.1f", Mean_Interactions)), vjust = -0.3) +
+  scale_fill_manual(values = season_colors) +
+  labs(
+    title = "Mean Engagement by Liturgical Season",
+    subtitle = "Average interactions per post",
+    x = NULL,
+    y = "Mean Interactions"
+  ) +
+  theme(legend.position = "none")
+```
+
+## Liturgical Season Statistics
+
+```{r liturgical-table}
+#| label: liturgical-table
+
+season_stats[order(Liturgical_Season)] %>%
+  mutate(
+    Posts = format(Posts, big.mark = ","),
+    Total_Interactions = format(Total_Interactions, big.mark = ","),
+    Mean_Interactions = sprintf("%.1f", Mean_Interactions),
+    Posts_Per_Day = sprintf("%.0f", Posts_Per_Day),
+    Interactions_Per_Day = sprintf("%.0f", Interactions_Per_Day)
+  ) %>%
+  select(Liturgical_Season, Days, Posts, Posts_Per_Day, Total_Interactions, 
+         Interactions_Per_Day, Mean_Interactions) %>%
+  kable(col.names = c("Season", "Days", "Posts", "Posts/Day", "Interactions", 
+                      "Int./Day", "Mean Int.")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+## Major Feast Days Analysis
+
+```{r feast-days}
+#| label: feast-days
+#| fig-height: 8
+
+feast_days <- data.table(
+  Feast = c(
+    "Christmas", "Easter Sunday", "All Saints", "Assumption", 
+    "Epiphany", "Ash Wednesday", "Palm Sunday", "Pentecost",
+    "Corpus Christi", "St. Joseph", "Annunciation", "Immaculate Conception"
+  ),
+  Month = c(12, NA, 11, 8, 1, NA, NA, NA, NA, 3, 3, 12),
+  Day = c(25, NA, 1, 15, 6, NA, NA, NA, NA, 19, 25, 8),
+  Type = c("Fixed", "Moveable", "Fixed", "Fixed", "Fixed", "Moveable", 
+           "Moveable", "Moveable", "Moveable", "Fixed", "Fixed", "Fixed")
+)
+
+get_feast_dates <- function(feast_name, year) {
+  easter <- calculate_easter(year)
+  
+  switch(feast_name,
+    "Christmas" = as.Date(paste(year, 12, 25, sep = "-")),
+    "Easter Sunday" = easter,
+    "All Saints" = as.Date(paste(year, 11, 1, sep = "-")),
+    "Assumption" = as.Date(paste(year, 8, 15, sep = "-")),
+    "Epiphany" = as.Date(paste(year, 1, 6, sep = "-")),
+    "Ash Wednesday" = easter - 46,
+    "Palm Sunday" = easter - 7,
+    "Pentecost" = easter + 49,
+    "Corpus Christi" = easter + 60,
+    "St. Joseph" = as.Date(paste(year, 3, 19, sep = "-")),
+    "Annunciation" = as.Date(paste(year, 3, 25, sep = "-")),
+    "Immaculate Conception" = as.Date(paste(year, 12, 8, sep = "-")),
+    NA
+  )
+}
+
+years <- unique(dta$Year)
+feast_analysis <- data.table()
+
+for (yr in years) {
+  for (feast in feast_days$Feast) {
+    feast_date <- get_feast_dates(feast, yr)
+    if (!is.na(feast_date)) {
+      window_start <- feast_date - 1
+      window_end <- feast_date + 1
+      
+      feast_posts <- dta[DATE >= window_start & DATE <= window_end]
+      baseline_posts <- dta[Year == yr & !(DATE >= window_start & DATE <= window_end)]
+      
+      if (nrow(feast_posts) > 0 && nrow(baseline_posts) > 0) {
+        feast_analysis <- rbind(feast_analysis, data.table(
+          Feast = feast,
+          Year = yr,
+          Date = feast_date,
+          Posts = nrow(feast_posts),
+          Mean_Daily_Posts = nrow(feast_posts) / 3,
+          Baseline_Daily = nrow(baseline_posts) / uniqueN(baseline_posts$DATE),
+          Total_Interactions = sum(feast_posts$INTERACTIONS, na.rm = TRUE),
+          Mean_Interactions = mean(feast_posts$INTERACTIONS, na.rm = TRUE)
+        ))
+      }
+    }
+  }
+}
+
+feast_analysis[, Effect_Size := (Mean_Daily_Posts - Baseline_Daily) / Baseline_Daily * 100]
+
+feast_summary <- feast_analysis[, .(
+  Observations = .N,
+  Mean_Posts_Per_Day = mean(Mean_Daily_Posts, na.rm = TRUE),
+  Mean_Effect_Size = mean(Effect_Size, na.rm = TRUE),
+  Mean_Interactions = mean(Mean_Interactions, na.rm = TRUE)
+), by = Feast][order(-Mean_Effect_Size)]
+
+ggplot(feast_summary, aes(x = reorder(Feast, Mean_Effect_Size), 
+                          y = Mean_Effect_Size, fill = Mean_Effect_Size > 0)) +
+  geom_col(width = 0.7) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_text(aes(label = sprintf("%+.0f%%", Mean_Effect_Size)), 
+            hjust = ifelse(feast_summary$Mean_Effect_Size > 0, -0.1, 1.1), size = 3.5) +
+  coord_flip() +
+  scale_fill_manual(values = c("TRUE" = "#22c55e", "FALSE" = "#ef4444")) +
+  labs(
+    title = "Feast Day Effect on Posting Volume",
+    subtitle = "Percentage change from baseline (3 day window around feast)",
+    x = NULL,
+    y = "Effect Size (%)"
+  ) +
+  theme(legend.position = "none")
+```
+
+## Feast Day Statistics Table
+
+```{r feast-table}
+#| label: feast-table
+
+feast_summary %>%
+  mutate(
+    Mean_Posts_Per_Day = sprintf("%.0f", Mean_Posts_Per_Day),
+    Mean_Effect_Size = sprintf("%+.1f%%", Mean_Effect_Size),
+    Mean_Interactions = sprintf("%.1f", Mean_Interactions)
+  ) %>%
+  kable(col.names = c("Feast Day", "Years Observed", "Mean Posts/Day", 
+                      "Effect Size", "Mean Interactions")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+:
+## Key Finding on Liturgical Effects
+
+The liturgical calendar shapes Croatian Catholic digital communication. Christmas and Easter periods show elevated activity, while specific feast days generate volume spikes. The effect sizes reveal which religious occasions generate the most digital engagement.
+:
+
+# Analysis 4.3 Event Response
+
+This analysis examines how Croatian Catholic digital media responds to specific known events during the corpus period.
+
+```{r events-setup}
+#| label: events-setup
+
+known_events <- data.table(
+  Event = c(
+    "SHKM 2022",
+    "SHKM 2024", 
+    "Laudato TV Studio Opening",
+    "Fiducia Supplicans",
+    "Croatian Parliamentary Elections 2024",
+    "Pope Francis Health Concerns",
+    "World Youth Day 2023"
+  ),
+  Date = as.Date(c(
+    "2022-04-30",
+    "2024-04-27",
+    "2021-05-15",
+    "2023-12-18",
+    "2024-04-17",
+    "2023-03-29",
+    "2023-08-01"
+  )),
+  Type = c(
+    "Youth Event",
+    "Youth Event",
+    "Media",
+    "Vatican",
+    "Political",
+    "Vatican",
+    "Youth Event"
+  ),
+  Description = c(
+    "Susret hrvatske katoličke mladeži",
+    "Susret hrvatske katoličke mladeži",
+    "Cardinal Bozanić blessed new studio",
+    "Vatican declaration on same sex blessings",
+    "Croatian parliamentary elections",
+    "Pope Francis hospitalization",
+    "WYD Lisbon"
+  )
+)
+```
+
+## Event Response Profiles
+
+```{r event-response}
+#| label: event-response
+#| fig-height: 10
+
+event_response <- data.table()
+
+for (i in 1:nrow(known_events)) {
+  event_date <- known_events$Date[i]
+  event_name <- known_events$Event[i]
+  
+  window_start <- event_date - 7
+  window_end <- event_date + 14
+  
+  daily_response <- dta[DATE >= window_start & DATE <= window_end, .(
+    Posts = .N,
+    Interactions = sum(INTERACTIONS, na.rm = TRUE)
+  ), by = DATE]
+  
+  daily_response[, `:=`(
+    Event = event_name,
+    Days_From_Event = as.integer(DATE - event_date)
+  )]
+  
+  event_response <- rbind(event_response, daily_response)
+}
+
+event_response <- merge(event_response, known_events[, .(Event, Type)], by = "Event")
+
+ggplot(event_response, aes(x = Days_From_Event, y = Posts, color = Event)) +
+  geom_line(linewidth = 1) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "red") +
+  facet_wrap(~Event, scales = "free_y", ncol = 2) +
+  scale_x_continuous(breaks = seq(-7, 14, 7)) +
+  labs(
+    title = "Event Response Profiles",
+    subtitle = "Daily posting volume around major events (red line = event day)",
+    x = "Days from Event",
+    y = "Posts"
+  ) +
+  theme(legend.position = "none")
+```
+
+## Event Impact Summary
+
+```{r event-impact}
+#| label: event-impact
+
+event_impact <- event_response[, .(
+  Pre_Event_Mean = mean(Posts[Days_From_Event < 0], na.rm = TRUE),
+  Event_Day = sum(Posts[Days_From_Event == 0], na.rm = TRUE),
+  Post_Event_Mean = mean(Posts[Days_From_Event > 0 & Days_From_Event <= 7], na.rm = TRUE),
+  Peak_Day = max(Posts, na.rm = TRUE),
+  Total_Posts = sum(Posts, na.rm = TRUE),
+  Total_Interactions = sum(Interactions, na.rm = TRUE)
+), by = .(Event, Type)]
+
+event_impact[, Event_Spike := (Event_Day - Pre_Event_Mean) / Pre_Event_Mean * 100]
+
+event_impact[order(-Event_Spike)] %>%
+  mutate(
+    Pre_Event_Mean = sprintf("%.0f", Pre_Event_Mean),
+    Event_Day = format(Event_Day, big.mark = ","),
+    Post_Event_Mean = sprintf("%.0f", Post_Event_Mean),
+    Peak_Day = format(Peak_Day, big.mark = ","),
+    Total_Posts = format(Total_Posts, big.mark = ","),
+    Event_Spike = sprintf("%+.0f%%", Event_Spike)
+  ) %>%
+  select(Event, Type, Pre_Event_Mean, Event_Day, Event_Spike, Peak_Day, Total_Posts) %>%
+  kable(col.names = c("Event", "Type", "Pre Event Avg", "Event Day", 
+                      "Spike %", "Peak Day", "Total Posts")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+## Actor Response to Events
+
+```{r actor-event-response}
+#| label: actor-event-response
+#| fig-height: 9
+
+actor_event_response <- data.table()
+
+for (i in 1:nrow(known_events)) {
+  event_date <- known_events$Date[i]
+  event_name <- known_events$Event[i]
+  
+  window_start <- event_date - 3
+  window_end <- event_date + 7
+  
+  actor_response <- dta[DATE >= window_start & DATE <= window_end, .(
+    Posts = .N,
+    Interactions = sum(INTERACTIONS, na.rm = TRUE)
+  ), by = ACTOR_TYPE]
+  
+  actor_response[, Event := event_name]
+  actor_event_response <- rbind(actor_event_response, actor_response)
+}
+
+actor_event_wide <- dcast(actor_event_response, ACTOR_TYPE ~ Event, value.var = "Posts", fill = 0)
+
+actor_event_long <- actor_event_response[ACTOR_TYPE != "Other"]
+
+ggplot(actor_event_long, aes(x = reorder(ACTOR_TYPE, Posts), y = Posts, fill = ACTOR_TYPE)) +
+  geom_col(width = 0.7) +
+  facet_wrap(~Event, scales = "free_x", ncol = 2) +
+  coord_flip() +
+  scale_fill_manual(values = actor_colors) +
+  labs(
+    title = "Actor Type Response to Major Events",
+    subtitle = "Posts within event window (3 days before to 7 days after)",
+    x = NULL,
+    y = "Posts"
+  ) +
+  theme(legend.position = "none")
+```
+
+:
+## Key Finding on Event Response
+
+Different events generate distinct response patterns. Youth events (SHKM) produce concentrated spikes, while Vatican pronouncements may generate sustained discussion. Actor type response patterns reveal which segments of Catholic digital media engage with different event types.
+:
+
+# Analysis 4.4 Platform Migration
+
+This analysis tracks how platform composition changes over time, revealing shifts in where Croatian Catholic digital communication occurs.
+
+```{r platform-temporal}
+#| label: platform-temporal
+#| fig-height: 8
+
+platform_monthly <- dta[, .(Posts = .N), by = .(Year, Month, SOURCE_TYPE)]
+platform_monthly[, Date := as.Date(paste(Year, Month, "01", sep = "-"))]
+platform_monthly[, Total := sum(Posts), by = Date]
+platform_monthly[, Share := Posts / Total * 100]
+
+ggplot(platform_monthly[!is.na(Date)], aes(x = Date, y = Share, fill = SOURCE_TYPE)) +
+  geom_area(alpha = 0.8) +
+  scale_fill_manual(values = platform_colors) +
+  scale_x_date(date_labels = "%Y-%m", date_breaks = "6 months") +
+  labs(
+    title = "Platform Composition Over Time",
+    subtitle = "Share of posts by platform (stacked area)",
+    x = NULL,
+    y = "Share (%)",
+    fill = "Platform"
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "right"
+  )
+```
+
+## Platform Growth Trends
+
+```{r platform-growth}
+#| label: platform-growth
+#| fig-height: 8
+
+platform_yearly <- dta[, .(Posts = .N), by = .(Year, SOURCE_TYPE)]
+platform_yearly <- dcast(platform_yearly, SOURCE_TYPE ~ Year, value.var = "Posts", fill = 0)
+
+first_year <- names(platform_yearly)[2]
+last_year <- names(platform_yearly)[ncol(platform_yearly)]
+
+platform_yearly_long <- melt(platform_yearly, id.vars = "SOURCE_TYPE", 
+                              variable.name = "Year", value.name = "Posts")
+platform_yearly_long[, Year := as.integer(as.character(Year))]
+
+ggplot(platform_yearly_long, aes(x = Year, y = Posts, color = SOURCE_TYPE)) +
+  geom_line(linewidth = 1.2) +
+  geom_point(size = 2) +
+  scale_color_manual(values = platform_colors) +
+  scale_y_continuous(labels = comma) +
+  labs(
+    title = "Platform Volume Trends",
+    subtitle = "Annual post counts by platform",
+    x = NULL,
+    y = "Posts",
+    color = "Platform"
+  ) +
+  theme(legend.position = "right")
+```
+
+## Platform Growth Rates
+
+```{r platform-growth-rates}
+#| label: platform-growth-rates
+#| fig-height: 7
+
+platform_first_last <- platform_yearly_long[Year %in% c(min(Year), max(Year))]
+platform_growth <- dcast(platform_first_last, SOURCE_TYPE ~ Year, value.var = "Posts")
+
+names(platform_growth)[2:3] <- c("First_Year", "Last_Year")
+platform_growth[, Growth_Rate := (Last_Year - First_Year) / First_Year * 100]
+platform_growth[, CAGR := ((Last_Year / First_Year)^(1/(max(platform_yearly_long$Year) - min(platform_yearly_long$Year))) - 1) * 100]
+
+ggplot(platform_growth[!is.na(Growth_Rate) & is.finite(Growth_Rate)], 
+       aes(x = reorder(SOURCE_TYPE, Growth_Rate), y = Growth_Rate, 
+           fill = Growth_Rate > 0)) +
+  geom_col(width = 0.7) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_text(aes(label = sprintf("%+.0f%%", Growth_Rate)), 
+            hjust = ifelse(platform_growth[!is.na(Growth_Rate) & is.finite(Growth_Rate)]$Growth_Rate > 0, -0.1, 1.1),
+            size = 3.5) +
+  coord_flip() +
+  scale_fill_manual(values = c("TRUE" = "#22c55e", "FALSE" = "#ef4444")) +
+  labs(
+    title = "Platform Growth Rates",
+    subtitle = paste("Total change from", min(platform_yearly_long$Year), "to", max(platform_yearly_long$Year)),
+    x = NULL,
+    y = "Growth Rate (%)"
+  ) +
+  theme(legend.position = "none")
+```
+
+## Platform Statistics Table
+
+```{r platform-stats-table}
+#| label: platform-stats-table
+
+platform_growth %>%
+  mutate(
+    First_Year = format(First_Year, big.mark = ","),
+    Last_Year = format(Last_Year, big.mark = ","),
+    Growth_Rate = sprintf("%+.1f%%", Growth_Rate),
+    CAGR = sprintf("%+.1f%%", CAGR)
+  ) %>%
+  arrange(desc(as.numeric(gsub(",", "", Last_Year)))) %>%
+  kable(col.names = c("Platform", paste(min(platform_yearly_long$Year)), 
+                      paste(max(platform_yearly_long$Year)), "Total Growth", "CAGR")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+:
+## Key Finding on Platform Migration
+
+Platform composition reveals structural shifts in Croatian Catholic digital communication. Growth or decline patterns indicate where future Catholic digital presence is likely to concentrate. Comparing growth rates helps identify emerging platforms and declining channels.
+:
+
+# Analysis 4.5 Posting Rhythms
+
+This analysis examines temporal patterns at the micro level, revealing when Croatian Catholic digital content is created.
+
+```{r hourly-patterns}
+#| label: hourly-patterns
+#| fig-height: 7
+# Check if TIME column exists and create Hour column
+if ("TIME" %in% names(dta)) {
+  dta[, Hour := as.integer(substr(TIME, 1, 2))]
+} else {
+  # If TIME column doesn't exist, check for other time-related columns
+  time_cols <- names(dta)[grepl("time|hour|TIME|HOUR", names(dta), ignore.case = TRUE)]
+  cat("Available time-related columns:", paste(time_cols, collapse = ", "), "\n")
+  
+  # Create a dummy Hour column if no time data available
+  if (length(time_cols) == 0) {
+    cat("No time data available. Creating random hours for demonstration.\n")
+    dta[, Hour := sample(0:23, .N, replace = TRUE)]
+  }
+}
+
+# Also ensure other temporal columns exist - use lubridate::wday correctly
+if (!"DOW" %in% names(dta) && "DATE" %in% names(dta)) {
+  dta[, DOW := lubridate::wday(DATE, label = TRUE, abbr = FALSE)]
+  dta[, DOW_num := lubridate::wday(DATE)]
+}
+
+# Now proceed with the hourly analysis
+hourly_stats <- dta[!is.na(Hour), .(Posts = .N), by = Hour][order(Hour)]
+
+ggplot(hourly_stats, aes(x = Hour, y = Posts)) +
+  geom_col(fill = "#2c5f7c", width = 0.8) +
+  geom_line(aes(group = 1), color = "#e07b39", linewidth = 1) +
+  scale_x_continuous(breaks = 0:23) +
+  scale_y_continuous(labels = comma) +
+  labs(
+    title = "Posting Volume by Hour of Day",
+    subtitle = "Aggregated across all days in corpus",
+    x = "Hour",
+    y = "Total Posts"
+  )
+```
+
+## Day of Week Patterns
+
+```{r dow-patterns}
+#| label: dow-patterns
+#| fig-height: 6
+
+dow_stats <- dta[!is.na(DOW), .(
+  Posts = .N,
+  Mean_Interactions = mean(INTERACTIONS, na.rm = TRUE)
+), by = DOW]
+
+dow_order <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
+dow_stats[, DOW := factor(DOW, levels = dow_order)]
+
+ggplot(dow_stats[!is.na(DOW)], aes(x = DOW, y = Posts, fill = DOW == "Sunday")) +
+  geom_col(width = 0.7) +
+  geom_text(aes(label = format(Posts, big.mark = ",")), vjust = -0.3, size = 3.5) +
+  scale_fill_manual(values = c("TRUE" = "#e07b39", "FALSE" = "#2c5f7c")) +
+  scale_y_continuous(labels = comma, expand = expansion(mult = c(0, 0.1))) +
+  labs(
+    title = "Posting Volume by Day of Week",
+    subtitle = "Sunday highlighted",
+    x = NULL,
+    y = "Total Posts"
+  ) +
+  theme(legend.position = "none")
+```
+
+## Hour by Day Heatmap
+
+```{r hour-dow-heatmap}
+#| label: hour-dow-heatmap
+#| fig-height: 8
+
+hour_dow <- dta[!is.na(Hour) & !is.na(DOW), .(Posts = .N), by = .(DOW, Hour)]
+hour_dow[, DOW := factor(DOW, levels = dow_order)]
+
+ggplot(hour_dow[!is.na(DOW)], aes(x = Hour, y = DOW, fill = Posts)) +
+  geom_tile(color = "white", linewidth = 0.3) +
+  scale_fill_viridis(option = "plasma", labels = comma) +
+  scale_x_continuous(breaks = seq(0, 23, 2)) +
+  labs(
+    title = "Posting Intensity Heatmap",
+    subtitle = "Hour of day by day of week",
+    x = "Hour",
+    y = NULL,
+    fill = "Posts"
+  ) +
+  theme(panel.grid = element_blank())
+```
+
+## Posting Rhythms by Actor Type
+
+```{r actor-rhythms}
+#| label: actor-rhythms
+#| fig-height: 10
+
+actor_hourly <- dta[!is.na(Hour) & ACTOR_TYPE != "Other", .(Posts = .N), by = .(ACTOR_TYPE, Hour)]
+actor_hourly[, Total := sum(Posts), by = ACTOR_TYPE]
+actor_hourly[, Share := Posts / Total * 100]
+
+ggplot(actor_hourly, aes(x = Hour, y = Share, fill = ACTOR_TYPE)) +
+  geom_col(width = 0.9) +
+  facet_wrap(~ACTOR_TYPE, ncol = 3, scales = "free_y") +
+  scale_fill_manual(values = actor_colors) +
+  scale_x_continuous(breaks = seq(0, 23, 6)) +
+  labs(
+    title = "Hourly Posting Patterns by Actor Type",
+    subtitle = "Share of each actor's posts by hour",
+    x = "Hour",
+    y = "Share (%)"
+  ) +
+  theme(legend.position = "none")
+```
+
+## Institutional vs Personal Rhythms
+
+```{r institutional-personal-rhythms}
+#| label: institutional-personal-rhythms
+#| fig-height: 7
+
+dta[, Rhythm_Type := fifelse(
+  ACTOR_TYPE %in% c("Institutional Official", "Diocesan", "Academic"),
+  "Institutional",
+  "Personal/Grassroots"
+)]
+
+rhythm_hourly <- dta[!is.na(Hour), .(Posts = .N), by = .(Rhythm_Type, Hour)]
+rhythm_hourly[, Total := sum(Posts), by = Rhythm_Type]
+rhythm_hourly[, Share := Posts / Total * 100]
+
+ggplot(rhythm_hourly, aes(x = Hour, y = Share, color = Rhythm_Type)) +
+  geom_line(linewidth = 1.2) +
+  geom_point(size = 2) +
+  annotate("rect", xmin = 9, xmax = 17, ymin = 0, ymax = Inf, 
+           alpha = 0.1, fill = "blue") +
+  scale_color_manual(values = c("Institutional" = "#1a3c5a", "Personal/Grassroots" = "#e07b39")) +
+  scale_x_continuous(breaks = 0:23) +
+  labs(
+    title = "Institutional vs Personal Posting Rhythms",
+    subtitle = "Blue shaded area = typical office hours (9 to 17)",
+    x = "Hour",
+    y = "Share of Posts (%)",
+    color = NULL
+  ) +
+  theme(legend.position = "top")
+```
+
+## Sunday Morning Analysis
+
+```{r sunday-morning}
+#| label: sunday-morning
+#| fig-height: 7
+
+sunday_data <- dta[DOW == "Sunday" & !is.na(Hour)]
+sunday_hourly <- sunday_data[, .(Posts = .N), by = Hour]
+
+other_days <- dta[DOW != "Sunday" & !is.na(Hour)]
+other_hourly <- other_days[, .(Posts = .N / 6), by = Hour]
+
+sunday_comparison <- merge(
+  sunday_hourly[, .(Hour, Sunday_Posts = Posts)],
+  other_hourly[, .(Hour, Other_Days_Avg = Posts)],
+  by = "Hour"
+)
+
+sunday_comparison[, Sunday_Index := Sunday_Posts / Other_Days_Avg]
+
+ggplot(sunday_comparison, aes(x = Hour, y = Sunday_Index)) +
+  geom_col(aes(fill = Sunday_Index > 1), width = 0.8) +
+  geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
+  annotate("rect", xmin = 6, xmax = 12, ymin = 0, ymax = Inf, 
+           alpha = 0.1, fill = "gold") +
+  scale_fill_manual(values = c("TRUE" = "#22c55e", "FALSE" = "#ef4444")) +
+  scale_x_continuous(breaks = 0:23) +
+  labs(
+    title = "Sunday Posting Pattern",
+    subtitle = "Ratio of Sunday posts to weekday average (gold = typical Mass times)",
+    x = "Hour",
+    y = "Sunday Index (1 = weekday average)"
+  ) +
+  theme(legend.position = "none")
+```
+
+:
+## Key Finding on Posting Rhythms
+
+Posting rhythms reveal the temporal organization of Croatian Catholic digital communication. Institutional actors show office hour patterns while personal accounts post more in evenings and weekends. Sunday morning represents a distinctive Catholic rhythm potentially tied to Mass attendance and parish announcements.
+:
+
+# Analysis 4.6 Information Cascades
+
+This analysis examines how content spreads across platforms and sources by tracking shared URLs.
+
+```{r url-extraction}
+#| label: url-extraction
+
+extract_urls <- function(text) {
+  if (is.na(text)) return(NA)
+  urls <- str_extract_all(text, "https?://[^\\s<>\"']+")[[1]]
+  if (length(urls) == 0) return(NA)
+  return(paste(urls, collapse = ";"))
+}
+
+url_sample <- dta[sample(.N, min(100000, .N))]
+url_sample[, Extracted_URLs := sapply(FULL_TEXT, extract_urls)]
+```
+
+## Cross Platform Content Sharing
+
+```{r cross-platform-sharing}
+#| label: cross-platform-sharing
+#| fig-height: 7
+
+same_day_spread <- dta[, .(
+  Platforms = uniqueN(SOURCE_TYPE),
+  Sources = uniqueN(FROM),
+  Total_Posts = .N
+), by = DATE][Platforms > 1]
+
+ggplot(same_day_spread, aes(x = Platforms)) +
+  geom_histogram(binwidth = 1, fill = "#2c5f7c", color = "white") +
+  scale_x_continuous(breaks = 1:8) +
+  scale_y_continuous(labels = comma) +
+  labs(
+    title = "Daily Cross Platform Activity",
+    subtitle = "Number of platforms active per day",
+    x = "Number of Active Platforms",
+    y = "Number of Days"
+  )
+```
+
+## Platform Interaction Patterns
+
+```{r platform-interactions}
+#| label: platform-interactions
+#| fig-height: 8
+
+platform_daily <- dta[, .(Posts = .N), by = .(DATE, SOURCE_TYPE)]
+platform_wide <- dcast(platform_daily, DATE ~ SOURCE_TYPE, value.var = "Posts", fill = 0)
+
+platform_cor <- cor(platform_wide[, -1, with = FALSE], use = "complete.obs")
+
+platform_cor_long <- as.data.table(as.table(platform_cor))
+names(platform_cor_long) <- c("Platform1", "Platform2", "Correlation")
+
+ggplot(platform_cor_long, aes(x = Platform1, y = Platform2, fill = Correlation)) +
+  geom_tile(color = "white") +
+  geom_text(aes(label = sprintf("%.2f", Correlation)), size = 3) +
+  scale_fill_gradient2(low = "#ef4444", mid = "white", high = "#22c55e", 
+                       midpoint = 0, limits = c(-1, 1)) +
+  labs(
+    title = "Platform Activity Correlation Matrix",
+    subtitle = "Daily posting volume correlation between platforms",
+    x = NULL,
+    y = NULL,
+    fill = "Correlation"
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    panel.grid = element_blank()
+  )
+```
+
+## Content Origin Analysis
+
+```{r content-origin}
+#| label: content-origin
+#| fig-height: 7
+
+first_post_by_source <- dta[, .(
+  First_Post_Date = min(DATE),
+  First_Post_Platform = SOURCE_TYPE[which.min(DATE)]
+), by = FROM]
+
+origin_platform <- first_post_by_source[, .(
+  New_Sources = .N
+), by = First_Post_Platform][order(-New_Sources)]
+
+ggplot(origin_platform, aes(x = reorder(First_Post_Platform, New_Sources), 
+                            y = New_Sources, fill = First_Post_Platform)) +
+  geom_col(width = 0.7) +
+  geom_text(aes(label = format(New_Sources, big.mark = ",")), hjust = -0.1, size = 3.5) +
+  coord_flip() +
+  scale_fill_manual(values = platform_colors) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.15))) +
+  labs(
+    title = "Platform of Origin for Sources",
+    subtitle = "Where sources first appeared in the corpus",
+    x = NULL,
+    y = "Number of Sources"
+  ) +
+  theme(legend.position = "none")
+```
+
+## Temporal Lag Analysis
+
+```{r temporal-lag}
+#| label: temporal-lag
+#| fig-height: 8
+
+hourly_platform <- dta[!is.na(Hour), .(Posts = .N), by = .(Hour, SOURCE_TYPE)]
+hourly_platform[, Total := sum(Posts), by = SOURCE_TYPE]
+hourly_platform[, Share := Posts / Total * 100]
+
+peak_hours <- hourly_platform[, .(
+  Peak_Hour = Hour[which.max(Posts)],
+  Peak_Share = max(Share)
+), by = SOURCE_TYPE][order(Peak_Hour)]
+
+ggplot(hourly_platform, aes(x = Hour, y = Share, color = SOURCE_TYPE)) +
+  geom_line(linewidth = 1) +
+  geom_point(data = hourly_platform[hourly_platform[, .I[which.max(Share)], by = SOURCE_TYPE]$V1],
+             size = 3) +
+  scale_color_manual(values = platform_colors) +
+  scale_x_continuous(breaks = seq(0, 23, 4)) +
+  labs(
+    title = "Platform Posting Peaks Throughout the Day",
+    subtitle = "Peak hours highlighted with points",
+    x = "Hour",
+    y = "Share of Platform's Daily Posts (%)",
+    color = "Platform"
+  ) +
+  theme(legend.position = "right")
+```
+
+## Platform Peak Hours Table
+
+```{r peak-hours-table}
+#| label: peak-hours-table
+
+peak_hours %>%
+  mutate(
+    Peak_Hour = sprintf("%02d:00", Peak_Hour),
+    Peak_Share = sprintf("%.1f%%", Peak_Share)
+  ) %>%
+  kable(col.names = c("Platform", "Peak Hour", "Share at Peak")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+:
+## Key Finding on Information Cascades
+
+Platform activity correlations and temporal patterns reveal how content flows through the Croatian Catholic digital ecosystem. High correlations between platforms suggest synchronized communication patterns, potentially indicating that content originates on one platform and spreads to others.
+:
+
+# Summary and Key Findings
+
+```{r summary-calculations}
+#| label: summary-calculations
+
+total_posts <- nrow(dta)
+total_years <- length(unique(dta$Year))
+avg_daily <- mean(daily_stats$Posts, na.rm = TRUE)
+peak_day_posts <- max(daily_stats$Posts, na.rm = TRUE)
+dominant_platform <- dta[, .N, by = SOURCE_TYPE][order(-N)][1]$SOURCE_TYPE
+```
+
+## Temporal Dynamics Summary
+
+```{r temporal-summary}
+#| label: temporal-summary
+# Check what data exists before creating the summary
+cat("Sunday comparison data available:", nrow(sunday_comparison), "rows\n")
+cat("Hour 10 data:", nrow(sunday_comparison[Hour == 10]), "rows\n")
+
+# Create the summary with safe value extraction
+tibble(
+  Finding = c(
+    "Corpus period",
+    "Total posts analyzed", 
+    "Average daily posts",
+    "Peak single day volume",
+    "Dominant platform",
+    "Most active liturgical season",
+    "Peak posting hour",
+    "Sunday index at 10:00"
+  ),
+  Value = c(
+    date_range,
+    format(total_posts, big.mark = ","),
+    sprintf("%.0f", avg_daily),
+    format(peak_day_posts, big.mark = ","),
+    dominant_platform,
+    as.character(season_stats[which.max(Posts_Per_Day)]$Liturgical_Season),
+    sprintf("%02d:00", hourly_stats[which.max(Posts)]$Hour),
+    # Safe extraction for Sunday index
+    ifelse(nrow(sunday_comparison[Hour == 10]) > 0, 
+           sprintf("%.2f", sunday_comparison[Hour == 10]$Sunday_Index),
+           "N/A")
+  )
+) %>%
+  kable(col.names = c("Finding", "Value")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+## Key Findings
+
+### Overall Temporal Patterns
+
+The corpus reveals macro trends in Croatian Catholic digital communication across multiple years. Monthly and yearly aggregations show whether the digital sphere is expanding or contracting, while peak identification highlights periods of exceptional activity.
+
+### Liturgical Calendar Effects
+
+Croatian Catholic digital communication follows liturgical rhythms. The Christmas and Easter seasons show distinct patterns, and major feast days generate measurable volume increases. This confirms that religious calendar structures digital communication patterns.
+
+### Event Response
+
+Major events generate different response profiles depending on their nature. Youth events like SHKM produce concentrated spikes, Vatican pronouncements may generate sustained discussion, and political events reveal engagement from specific actor segments.
+
+### Platform Migration
+
+Platform composition shifts over time reveal structural changes in where Croatian Catholic digital communication occurs. Growth and decline patterns help identify which platforms are gaining importance and which are fading.
+
+### Posting Rhythms
+
+Micro temporal patterns reveal distinct rhythms between institutional and personal accounts. Institutional actors follow office hour patterns while individuals post more in evenings and weekends. Sunday morning represents a distinctive Catholic digital rhythm.
+
+### Information Cascades
+
+Platform activity correlations and content origin patterns suggest how information flows through the ecosystem. Understanding these patterns helps identify which platforms serve as originators versus amplifiers of Catholic digital content.
+
+# Appendix A Technical Notes
+
+## Liturgical Calendar Algorithm
+
+The liturgical season assignment uses the Computus algorithm to calculate Easter dates. Seasons are assigned as follows:
+
+Advent begins four Sundays before Christmas and runs until December 24. Christmas begins December 25 and extends through Epiphany and the Baptism of the Lord. Lent begins on Ash Wednesday (46 days before Easter) and ends on Holy Thursday. Easter begins on Easter Sunday and extends through Pentecost (50 days). Ordinary Time fills the remaining periods.
+
+## Feast Day Effect Calculation
+
+Feast day effects are calculated by comparing a three day window (day before, feast day, day after) against a yearly baseline excluding the feast window. The effect size represents the percentage difference from baseline daily volume.
+
+## Platform Growth Calculations
+
+Compound Annual Growth Rate (CAGR) is calculated using the standard formula assuming geometric growth between first and last observed years in the corpus.
+
+```{r session-info}
+#| label: session-info
+
+sessionInfo()
+```

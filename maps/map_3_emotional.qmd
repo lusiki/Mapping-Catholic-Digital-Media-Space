@@ -1,0 +1,1093 @@
+---
+title: "DigiKat Map 3: Emotional Structure"
+subtitle: "Mapping Sentiment and Controversy in Croatian Catholic Digital Media"
+author: "DigiKat Project"
+date: today
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-location: left
+    number-sections: true
+    code-fold: true
+    code-summary: "Show code"
+    theme: cosmo
+    fig-width: 10
+    fig-height: 6
+execute:
+  warning: false
+  message: false
+---
+
+```{r setup}
+#| label: setup
+#| include: false
+
+# ============================================================================
+# CONFIGURATION - ADJUST THESE PARAMETERS
+# ============================================================================
+SAMPLE_PCT <- 0.10
+# ============================================================================
+
+library(tidyverse)
+library(data.table)
+library(scales)
+library(ggplot2)
+library(knitr)
+library(kableExtra)
+library(fmsb)
+library(viridis)
+library(ggridges)
+library(patchwork)
+library(lubridate)
+
+theme_set(theme_minimal(base_size = 12) +
+          theme(
+            plot.title = element_text(face = "bold", size = 14),
+            plot.subtitle = element_text(color = "gray40"),
+            legend.position = "bottom"
+          ))
+
+platform_colors <- c(
+  "web" = "#4285F4",
+  "facebook" = "#1877F2", 
+  "instagram" = "#E4405F",
+  "youtube" = "#FF0000",
+  "twitter" = "#1DA1F2",
+  "forum" = "#FF6600",
+  "reddit" = "#FF4500",
+  "comment" = "#808080"
+)
+
+actor_colors <- c(
+  "Institutional Official" = "#1a3c5a",
+  "Diocesan" = "#2c5f7c",
+  "Independent Media" = "#4a9c6d",
+  "Individual Priests" = "#e07b39",
+  "Charismatic Communities" = "#c44536",
+  "Religious Orders" = "#6b4c9a",
+  "Youth Organizations" = "#eab308",
+  "Academic" = "#64748b",
+  "Lay Influencers" = "#ec4899",
+  "Other" = "#94a3b8"
+)
+
+sentiment_colors <- c(
+  "positive" = "#22c55e",
+  "neutral" = "#64748b",
+  "negative" = "#ef4444"
+)
+
+emotion_colors <- c(
+  "LOVE" = "#ec4899",
+  "WOW" = "#f59e0b",
+  "HAHA" = "#84cc16",
+  "SAD" = "#3b82f6",
+  "ANGRY" = "#ef4444"
+)
+```
+
+# Introduction
+
+This document presents **Map 3 of the DigiKat project**, analyzing the emotional structure of Croatian Catholic digital media. The core question driving this analysis is **What emotional register characterizes Croatian Catholic digital communication, and where does controversy emerge?**
+
+```{r load-data}
+#| label: load-data
+
+dta <- readRDS("C:/Users/lsikic/Luka C/HKS/Projekti/Digitalni Kat/SHKM/DigiKat/data/merged_comprehensive.rds") %>%
+  filter(SOURCE_TYPE != "tiktok", !is.na(SOURCE_TYPE)) %>%
+  filter(DATE >= as.Date("2021-01-01") & DATE <= as.Date("2024-12-31")) %>%
+  filter(year >= 2021 & year <= 2024)
+
+setDT(dta)
+
+# Check data loaded
+cat("Data loaded:", nrow(dta), "rows\n")
+if (nrow(dta) == 0) stop("No data after filtering! Check your date filters.")
+
+n_posts <- nrow(dta)
+n_sources <- uniqueN(dta$FROM)
+date_range <- paste(min(dta$DATE), "to", max(dta$DATE))
+```
+
+```{r actor-classification}
+#| label: actor-classification
+
+secular_media_exclusions <- c(
+  "slobodnadalmacija", "vecernji", "index.hr", "jutarnji", "novilist",
+  "24sata", "direktno.hr", "nacional", "tportal", "dnevnik.hr", "hrt.hr",
+  "n1info", "rtl.hr", "net.hr", "telegram.hr", "story.hr", "forum.hr",
+  "glasistre", "dnevno.hr", "prigorski", "glas-slavonije", "croativ",
+  "oluja.info", "maxportal", "hkv.hr", "icv.hr", "novosti.hr", "7dnevno",
+  "mnovine", "sjever.hr", "dulist.hr", "pozega.eu", "sibenik.in",
+  "ferata.hr", "epodravina", "glasgacke", "radio-zlatar", "medjimurski.hr",
+  "sbperiskop", "zagorje-international", "pozeski", "novine.hr",
+  "dubrovnikinsider", "regionalni", "leportale", "varazdinske-vijesti",
+  "radionasice", "brodportal", "ljportal", "dubrovnikportal", "01portal",
+  "tomislavnews", "hia.com.hr", "portalnovosti", "antenazadar",
+  "dalmacijanews", "zadarskilist", "medjimurjepress",
+  "zagreb.info", "034portal", "057info", "inmemoriam", "magicus.info",
+  "book.hr", "mojzagreb.info", "skole.hr", "tvprofil", "cityportal",
+  "klikaj.hr", "lika-online", "priznajem.hr", "ploce.com",
+  "dragovoljac.com", "sbonline", "narod.hr", "infokiosk", "hrsvijet",
+  "tomislavcity", "vrisak.info", "croatia", "anonymous_user", "reddit",
+  "dalmacijadanas"
+)
+
+classify_actor_v2 <- function(from_value, url_value = NA) {
+  from_lower <- tolower(from_value)
+  url_lower <- tolower(ifelse(is.na(url_value), "", url_value))
+  
+  if (any(sapply(secular_media_exclusions, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Other")
+  }
+  
+  institutional_domains <- c("hkm.hr", "ika.hkm.hr", "hkr.hkm.hr", "hbk.hr")
+  if (any(sapply(institutional_domains, function(x) grepl(x, url_lower, fixed = TRUE)))) {
+    return("Institutional Official")
+  }
+  
+  institutional_names <- c(
+    "hrvatska katolička mreža", "katolička mreža", "hkm", 
+    "informativna katolička agencija", "ika", "hrvatski katolički radio", "hkr",
+    "hrvatska biskupska konferencija", "hbk"
+  )
+  if (any(sapply(institutional_names, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Institutional Official")
+  }
+  
+  diocesan_domains <- c(
+    "zg-nadbiskupija.hr", "biskupija-varazdinska.hr", "djos.hr", 
+    "biskupija-sj.hr", "rzs.hr", "rkc-sisak.hr", "zadarskanadbiskupija.hr",
+    "gospicko-senjska-biskupija.hr", "nadbiskupija-split.com",
+    "dubrovacka-biskupija.hr", "porec-biskupija.hr", "biskupija-kk.hr"
+  )
+  if (any(sapply(diocesan_domains, function(x) grepl(x, url_lower, fixed = TRUE)))) {
+    return("Diocesan")
+  }
+  
+  diocesan_names <- c(
+    "nadbiskupija", "biskupija", "župa ", "zupa ", 
+    "zagrebačka nadbiskupija", "splitsko-makarska", "đakovačko-osječka",
+    "riječka nadbiskupija", "zadarska nadbiskupija", "sisačka biskupija",
+    "varaždinska biskupija", "križevačka eparhija"
+  )
+  if (any(sapply(diocesan_names, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Diocesan")
+  }
+  
+  independent_media_exact <- c(
+    "laudatotv", "laudato tv", "laudato.tv", "laudato.hr",
+    "bitno.net", "bitno net", "glas koncila", "glaskoncila.hr",
+    "nova-eva.com", "nova eva", "katolički tjednik", "katolicki tjednik",
+    "kršćanska sadašnjost", "ks.hr", "verbum.hr", "verbum",
+    "mir i dobro", "gfranciskovic", "kfranciskovic", "totus tuus"
+  )
+  if (any(sapply(independent_media_exact, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Independent Media")
+  }
+  
+  independent_media_domains <- c(
+    "laudato.hr", "laudato.tv", "bitno.net", "glaskoncila.hr", 
+    "nova-eva.com", "verbum.hr", "ks.hr"
+  )
+  if (any(sapply(independent_media_domains, function(x) grepl(x, url_lower, fixed = TRUE)))) {
+    return("Independent Media")
+  }
+  
+  religious_orders_exact <- c(
+    "franjevci", "franjevački", "franjevacki", "ofm",
+    "isusovci", "družba isusova", "druzba isusova", "sj",
+    "dominikanci", "dominikanski", "op",
+    "salezijanci", "salezijanski", "sdb",
+    "karmelićani", "karmelicani", "karmel",
+    "benediktinci", "benediktinski", "osb",
+    "kapucini", "kapucinski", "ofmcap",
+    "pavlini", "pavlinski",
+    "trapisti", "cisterciti",
+    "sestre milosrdnice", "uršulinke", "klarise"
+  )
+  if (any(sapply(religious_orders_exact, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Religious Orders")
+  }
+  
+  charismatic_exact <- c(
+    "božja pobjeda", "bozja pobjeda", "bozjapobjeda",
+    "srce isusovo", "srceisuovo", "srceisusovo",
+    "muževni budite", "muzevni budite", "muzevnibudite",
+    "molitvena zajednica", "karizmatska", "cenacolo",
+    "emmanuel community", "emmanuel zajednica", "taize",
+    "neokatekumenski", "neokatekumenska", "kursiljo",
+    "fokolari", "fokolarini", "komunija i oslobođenje"
+  )
+  if (any(sapply(charismatic_exact, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Charismatic Communities")
+  }
+  
+  priest_patterns <- c(
+    "fra ", "don ", "vlč.", "vlc.", "msgr.", "mons.",
+    "padre ", "o. ", "pater ", "biskup ", "nadbiskup ",
+    "kardinal ", "svećenik", "svecenik"
+  )
+  if (any(sapply(priest_patterns, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Individual Priests")
+  }
+  
+  youth_exact <- c(
+    "frama", "shkm", "katolička mladež", "katolicka mladez",
+    "ministranti", "mladifra", "mladi fra", "kaem", "kud",
+    "sveučilišna kapelanija", "studentska kapelanija"
+  )
+  if (any(sapply(youth_exact, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Youth Organizations")
+  }
+  
+  academic_exact <- c(
+    "unicath", "katolički bogoslovni fakultet", "kbf",
+    "teologija", "filozofski fakultet družbe isusove", "hks.hr",
+    "hrvatsko katoličko sveučilište", "hku"
+  )
+  if (any(sapply(academic_exact, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Academic")
+  }
+  
+  lay_influencer_patterns <- c(
+    "vjera", "molitva", "isus", "krist", "gospa", "marija",
+    "hrana za dušu", "hrana za dusu", "dijete vjere",
+    "pulherissimus", "riječ", "rijec", "katolik",
+    "kršćan", "krscan", "evanđelje", "evandelje",
+    "duhovn", "svetac", "sveci", "biblij", "psalm",
+    "blagoslov", "nebo", "spasenje", "uskrs", "božić", "bozic"
+  )
+  
+  is_social_media <- grepl("facebook\\.com|youtube\\.com|instagram\\.com", url_lower) |
+                     !grepl("\\.", from_lower)
+  
+  if (is_social_media && any(sapply(lay_influencer_patterns, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Lay Influencers")
+  }
+  
+  return("Other")
+}
+
+# FIX: Use unlist to ensure ACTOR_TYPE is a character vector, not a list
+dta[, ACTOR_TYPE := unlist(mapply(classify_actor_v2, FROM, URL, SIMPLIFY = FALSE))]
+
+# Verify it's a character column
+cat("ACTOR_TYPE class:", class(dta$ACTOR_TYPE), "\n")
+cat("ACTOR_TYPE distribution:\n")
+print(table(dta$ACTOR_TYPE))
+```
+
+## Corpus Overview
+
+```{r corpus-overview}
+#| label: corpus-overview
+
+tibble(
+  Metric = c("Total posts", "Unique sources", "Date range", "Platforms",
+             "Posts with sentiment", "Posts with Facebook reactions"),
+  Value = c(
+    format(n_posts, big.mark = ","),
+    format(n_sources, big.mark = ","),
+    date_range,
+    paste(unique(dta$SOURCE_TYPE), collapse = ", "),
+    format(sum(!is.na(dta$AUTO_SENTIMENT)), big.mark = ","),
+    format(sum(dta$SOURCE_TYPE == "facebook" & !is.na(dta$LOVE_COUNT)), big.mark = ",")
+  )
+) %>%
+  kable(col.names = c("Metric", "Value")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+# Analysis 3.1 Sentiment Distribution
+
+```{r sentiment-overall}
+#| label: sentiment-overall
+
+sentiment_dist <- dta[!is.na(AUTO_SENTIMENT), .(
+  Count = .N
+), by = AUTO_SENTIMENT][order(-Count)]
+
+sentiment_dist[, Percentage := Count / sum(Count) * 100]
+
+ggplot(sentiment_dist, aes(x = reorder(AUTO_SENTIMENT, -Count), y = Count, fill = AUTO_SENTIMENT)) +
+  geom_col(width = 0.7) +
+  geom_text(aes(label = sprintf("%s\n(%.1f%%)", format(Count, big.mark = ","), Percentage)), 
+            vjust = -0.3, size = 4) +
+  scale_fill_manual(values = sentiment_colors) +
+  scale_y_continuous(labels = comma, expand = expansion(mult = c(0, 0.15))) +
+  labs(
+    title = "Overall Sentiment Distribution",
+    subtitle = "Distribution of automated sentiment classification across corpus",
+    x = NULL,
+    y = "Number of Posts"
+  ) +
+  theme(legend.position = "none")
+```
+
+## Sentiment by Platform
+
+```{r sentiment-by-platform}
+#| label: sentiment-by-platform
+#| fig-height: 8
+
+sentiment_platform <- dta[!is.na(AUTO_SENTIMENT), .(
+  Count = .N
+), by = .(SOURCE_TYPE, AUTO_SENTIMENT)]
+
+sentiment_platform[, Total := sum(Count), by = SOURCE_TYPE]
+sentiment_platform[, Percentage := Count / Total * 100]
+
+ggplot(sentiment_platform, aes(x = reorder(SOURCE_TYPE, Total), y = Percentage, fill = AUTO_SENTIMENT)) +
+  geom_col(position = "stack", width = 0.7) +
+  geom_text(aes(label = sprintf("%.1f%%", Percentage)), 
+            position = position_stack(vjust = 0.5), 
+            size = 3, color = "white") +
+  coord_flip() +
+  scale_fill_manual(values = sentiment_colors) +
+  labs(
+    title = "Sentiment Distribution by Platform",
+    subtitle = "Share of positive, neutral, and negative content per platform",
+    x = NULL,
+    y = "Percentage of Posts",
+    fill = "Sentiment"
+  ) +
+  theme(legend.position = "top")
+```
+
+## Sentiment by Actor Type
+
+```{r sentiment-by-actor}
+#| label: sentiment-by-actor
+#| fig-height: 9
+
+sentiment_actor <- dta[!is.na(AUTO_SENTIMENT), .(
+  Count = .N
+), by = .(ACTOR_TYPE, AUTO_SENTIMENT)]
+
+sentiment_actor[, Total := sum(Count), by = ACTOR_TYPE]
+sentiment_actor[, Percentage := Count / Total * 100]
+
+actor_order <- sentiment_actor[AUTO_SENTIMENT == "positive"][order(-Percentage)]$ACTOR_TYPE
+
+ggplot(sentiment_actor, aes(x = factor(ACTOR_TYPE, levels = rev(actor_order)), 
+                            y = Percentage, fill = AUTO_SENTIMENT)) +
+  geom_col(position = "stack", width = 0.7) +
+  coord_flip() +
+  scale_fill_manual(values = sentiment_colors) +
+  labs(
+    title = "Sentiment Distribution by Actor Type",
+    subtitle = "Ordered by share of positive content",
+    x = NULL,
+    y = "Percentage of Posts",
+    fill = "Sentiment"
+  ) +
+  theme(legend.position = "top")
+```
+
+## Sentiment Summary Table
+
+```{r sentiment-summary-table}
+#| label: sentiment-summary-table
+
+sentiment_summary <- dta[!is.na(AUTO_SENTIMENT), .(
+  Total_Posts = .N,
+  Positive = sum(AUTO_SENTIMENT == "positive"),
+  Neutral = sum(AUTO_SENTIMENT == "neutral"),
+  Negative = sum(AUTO_SENTIMENT == "negative")
+), by = ACTOR_TYPE]
+
+sentiment_summary[, `:=`(
+  Positive_Pct = Positive / Total_Posts * 100,
+  Neutral_Pct = Neutral / Total_Posts * 100,
+  Negative_Pct = Negative / Total_Posts * 100,
+  Positivity_Ratio = Positive / (Negative + 0.1)
+)]
+
+sentiment_summary[order(-Positive_Pct)] %>%
+  mutate(
+    Total_Posts = format(Total_Posts, big.mark = ","),
+    Positive_Pct = sprintf("%.1f%%", Positive_Pct),
+    Neutral_Pct = sprintf("%.1f%%", Neutral_Pct),
+    Negative_Pct = sprintf("%.1f%%", Negative_Pct),
+    Positivity_Ratio = sprintf("%.2f", Positivity_Ratio)
+  ) %>%
+  select(ACTOR_TYPE, Total_Posts, Positive_Pct, Neutral_Pct, Negative_Pct, Positivity_Ratio) %>%
+  kable(col.names = c("Actor Type", "Total Posts", "Positive %", "Neutral %", 
+                      "Negative %", "Positivity Ratio")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+## Sentiment and Engagement Relationship
+
+```{r sentiment-engagement}
+#| label: sentiment-engagement
+#| fig-height: 7
+
+sentiment_engagement <- dta[!is.na(AUTO_SENTIMENT) & !is.na(INTERACTIONS), .(
+  Mean_Interactions = mean(INTERACTIONS, na.rm = TRUE),
+  Median_Interactions = median(INTERACTIONS, na.rm = TRUE),
+  Total_Interactions = sum(INTERACTIONS, na.rm = TRUE),
+  Count = .N
+), by = AUTO_SENTIMENT]
+
+p1 <- ggplot(sentiment_engagement, aes(x = AUTO_SENTIMENT, y = Mean_Interactions, fill = AUTO_SENTIMENT)) +
+  geom_col(width = 0.6) +
+  geom_text(aes(label = sprintf("%.1f", Mean_Interactions)), vjust = -0.3) +
+  scale_fill_manual(values = sentiment_colors) +
+  labs(
+    title = "Mean Engagement by Sentiment",
+    x = NULL,
+    y = "Mean Interactions"
+  ) +
+  theme(legend.position = "none")
+
+p2 <- ggplot(dta[!is.na(AUTO_SENTIMENT) & INTERACTIONS > 0 & INTERACTIONS < quantile(INTERACTIONS, 0.99, na.rm = TRUE)], 
+             aes(x = AUTO_SENTIMENT, y = INTERACTIONS, fill = AUTO_SENTIMENT)) +
+  geom_violin(alpha = 0.7) +
+  geom_boxplot(width = 0.2, fill = "white", outlier.shape = NA) +
+  scale_fill_manual(values = sentiment_colors) +
+  scale_y_log10(labels = comma) +
+  labs(
+    title = "Engagement Distribution by Sentiment",
+    subtitle = "Log scale, top 1% outliers excluded",
+    x = NULL,
+    y = "Interactions (log scale)"
+  ) +
+  theme(legend.position = "none")
+
+p1 + p2
+```
+
+# Analysis 3.2 Emotional Fingerprinting
+
+Facebook reactions provide granular emotional data beyond simple sentiment.
+
+```{r emotion-prep}
+#| label: emotion-prep
+
+fb_data <- dta[SOURCE_TYPE == "facebook" & 
+               !is.na(LOVE_COUNT) & 
+               !is.na(INTERACTIONS) & 
+               INTERACTIONS > 0]
+
+cat("Facebook posts with reaction data:", nrow(fb_data), "\n")
+
+if (nrow(fb_data) > 0) {
+  fb_data[, `:=`(
+    LOVE_RATIO = LOVE_COUNT / INTERACTIONS,
+    WOW_RATIO = fifelse(is.na(WOW_COUNT), 0, WOW_COUNT) / INTERACTIONS,
+    HAHA_RATIO = fifelse(is.na(HAHA_COUNT), 0, HAHA_COUNT) / INTERACTIONS,
+    SAD_RATIO = fifelse(is.na(SAD_COUNT), 0, SAD_COUNT) / INTERACTIONS,
+    ANGRY_RATIO = fifelse(is.na(ANGRY_COUNT), 0, ANGRY_COUNT) / INTERACTIONS,
+    LIKE_RATIO = LIKE_COUNT / INTERACTIONS
+  )]
+  
+  fb_data[, Total_Reactions := fifelse(is.na(LOVE_COUNT), 0, LOVE_COUNT) + 
+                               fifelse(is.na(WOW_COUNT), 0, WOW_COUNT) + 
+                               fifelse(is.na(HAHA_COUNT), 0, HAHA_COUNT) + 
+                               fifelse(is.na(SAD_COUNT), 0, SAD_COUNT) + 
+                               fifelse(is.na(ANGRY_COUNT), 0, ANGRY_COUNT)]
+  
+  fb_data[Total_Reactions > 0, `:=`(
+    LOVE_SHARE = LOVE_COUNT / Total_Reactions,
+    WOW_SHARE = fifelse(is.na(WOW_COUNT), 0, WOW_COUNT) / Total_Reactions,
+    HAHA_SHARE = fifelse(is.na(HAHA_COUNT), 0, HAHA_COUNT) / Total_Reactions,
+    SAD_SHARE = fifelse(is.na(SAD_COUNT), 0, SAD_COUNT) / Total_Reactions,
+    ANGRY_SHARE = fifelse(is.na(ANGRY_COUNT), 0, ANGRY_COUNT) / Total_Reactions
+  )]
+}
+```
+
+## Overall Emotional Profile
+
+```{r emotion-overall}
+#| label: emotion-overall
+#| fig-height: 6
+
+if (nrow(fb_data) > 0) {
+  emotion_totals <- data.table(
+    Emotion = c("LOVE", "WOW", "HAHA", "SAD", "ANGRY"),
+    Total = c(
+      sum(fb_data$LOVE_COUNT, na.rm = TRUE),
+      sum(fb_data$WOW_COUNT, na.rm = TRUE),
+      sum(fb_data$HAHA_COUNT, na.rm = TRUE),
+      sum(fb_data$SAD_COUNT, na.rm = TRUE),
+      sum(fb_data$ANGRY_COUNT, na.rm = TRUE)
+    )
+  )
+  
+  emotion_totals[, Percentage := Total / sum(Total) * 100]
+  
+  ggplot(emotion_totals, aes(x = reorder(Emotion, -Total), y = Total, fill = Emotion)) +
+    geom_col(width = 0.7) +
+    geom_text(aes(label = sprintf("%s\n(%.1f%%)", format(Total, big.mark = ","), Percentage)), 
+              vjust = -0.2, size = 3.5) +
+    scale_fill_manual(values = emotion_colors) +
+    scale_y_continuous(labels = comma, expand = expansion(mult = c(0, 0.15))) +
+    labs(
+      title = "Overall Emotional Reaction Distribution",
+      subtitle = "Total Facebook reactions by type across all Catholic content",
+      x = NULL,
+      y = "Total Reactions"
+    ) +
+    theme(legend.position = "none")
+} else {
+  cat("No Facebook reaction data available.\n")
+}
+```
+
+## Emotional Fingerprints by Actor Type
+
+```{r emotion-fingerprint-actor}
+#| label: emotion-fingerprint-actor
+#| fig-height: 10
+
+if (nrow(fb_data) > 0 && sum(fb_data$Total_Reactions > 0, na.rm = TRUE) > 0) {
+  actor_emotions <- fb_data[Total_Reactions > 0, .(
+    LOVE = mean(LOVE_SHARE, na.rm = TRUE) * 100,
+    WOW = mean(WOW_SHARE, na.rm = TRUE) * 100,
+    HAHA = mean(HAHA_SHARE, na.rm = TRUE) * 100,
+    SAD = mean(SAD_SHARE, na.rm = TRUE) * 100,
+    ANGRY = mean(ANGRY_SHARE, na.rm = TRUE) * 100,
+    Posts = .N
+  ), by = ACTOR_TYPE]
+  
+  actor_emotions_long <- actor_emotions %>%
+    select(-Posts) %>%
+    pivot_longer(cols = -ACTOR_TYPE, names_to = "Emotion", values_to = "Share")
+  
+  ggplot(actor_emotions_long, aes(x = Emotion, y = Share, fill = Emotion)) +
+    geom_col(width = 0.7) +
+    facet_wrap(~ACTOR_TYPE, ncol = 3, scales = "free_y") +
+    scale_fill_manual(values = emotion_colors) +
+    labs(
+      title = "Emotional Fingerprints by Actor Type",
+      subtitle = "Mean share of each reaction type among emotional reactions",
+      x = NULL,
+      y = "Share of Emotional Reactions (%)"
+    ) +
+    theme(
+      legend.position = "none",
+      axis.text.x = element_text(angle = 45, hjust = 1)
+    )
+} else {
+  cat("Insufficient Facebook reaction data for actor analysis.\n")
+}
+```
+
+## Comparative Emotional Profiles
+
+```{r emotion-heatmap}
+#| label: emotion-heatmap
+#| fig-height: 8
+
+if (exists("actor_emotions") && nrow(actor_emotions) > 0) {
+  actor_emotions_matrix <- actor_emotions %>%
+    select(ACTOR_TYPE, LOVE, WOW, HAHA, SAD, ANGRY) %>%
+    pivot_longer(cols = -ACTOR_TYPE, names_to = "Emotion", values_to = "Share")
+  
+  ggplot(actor_emotions_matrix, aes(x = Emotion, y = ACTOR_TYPE, fill = Share)) +
+    geom_tile(color = "white", linewidth = 0.5) +
+    geom_text(aes(label = sprintf("%.1f%%", Share)), size = 3) +
+    scale_fill_viridis(option = "plasma", direction = -1) +
+    labs(
+      title = "Emotional Profile Heatmap by Actor Type",
+      subtitle = "Mean share of each reaction type",
+      x = NULL,
+      y = NULL,
+      fill = "Share %"
+    ) +
+    theme(
+      axis.text.x = element_text(angle = 0, hjust = 0.5),
+      panel.grid = element_blank()
+    )
+}
+```
+
+## LOVE Ratio Analysis
+
+```{r love-ratio-analysis}
+#| label: love-ratio-analysis
+#| fig-height: 7
+
+if (nrow(fb_data) > 0 && sum(fb_data$Total_Reactions > 0, na.rm = TRUE) > 0) {
+  love_by_actor <- fb_data[Total_Reactions > 0, .(
+    Mean_Love_Share = mean(LOVE_SHARE, na.rm = TRUE) * 100,
+    Median_Love_Share = median(LOVE_SHARE, na.rm = TRUE) * 100,
+    SD_Love_Share = sd(LOVE_SHARE, na.rm = TRUE) * 100,
+    Posts = .N
+  ), by = ACTOR_TYPE][order(-Mean_Love_Share)]
+  
+  ggplot(love_by_actor, aes(x = reorder(ACTOR_TYPE, Mean_Love_Share), 
+                            y = Mean_Love_Share, fill = ACTOR_TYPE)) +
+    geom_col(width = 0.7) +
+    geom_errorbar(aes(ymin = Mean_Love_Share - SD_Love_Share/sqrt(Posts),
+                      ymax = Mean_Love_Share + SD_Love_Share/sqrt(Posts)),
+                  width = 0.2) +
+    geom_text(aes(label = sprintf("%.1f%%", Mean_Love_Share)), hjust = -0.1, size = 3.5) +
+    coord_flip() +
+    scale_fill_manual(values = actor_colors) +
+    scale_y_continuous(expand = expansion(mult = c(0, 0.15))) +
+    labs(
+      title = "LOVE Reaction Share by Actor Type",
+      subtitle = "Mean percentage of LOVE among all emotional reactions",
+      x = NULL,
+      y = "LOVE Share (%)"
+    ) +
+    theme(legend.position = "none")
+}
+```
+
+## ANGRY Ratio Analysis
+
+```{r angry-ratio-analysis}
+#| label: angry-ratio-analysis
+#| fig-height: 7
+
+if (nrow(fb_data) > 0 && sum(fb_data$Total_Reactions > 0, na.rm = TRUE) > 0) {
+  angry_by_actor <- fb_data[Total_Reactions > 0, .(
+    Mean_Angry_Share = mean(ANGRY_SHARE, na.rm = TRUE) * 100,
+    Median_Angry_Share = median(ANGRY_SHARE, na.rm = TRUE) * 100,
+    SD_Angry_Share = sd(ANGRY_SHARE, na.rm = TRUE) * 100,
+    Posts = .N
+  ), by = ACTOR_TYPE][order(-Mean_Angry_Share)]
+  
+  ggplot(angry_by_actor, aes(x = reorder(ACTOR_TYPE, Mean_Angry_Share), 
+                             y = Mean_Angry_Share, fill = ACTOR_TYPE)) +
+    geom_col(width = 0.7) +
+    geom_errorbar(aes(ymin = pmax(0, Mean_Angry_Share - SD_Angry_Share/sqrt(Posts)),
+                      ymax = Mean_Angry_Share + SD_Angry_Share/sqrt(Posts)),
+                  width = 0.2) +
+    geom_text(aes(label = sprintf("%.2f%%", Mean_Angry_Share)), hjust = -0.1, size = 3.5) +
+    coord_flip() +
+    scale_fill_manual(values = actor_colors) +
+    scale_y_continuous(expand = expansion(mult = c(0, 0.2))) +
+    labs(
+      title = "ANGRY Reaction Share by Actor Type",
+      subtitle = "Mean percentage of ANGRY among all emotional reactions",
+      x = NULL,
+      y = "ANGRY Share (%)"
+    ) +
+    theme(legend.position = "none")
+}
+```
+
+## Emotional Profile Table
+
+```{r emotion-table}
+#| label: emotion-table
+
+if (exists("actor_emotions") && nrow(actor_emotions) > 0) {
+  actor_emotions %>%
+    mutate(
+      Posts = format(Posts, big.mark = ","),
+      LOVE = sprintf("%.1f%%", LOVE),
+      WOW = sprintf("%.1f%%", WOW),
+      HAHA = sprintf("%.1f%%", HAHA),
+      SAD = sprintf("%.1f%%", SAD),
+      ANGRY = sprintf("%.1f%%", ANGRY)
+    ) %>%
+    arrange(desc(as.numeric(gsub("%", "", LOVE)))) %>%
+    kable(col.names = c("Actor Type", "LOVE", "WOW", "HAHA", "SAD", "ANGRY", "Posts")) %>%
+    kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+}
+```
+
+# Analysis 3.3 Controversy Detection
+
+```{r controversy-index}
+#| label: controversy-index
+
+if (nrow(fb_data) > 0) {
+  fb_data[, Controversy_Index := (fifelse(is.na(ANGRY_COUNT), 0, ANGRY_COUNT) / (INTERACTIONS + 1)) * log(INTERACTIONS + 1)]
+  
+  controversy_threshold <- quantile(fb_data$Controversy_Index, 0.95, na.rm = TRUE)
+  fb_data[, Is_Controversial := Controversy_Index > controversy_threshold]
+  
+  cat("Controversy threshold (95th percentile):", controversy_threshold, "\n")
+  cat("Controversial posts:", sum(fb_data$Is_Controversial, na.rm = TRUE), "\n")
+}
+```
+
+## Controversy Index Distribution
+
+```{r controversy-distribution}
+#| label: controversy-distribution
+#| fig-height: 6
+
+if (nrow(fb_data) > 0 && sum(fb_data$Controversy_Index > 0, na.rm = TRUE) > 0) {
+  ggplot(fb_data[Controversy_Index > 0], aes(x = Controversy_Index)) +
+    geom_histogram(bins = 50, fill = "#ef4444", alpha = 0.7, color = "white") +
+    geom_vline(xintercept = controversy_threshold, linetype = "dashed", color = "darkred", linewidth = 1) +
+    annotate("text", x = controversy_threshold * 1.5, y = Inf, vjust = 2,
+             label = sprintf("95th percentile threshold\n(%.3f)", controversy_threshold),
+             size = 3.5) +
+    scale_x_log10() +
+    scale_y_continuous(labels = comma) +
+    labs(
+      title = "Controversy Index Distribution",
+      subtitle = "Controversy Index = (ANGRY / INTERACTIONS) × log(INTERACTIONS)",
+      x = "Controversy Index (log scale)",
+      y = "Number of Posts"
+    )
+}
+```
+
+## Most Controversial Posts
+
+```{r top-controversial}
+#| label: top-controversial
+
+if (nrow(fb_data) > 0) {
+  top_controversial <- fb_data[order(-Controversy_Index)][1:min(50, nrow(fb_data)), .(
+    Rank = .I,
+    FROM,
+    ACTOR_TYPE,
+    DATE,
+    TITLE_SHORT = substr(TITLE, 1, 60),
+    INTERACTIONS,
+    ANGRY_COUNT,
+    Controversy_Index
+  )]
+  
+  top_controversial[1:min(20, nrow(top_controversial))] %>%
+    mutate(
+      INTERACTIONS = format(INTERACTIONS, big.mark = ","),
+      Controversy_Index = sprintf("%.3f", Controversy_Index)
+    ) %>%
+    kable(col.names = c("Rank", "Source", "Actor Type", "Date", "Title", 
+                        "Interactions", "ANGRY", "Index")) %>%
+    kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE) %>%
+    scroll_box(height = "500px")
+}
+```
+
+## Controversy by Actor Type
+
+```{r controversy-by-actor}
+#| label: controversy-by-actor
+#| fig-height: 8
+
+if (nrow(fb_data) > 0) {
+  controversy_actor <- fb_data[, .(
+    Mean_Controversy = mean(Controversy_Index, na.rm = TRUE),
+    Median_Controversy = median(Controversy_Index, na.rm = TRUE),
+    Max_Controversy = max(Controversy_Index, na.rm = TRUE),
+    Controversial_Posts = sum(Is_Controversial, na.rm = TRUE),
+    Total_Posts = .N,
+    Controversy_Rate = sum(Is_Controversial, na.rm = TRUE) / .N * 100
+  ), by = ACTOR_TYPE][order(-Mean_Controversy)]
+  
+  ggplot(controversy_actor, aes(x = reorder(ACTOR_TYPE, Mean_Controversy), 
+                                 y = Mean_Controversy, fill = ACTOR_TYPE)) +
+    geom_col(width = 0.7) +
+    geom_text(aes(label = sprintf("%.4f", Mean_Controversy)), hjust = -0.1, size = 3.5) +
+    coord_flip() +
+    scale_fill_manual(values = actor_colors) +
+    scale_y_continuous(expand = expansion(mult = c(0, 0.2))) +
+    labs(
+      title = "Mean Controversy Index by Actor Type",
+      subtitle = "Higher values indicate more controversial content on average",
+      x = NULL,
+      y = "Mean Controversy Index"
+    ) +
+    theme(legend.position = "none")
+}
+```
+
+## Controversy Rate by Actor Type
+
+```{r controversy-rate}
+#| label: controversy-rate
+#| fig-height: 8
+
+if (exists("controversy_actor") && nrow(controversy_actor) > 0) {
+  ggplot(controversy_actor, aes(x = reorder(ACTOR_TYPE, Controversy_Rate), 
+                                 y = Controversy_Rate, fill = ACTOR_TYPE)) +
+    geom_col(width = 0.7) +
+    geom_text(aes(label = sprintf("%.1f%%", Controversy_Rate)), hjust = -0.1, size = 3.5) +
+    coord_flip() +
+    scale_fill_manual(values = actor_colors) +
+    scale_y_continuous(expand = expansion(mult = c(0, 0.2))) +
+    labs(
+      title = "Controversy Rate by Actor Type",
+      subtitle = "Percentage of posts exceeding 95th percentile controversy threshold",
+      x = NULL,
+      y = "Controversy Rate (%)"
+    ) +
+    theme(legend.position = "none")
+}
+```
+
+## Controversy Summary Table
+
+```{r controversy-table}
+#| label: controversy-table
+
+if (exists("controversy_actor") && nrow(controversy_actor) > 0) {
+  controversy_actor %>%
+    mutate(
+      Total_Posts = format(Total_Posts, big.mark = ","),
+      Controversial_Posts = format(Controversial_Posts, big.mark = ","),
+      Mean_Controversy = sprintf("%.4f", Mean_Controversy),
+      Median_Controversy = sprintf("%.4f", Median_Controversy),
+      Max_Controversy = sprintf("%.3f", Max_Controversy),
+      Controversy_Rate = sprintf("%.2f%%", Controversy_Rate)
+    ) %>%
+    select(ACTOR_TYPE, Total_Posts, Controversial_Posts, Controversy_Rate, 
+           Mean_Controversy, Median_Controversy, Max_Controversy) %>%
+    kable(col.names = c("Actor Type", "Total Posts", "Controversial Posts", 
+                        "Controversy Rate", "Mean Index", "Median Index", "Max Index")) %>%
+    kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+}
+```
+
+## Controversy Over Time
+
+```{r controversy-temporal}
+#| label: controversy-temporal
+#| fig-height: 7
+
+if (nrow(fb_data) > 0) {
+  controversy_time <- fb_data[, .(
+    Mean_Controversy = mean(Controversy_Index, na.rm = TRUE),
+    Controversial_Posts = sum(Is_Controversial, na.rm = TRUE),
+    Total_Posts = .N
+  ), by = .(Year = year(DATE), Month = month(DATE))]
+  
+  controversy_time[, Date := as.Date(paste(Year, Month, "01", sep = "-"))]
+  controversy_time[, Controversy_Rate := Controversial_Posts / Total_Posts * 100]
+  
+  ggplot(controversy_time[!is.na(Date)], aes(x = Date, y = Mean_Controversy)) +
+    geom_line(color = "#ef4444", linewidth = 1) +
+    geom_smooth(method = "loess", se = TRUE, color = "darkred", fill = "pink", alpha = 0.3) +
+    scale_x_date(date_labels = "%Y-%m", date_breaks = "6 months") +
+    labs(
+      title = "Controversy Index Over Time",
+      subtitle = "Monthly mean controversy index with LOESS trend",
+      x = NULL,
+      y = "Mean Controversy Index"
+    ) +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+}
+```
+
+## Top Controversial Sources
+
+```{r top-controversial-sources}
+#| label: top-controversial-sources
+
+if (nrow(fb_data) > 0) {
+  source_controversy <- fb_data[, .(
+    Mean_Controversy = mean(Controversy_Index, na.rm = TRUE),
+    Max_Controversy = max(Controversy_Index, na.rm = TRUE),
+    Controversial_Posts = sum(Is_Controversial, na.rm = TRUE),
+    Total_Posts = .N,
+    Total_ANGRY = sum(ANGRY_COUNT, na.rm = TRUE),
+    ACTOR_TYPE = first(ACTOR_TYPE)
+  ), by = FROM][Total_Posts >= 20][order(-Mean_Controversy)]
+  
+  if (nrow(source_controversy) > 0) {
+    source_controversy[1:min(20, nrow(source_controversy))] %>%
+      mutate(
+        Total_Posts = format(Total_Posts, big.mark = ","),
+        Total_ANGRY = format(Total_ANGRY, big.mark = ","),
+        Mean_Controversy = sprintf("%.4f", Mean_Controversy),
+        Max_Controversy = sprintf("%.3f", Max_Controversy)
+      ) %>%
+      select(FROM, ACTOR_TYPE, Total_Posts, Controversial_Posts, 
+             Mean_Controversy, Max_Controversy, Total_ANGRY) %>%
+      kable(col.names = c("Source", "Actor Type", "Posts", "Controversial", 
+                          "Mean Index", "Max Index", "Total ANGRY")) %>%
+      kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+  }
+}
+```
+
+# Analysis 3.4 Emotion by Sentiment
+
+```{r emotion-sentiment-cross}
+#| label: emotion-sentiment-cross
+
+if (nrow(fb_data) > 0 && sum(fb_data$Total_Reactions > 0, na.rm = TRUE) > 0) {
+  emotion_sentiment <- fb_data[!is.na(AUTO_SENTIMENT) & Total_Reactions > 0, .(
+    LOVE = mean(LOVE_SHARE, na.rm = TRUE) * 100,
+    WOW = mean(WOW_SHARE, na.rm = TRUE) * 100,
+    HAHA = mean(HAHA_SHARE, na.rm = TRUE) * 100,
+    SAD = mean(SAD_SHARE, na.rm = TRUE) * 100,
+    ANGRY = mean(ANGRY_SHARE, na.rm = TRUE) * 100,
+    Posts = .N
+  ), by = AUTO_SENTIMENT]
+  
+  emotion_sentiment_long <- emotion_sentiment %>%
+    select(-Posts) %>%
+    pivot_longer(cols = -AUTO_SENTIMENT, names_to = "Emotion", values_to = "Share")
+  
+  ggplot(emotion_sentiment_long, aes(x = Emotion, y = Share, fill = Emotion)) +
+    geom_col(width = 0.7) +
+    facet_wrap(~AUTO_SENTIMENT, ncol = 3) +
+    scale_fill_manual(values = emotion_colors) +
+    labs(
+      title = "Emotional Reactions by Automated Sentiment",
+      subtitle = "Mean reaction share within each sentiment category",
+      x = NULL,
+      y = "Share of Emotional Reactions (%)"
+    ) +
+    theme(
+      legend.position = "none",
+      axis.text.x = element_text(angle = 45, hjust = 1)
+    )
+}
+```
+
+## Sentiment Validation Through Reactions
+
+```{r sentiment-validation}
+#| label: sentiment-validation
+#| fig-height: 7
+
+if (nrow(fb_data) > 0 && sum(fb_data$Total_Reactions > 0, na.rm = TRUE) > 0) {
+  validation_metrics <- fb_data[!is.na(AUTO_SENTIMENT) & Total_Reactions > 0, .(
+    Mean_Love = mean(LOVE_SHARE, na.rm = TRUE),
+    Mean_Angry = mean(ANGRY_SHARE, na.rm = TRUE),
+    Mean_Sad = mean(SAD_SHARE, na.rm = TRUE),
+    Positive_Ratio = mean(LOVE_SHARE, na.rm = TRUE) / (mean(ANGRY_SHARE, na.rm = TRUE) + mean(SAD_SHARE, na.rm = TRUE) + 0.001)
+  ), by = AUTO_SENTIMENT]
+  
+  validation_metrics %>%
+    mutate(
+      Mean_Love = sprintf("%.1f%%", Mean_Love * 100),
+      Mean_Angry = sprintf("%.1f%%", Mean_Angry * 100),
+      Mean_Sad = sprintf("%.1f%%", Mean_Sad * 100),
+      Positive_Ratio = sprintf("%.2f", Positive_Ratio)
+    ) %>%
+    kable(col.names = c("Auto Sentiment", "Mean LOVE", "Mean ANGRY", "Mean SAD", 
+                        "Positive Ratio (LOVE / (ANGRY+SAD))")) %>%
+    kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+}
+```
+
+# Analysis 3.5 Emotional Temporal Patterns
+
+```{r emotion-temporal}
+#| label: emotion-temporal
+#| fig-height: 8
+
+if (nrow(fb_data) > 0 && sum(fb_data$Total_Reactions > 0, na.rm = TRUE) > 0) {
+  emotion_monthly <- fb_data[Total_Reactions > 0, .(
+    LOVE = mean(LOVE_SHARE, na.rm = TRUE) * 100,
+    ANGRY = mean(ANGRY_SHARE, na.rm = TRUE) * 100,
+    SAD = mean(SAD_SHARE, na.rm = TRUE) * 100,
+    Posts = .N
+  ), by = .(Year = year(DATE), Month = month(DATE))]
+  
+  emotion_monthly[, Date := as.Date(paste(Year, Month, "01", sep = "-"))]
+  
+  emotion_monthly_long <- emotion_monthly %>%
+    select(Date, LOVE, ANGRY, SAD) %>%
+    pivot_longer(cols = -Date, names_to = "Emotion", values_to = "Share")
+  
+  ggplot(emotion_monthly_long[!is.na(Date)], aes(x = Date, y = Share, color = Emotion)) +
+    geom_line(linewidth = 1) +
+    geom_smooth(method = "loess", se = FALSE, linetype = "dashed", linewidth = 0.7) +
+    scale_color_manual(values = c("LOVE" = "#ec4899", "ANGRY" = "#ef4444", "SAD" = "#3b82f6")) +
+    scale_x_date(date_labels = "%Y-%m", date_breaks = "6 months") +
+    labs(
+      title = "Key Emotional Reactions Over Time",
+      subtitle = "Monthly mean share of LOVE, ANGRY, and SAD reactions",
+      x = NULL,
+      y = "Share of Emotional Reactions (%)",
+      color = "Reaction"
+    ) +
+    theme(
+      axis.text.x = element_text(angle = 45, hjust = 1),
+      legend.position = "top"
+    )
+}
+```
+
+## Day of Week Emotional Patterns
+
+```{r emotion-dayofweek}
+#| label: emotion-dayofweek
+#| fig-height: 7
+
+if (nrow(fb_data) > 0 && sum(fb_data$Total_Reactions > 0, na.rm = TRUE) > 0) {
+  # Use lubridate::wday explicitly to avoid data.table conflict
+  fb_data[, DOW := lubridate::wday(DATE, label = TRUE, abbr = FALSE)]
+  
+  emotion_dow <- fb_data[Total_Reactions > 0 & !is.na(DOW), .(
+    LOVE = mean(LOVE_SHARE, na.rm = TRUE) * 100,
+    ANGRY = mean(ANGRY_SHARE, na.rm = TRUE) * 100,
+    Posts = .N
+  ), by = DOW]
+  
+  emotion_dow_long <- emotion_dow %>%
+    select(DOW, LOVE, ANGRY) %>%
+    pivot_longer(cols = -DOW, names_to = "Emotion", values_to = "Share")
+  
+  ggplot(emotion_dow_long, aes(x = DOW, y = Share, fill = Emotion)) +
+    geom_col(position = "dodge", width = 0.7) +
+    scale_fill_manual(values = c("LOVE" = "#ec4899", "ANGRY" = "#ef4444")) +
+    labs(
+      title = "LOVE and ANGRY Reactions by Day of Week",
+      subtitle = "Mean share of reactions by posting day",
+      x = NULL,
+      y = "Share of Emotional Reactions (%)",
+      fill = "Reaction"
+    ) +
+    theme(legend.position = "top")
+}
+```
+
+# Summary and Key Findings
+
+```{r summary-stats}
+#| label: summary-stats
+
+total_with_sentiment <- sum(!is.na(dta$AUTO_SENTIMENT))
+positive_pct <- sum(dta$AUTO_SENTIMENT == "positive", na.rm = TRUE) / total_with_sentiment * 100
+negative_pct <- sum(dta$AUTO_SENTIMENT == "negative", na.rm = TRUE) / total_with_sentiment * 100
+
+fb_total <- nrow(fb_data)
+mean_love_share <- if(fb_total > 0) mean(fb_data$LOVE_SHARE, na.rm = TRUE) * 100 else 0
+mean_angry_share <- if(fb_total > 0) mean(fb_data$ANGRY_SHARE, na.rm = TRUE) * 100 else 0
+controversial_count <- if(fb_total > 0) sum(fb_data$Is_Controversial, na.rm = TRUE) else 0
+```
+
+## Summary Table
+
+```{r final-summary}
+#| label: final-summary
+
+tibble(
+  Finding = c(
+    "Total posts with sentiment data",
+    "Positive sentiment share",
+    "Negative sentiment share",
+    "Facebook posts with reaction data",
+    "Mean LOVE share of reactions",
+    "Mean ANGRY share of reactions",
+    "Posts exceeding controversy threshold"
+  ),
+  Value = c(
+    format(total_with_sentiment, big.mark = ","),
+    sprintf("%.1f%%", positive_pct),
+    sprintf("%.1f%%", negative_pct),
+    format(fb_total, big.mark = ","),
+    sprintf("%.1f%%", mean_love_share),
+    sprintf("%.2f%%", mean_angry_share),
+    format(controversial_count, big.mark = ",")
+  )
+) %>%
+  kable(col.names = c("Finding", "Value")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+```{r session-info}
+#| label: session-info
+
+sessionInfo()
+```
