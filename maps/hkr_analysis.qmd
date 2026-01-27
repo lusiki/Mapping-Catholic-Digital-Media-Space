@@ -1,0 +1,202 @@
+---
+title: "HKR Analysis - Hrvatski Katolički Radio"
+subtitle: "Deep dive into HKR activity across digital platforms"
+author: "DigiKat Project"
+date: today
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    code-fold: true
+    theme: cosmo
+    embed-resources: true
+---
+
+```{r setup}
+#| label: setup
+#| include: false
+
+# Load required packages
+library(tidyverse)
+library(data.table)
+library(scales)
+library(ggplot2)
+library(knitr)
+library(kableExtra)
+library(lubridate)
+
+# Set theme for all plots
+theme_set(theme_minimal(base_size = 12) +
+          theme(
+            plot.title = element_text(face = "bold", size = 14),
+            plot.subtitle = element_text(color = "gray40"),
+            legend.position = "bottom"
+          ))
+
+# Color palette for platforms
+platform_colors <- c(
+  "web" = "#4285F4",
+  "facebook" = "#1877F2", 
+  "instagram" = "#E4405F",
+  "youtube" = "#FF0000",
+  "twitter" = "#1DA1F2",
+  "forum" = "#FF6600",
+  "reddit" = "#FF4500",
+  "comment" = "#808080"
+)
+```
+
+```{r load-data}
+#| label: load-data
+#| message: false
+
+# Load the merged comprehensive dataset
+dta <- readRDS("C:/Users/lsikic/Luka C/HKS/Projekti/Digitalni Kat/SHKM/DigiKat/data/merged_comprehensive.rds")
+
+# Convert to data.table for efficient processing
+setDT(dta)
+
+# Ensure DATE is proper date format
+dta[, DATE := as.Date(DATE)]
+
+cat("Dataset loaded successfully.\n")
+cat(paste0("Total records: ", format(nrow(dta), big.mark = ","), "\n"))
+cat(paste0("Date range: ", min(dta$DATE, na.rm = TRUE), " to ", max(dta$DATE, na.rm = TRUE), "\n"))
+```
+
+# HKR Overview
+
+```{r hkr-extract}
+#| label: hkr-extract
+
+# Extract all HKR posts
+hkr_posts <- dta[grepl("hkr|hrvatski katolički radio|hrvatski katolicki radio", FROM, ignore.case = TRUE)]
+
+cat("=== HKR DATA SUMMARY ===\n")
+cat(paste0("Total HKR posts: ", nrow(hkr_posts), "\n"))
+cat(paste0("Source types: ", paste(unique(hkr_posts$SOURCE_TYPE), collapse = ", "), "\n"))
+cat(paste0("Date range: ", min(hkr_posts$DATE, na.rm = TRUE), " to ", max(hkr_posts$DATE, na.rm = TRUE), "\n"))
+```
+
+# Activity by Platform
+
+```{r hkr-by-source}
+#| label: hkr-by-source
+
+# HKR activity across all source types
+hkr_by_source <- hkr_posts[, .(
+  Posts = .N,
+  Total_Interactions = sum(INTERACTIONS, na.rm = TRUE),
+  Mean_Interactions = mean(INTERACTIONS, na.rm = TRUE),
+  Median_Interactions = median(INTERACTIONS, na.rm = TRUE),
+  Total_Reach = sum(REACH, na.rm = TRUE),
+  Mean_Reach = mean(REACH, na.rm = TRUE),
+  Mean_Followers = mean(FOLLOWERS_COUNT, na.rm = TRUE),
+  Engagement_Rate = fifelse(mean(FOLLOWERS_COUNT, na.rm = TRUE) > 0,
+                            mean(INTERACTIONS, na.rm = TRUE) / mean(FOLLOWERS_COUNT, na.rm = TRUE) * 100,
+                            NA_real_),
+  First_Post = min(DATE, na.rm = TRUE),
+  Last_Post = max(DATE, na.rm = TRUE)
+), by = SOURCE_TYPE][order(-Total_Interactions)]
+
+hkr_by_source %>%
+  mutate(
+    Posts = format(Posts, big.mark = ","),
+    Total_Interactions = format(Total_Interactions, big.mark = ","),
+    Mean_Interactions = format(round(Mean_Interactions, 1), big.mark = ","),
+    Median_Interactions = format(Median_Interactions, big.mark = ","),
+    Total_Reach = format(Total_Reach, big.mark = ","),
+    Mean_Reach = format(round(Mean_Reach, 1), big.mark = ","),
+    Mean_Followers = format(round(Mean_Followers), big.mark = ","),
+    Engagement_Rate = sprintf("%.2f%%", Engagement_Rate),
+    First_Post = as.character(First_Post),
+    Last_Post = as.character(Last_Post)
+  ) %>%
+  kable() %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+# Temporal Patterns
+
+```{r hkr-timeline}
+#| label: hkr-timeline
+#| fig-width: 10
+#| fig-height: 6
+
+# Timeline visualization
+hkr_posts[, .(
+  SOURCE_TYPE,
+  DATE,
+  INTERACTIONS
+)] %>%
+  mutate(YearMonth = floor_date(DATE, "month")) %>%
+  group_by(SOURCE_TYPE, YearMonth) %>%
+  summarise(
+    Posts = n(),
+    Total_Interactions = sum(INTERACTIONS, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  ggplot(aes(x = YearMonth, y = Posts, color = SOURCE_TYPE, group = SOURCE_TYPE)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 2) +
+  scale_color_manual(values = platform_colors) +
+  labs(
+    title = "HKR Posting Activity Over Time by Source Type",
+    x = "Date",
+    y = "Number of Posts",
+    color = "Source Type"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+```
+
+# Top Posts
+
+```{r hkr-top-posts}
+#| label: hkr-top-posts
+
+# Show top 20 posts by interactions
+hkr_posts[order(-INTERACTIONS)][1:20, .(
+  DATE,
+  SOURCE_TYPE,
+  TITLE,
+  INTERACTIONS,
+  REACH,
+  URL
+)] %>%
+  mutate(
+    DATE = as.character(DATE),
+    INTERACTIONS = format(INTERACTIONS, big.mark = ","),
+    REACH = format(REACH, big.mark = ",")
+  ) %>%
+  kable() %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE) %>%
+  scroll_box(height = "500px")
+```
+
+# All HKR Posts
+
+```{r hkr-all-posts}
+#| label: hkr-all-posts
+
+# Show all HKR posts sorted from newest to oldest
+hkr_posts[order(-DATE), .(
+  FROM,
+  DATE,
+  SOURCE_TYPE,
+  TITLE,
+  INTERACTIONS,
+  REACH,
+  FOLLOWERS_COUNT,
+  URL
+)] %>%
+  mutate(
+    DATE = as.character(DATE),
+    INTERACTIONS = format(INTERACTIONS, big.mark = ","),
+    REACH = format(REACH, big.mark = ","),
+    FOLLOWERS_COUNT = format(FOLLOWERS_COUNT, big.mark = ",")
+  ) %>%
+  kable() %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE) %>%
+  scroll_box(height = "600px")
+```
