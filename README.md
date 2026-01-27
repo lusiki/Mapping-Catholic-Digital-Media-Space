@@ -1,6 +1,6 @@
-# DigiKat: Mapping the Croatian Catholic Digital Media Space
+# Mapping the Croatian Catholic Digital Media Space
 
-A comprehensive computational analysis of **600,000+ posts** from Croatian Catholic digital media across multiple platforms (2021-2024). This project maps the structure, themes, emotions, and temporal dynamics of religious communication in the Croatian digital public sphere.
+A comprehensive computational analysis of **600,000+ posts** from Croatian Catholic digital media across multiple platforms (2021-2026). This project maps the structure, themes, emotions, and temporal dynamics of religious communication in the Croatian digital public sphere.
 
 ## Interactive Maps
 
@@ -17,7 +17,7 @@ Explore the full interactive analyses:
 
 ## Project Overview
 
-The **DigiKat Project** applies computational social science methods to understand how the Catholic Church and Catholic voices communicate in Croatia's digital landscape. Each "map" addresses a distinct research question:
+The analysis applies computational social science methods to understand how the Catholic Church and Catholic voices communicate in Croatia's digital landscape. Each "map" addresses a distinct research question:
 
 ### Map 1: Platform and Actor Structure
 > **Who communicates where, and who dominates visibility?**
@@ -102,7 +102,7 @@ The project classifies sources into meaningful actor types within the Croatian C
 
 ### Data Collection
 - **Corpus size:** 600,000+ posts
-- **Time period:** January 2021 – December 2024
+- **Time period:** 2021 – 2026
 - **Sources:** Web scraping, API collection, platform exports
 
 ### Analytical Methods
@@ -155,7 +155,7 @@ This project draws on:
 If you use this research, please cite:
 
 ```
-DigiKat Project. (2024). Mapping the Croatian Catholic Digital Media Space.
+Sikic (2026). Attention Markets in Religious Digital Media: Mapping the Croatian Catholic Digital Space.
 https://github.com/lusiki/Mapping-Catholic-Digital-Media-Space
 ```
 
