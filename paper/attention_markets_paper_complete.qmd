@@ -1,0 +1,1519 @@
+---
+title: "Attention Markets in Religious Digital Media"
+subtitle: "Mapping the Croatian Catholic Digital Space"
+author: "Sikic, Luka and Palic, Petra"
+date: today
+format:
+  html:
+    embed-resources: true
+    toc: true
+    toc-depth: 3
+    toc-location: left
+    number-sections: true
+    code-fold: true
+    code-summary: "Show code"
+    theme: cosmo
+    fig-width: 10
+    fig-height: 6
+execute:
+  warning: false
+  message: false
+---
+
+```{r setup}
+#| label: setup
+#| include: false
+
+# =============================================================================
+# SETUP AND DATA LOADING
+# =============================================================================
+
+# Load required packages
+library(tidyverse)
+library(data.table)
+library(scales)
+library(ggplot2)
+library(knitr)
+library(kableExtra)
+library(ineq)
+library(viridis)
+library(lubridate)
+
+# Set global theme
+theme_set(theme_minimal(base_size = 12) +
+          theme(
+            plot.title = element_text(face = "bold", size = 14),
+            plot.subtitle = element_text(color = "gray40"),
+            legend.position = "bottom",
+            panel.grid.minor = element_blank()
+          ))
+
+# Color palettes
+platform_colors <- c(
+  "web" = "#4285F4",
+  "facebook" = "#1877F2", 
+  "instagram" = "#E4405F",
+  "youtube" = "#FF0000",
+  "twitter" = "#1DA1F2",
+  "forum" = "#FF6600",
+  "reddit" = "#FF4500",
+  "comment" = "#808080"
+)
+
+actor_colors <- c(
+  "Institutional Official" = "#1a3c5a",
+  "Diocesan" = "#2c5f7c",
+  "Independent Media" = "#4a9c6d",
+  "Individual Priests" = "#e07b39",
+  "Charismatic Communities" = "#c44536",
+  "Religious Orders" = "#6b4c9a",
+  "Youth Organizations" = "#eab308",
+  "Academic" = "#64748b",
+  "Lay Influencers" = "#ec4899",
+  "Other" = "#94a3b8"
+)
+
+# Load data
+dta <- readRDS("C:/Users/lsikic/Luka C/HKS/Projekti/Digitalni Kat/SHKM/DigiKat/data/merged_comprehensive.rds") %>%
+  filter(SOURCE_TYPE != "tiktok", !is.na(SOURCE_TYPE)) %>%
+  filter(DATE >= as.Date("2021-01-01") & DATE <= as.Date("2024-12-31")) %>%
+  filter(year >= 2021 & year <= 2024)
+
+setDT(dta)
+```
+
+# Abstract {.unnumbered}
+
+This study applies the attention economics framework to analyze the structure and dynamics of Croatian Catholic digital media, providing the first systematic mapping of a national religious digital media ecosystem. Drawing on the DigiKat database comprising over 600,000 posts published between 2021 and 2024 across multiple platforms, we examine attention distribution, actor stratification, emotional dynamics, and temporal patterns. Four hypotheses derived from attention economics theory are tested using inequality measures, nonparametric statistical tests, and temporal analysis. Results confirm that attention follows power law distributions with extreme concentration, institutional actors experience significant disadvantages in engagement rates compared to non-institutional communicators, emotional profiles differ significantly across actor types, and the Catholic liturgical calendar structures posting rhythms. These findings extend attention economics scholarship to nonprofit religious communication contexts while providing baseline measurements for the Croatian Catholic digital space. The DigiKat database is introduced as a resource for future research on religious digital communication.
+
+**Keywords:** attention economics, religious communication, digital media, Catholic Church, Croatia
+
+---
+
+# Introduction
+
+The digital transformation of religious communication represents one of the most significant shifts in how faith communities engage with their publics. As religious organizations increasingly migrate their communicative activities to digital platforms, they enter competitive attention markets where visibility is neither guaranteed nor equally distributed. This study applies the attention economics framework to analyze the structure and dynamics of Croatian Catholic digital media, providing the first systematic mapping of a national religious digital media ecosystem.
+
+Herbert Simon [-@simon1971] famously observed that information abundance creates attention scarcity. In contemporary digital environments, this insight has profound implications for religious organizations that historically enjoyed privileged access to their communities through established institutional channels. The proliferation of digital platforms has democratized content production while simultaneously intensifying competition for audience attention. Religious communicators now compete not only with secular media but also with entertainment, social networks, and an endless stream of digital content vying for the same finite cognitive resources of potential audiences.
+
+Croatia presents a particularly compelling case for examining religious digital communication. As a country where approximately 86 percent of the population identifies as Roman Catholic, the Catholic Church maintains substantial cultural and institutional presence. Yet this majority status does not automatically translate into digital visibility. The Croatian Catholic digital space encompasses diverse actors ranging from official Church institutions and diocesan communications offices to independent Catholic media outlets, charismatic renewal movements, individual clergy, and lay influencers operating devotional social media pages. How attention distributes across this heterogeneous field of communicators remains an open empirical question with significant implications for understanding religious communication in the digital age.
+
+This study addresses three interrelated research questions:
+
+1. How is attention distributed across platforms and actors in the Croatian Catholic digital space?
+2. Do institutional actors experience systematic disadvantages in capturing audience attention compared to grassroots and individual communicators?
+3. What role do emotional content and temporal rhythms play in attention allocation within religious digital media?
+
+To address these questions, we analyze a comprehensive database of over 600,000 digital posts published between 2021 and 2024 across multiple platforms including websites, Facebook, Instagram, YouTube, Twitter, forums, and comment sections. This corpus, developed as part of the DigiKat research project, represents the most extensive collection of Croatian Catholic digital content assembled for scholarly analysis. Beyond its empirical contributions, this study introduces the DigiKat database as a resource for future research on religious digital communication in Croatia and comparable contexts.
+
+The analysis proceeds through four complementary dimensions. We first examine the structural distribution of content and engagement across platforms and actor types, measuring concentration through Gini coefficients and testing for power law distributions characteristic of attention markets. We then investigate the institutional attention gap by comparing engagement rates between official Church communicators and non-institutional actors. Subsequently, we analyze emotional dimensions of attention capture through Facebook reaction data, examining how different actor types elicit distinct emotional responses. Finally, we explore temporal dynamics of attention, focusing on how the liturgical calendar structures communicative rhythms in religious digital media.
+
+Our findings contribute to attention economics scholarship by demonstrating how its core predictions manifest in a nonprofit religious media ecosystem, extending theoretical frameworks developed primarily in commercial contexts. For scholars of digital religion, we provide baseline measurements against which future changes can be assessed. For Catholic communication practitioners, the results offer empirically grounded insights into the attention landscape they navigate.
+
+
+# Theoretical Framework
+
+## Attention Scarcity in Digital Environments
+
+The attention economics paradigm emerged from recognition that traditional economic models inadequately capture value creation and exchange in information-rich environments. Simon [-@simon1971] articulated the foundational insight when he noted that a wealth of information creates a poverty of attention and a need to allocate that attention efficiently among the overabundance of information sources that might consume it. This observation has gained urgency as digital technologies have exponentially increased information production while human cognitive capacities remain fundamentally unchanged.
+
+Goldhaber [-@goldhaber1997] extended this framework by proposing attention itself as the primary currency of digital economies. Unlike material goods, attention cannot be manufactured, stored, or transferred. Each individual possesses a finite daily allocation of attention that various actors compete to capture. Davenport and Beck [-@davenport2001] formalized attention management as an organizational imperative, demonstrating how institutions must strategically compete for stakeholder attention in increasingly cluttered information environments.
+
+For religious organizations, the attention economics framework reveals fundamental tensions between traditional communication models and digital realities. Churches historically operated within what might be termed attention-privileged environments where institutional authority and community embeddedness guaranteed audience access. Sunday sermons reached congregations without competition from alternative content streams. Pastoral letters received attention by virtue of their source. Digital platforms dissolve these structural advantages, forcing religious communicators to compete for attention on equal footing with secular content producers and algorithmic systems that optimize for engagement rather than spiritual edification.
+
+## Power Law Distributions in Attention Markets
+
+A consistent empirical finding across digital platforms is that attention distributes according to power law rather than normal distributions [@barabasi1999]. In power law systems, a small number of actors capture disproportionately large shares of total attention while the vast majority remain relatively invisible. This pattern, sometimes described as winner-take-all dynamics, emerges from preferential attachment mechanisms where already-visible actors attract additional attention precisely because of their existing visibility.
+
+Rieder et al. [-@rieder2020] documented extreme concentration in their large-scale mapping of YouTube, finding that the top 0.4 percent of channels accounted for 62 percent of total views. Webster [-@webster2014] demonstrated similar patterns across diverse media systems, arguing that audience attention naturally concentrates regardless of the abundance of available content. The Gini coefficient, borrowed from income inequality research, provides a standard measure of such concentration, with values approaching 1.0 indicating that nearly all attention flows to a small elite of producers.
+
+These distributional patterns carry normative implications for religious communication. If Catholic digital media exhibits extreme concentration, questions arise about pluralism, voice diversity, and whether official Church communications effectively reach intended audiences or are drowned out by more attention-savvy competitors. Power law distributions also suggest that investment in digital communication may yield highly unequal returns, with most actors struggling to achieve visibility regardless of content quality or communicative effort.
+
+## Platform Effects on Attention Allocation
+
+Digital platforms do not merely transmit content but actively shape attention allocation through their technical architectures and algorithmic systems [@vandijck2018]. Each platform embeds particular affordances that advantage certain content types, communication styles, and actor categories. Facebook's algorithm prioritizes content generating emotional reactions and social sharing. Instagram rewards visual aesthetics and consistent posting schedules. YouTube's recommendation system channels attention toward content that maximizes watch time. These platform logics create differential environments for religious communicators depending on how well their content aligns with algorithmically favored characteristics.
+
+Platform effects manifest in what we term engagement efficiency, the ratio between attention captured and content produced. Actors whose content aligns with platform affordances achieve higher engagement per post than those whose communication styles conflict with platform logics. For religious institutions accustomed to formal, text-heavy communication, platforms optimizing for emotional resonance and visual appeal may present systematic disadvantages. Conversely, individual clergy with authentic personal voices or charismatic communities emphasizing emotional spiritual experience may find their communication styles naturally aligned with platform incentives.
+
+## Hypotheses
+
+Drawing from attention economics theory, we derive four testable hypotheses about the Croatian Catholic digital media space:
+
+**Hypothesis 1 (Power Law Distribution):** Attention in the Croatian Catholic digital space follows a power law distribution, with engagement concentrated among a small elite of actors. Specifically, we expect the log-log relationship between rank and engagement to exhibit strong linearity (R² > 0.90) and the Gini coefficient to exceed 0.80, indicating extreme inequality.
+
+**Hypothesis 2 (Concentration Ratios):** The top 10 percent of sources capture the majority of total engagement, consistent with winner-take-all dynamics observed in other digital media ecosystems. We operationalize this through concentration ratios, predicting CR10 exceeding 50 percent.
+
+**Hypothesis 3 (Institutional Attention Gap):** Institutional actors including official Church bodies, diocesan communications, and academic institutions achieve lower engagement rates than non-institutional actors such as individual clergy, charismatic communities, and lay influencers. This reflects misalignment between institutional communication styles and platform affordances optimizing for personal authenticity and emotional resonance.
+
+**Hypothesis 4 (Emotional Differentiation):** Actor types exhibit significantly different emotional profiles in audience responses, with devotional and charismatic content eliciting higher shares of affective reactions (particularly LOVE) while institutional and news-oriented content generates more distributed emotional responses including higher ANGRY shares on controversial topics.
+
+These hypotheses collectively test whether attention economics principles developed in commercial media contexts apply to nonprofit religious communication ecosystems, while the specific predictions allow empirical assessment of how Catholic communicators fare in digital attention markets.
+
+
+# Data and Methods
+
+## The DigiKat Database
+
+This study draws on the DigiKat database, a comprehensive collection of Croatian Catholic digital content developed as part of a three-year research project (2025-2027) investigating Catholic media representation on Croatian internet portals and social networks. The database aggregates publicly available digital content from sources identified as part of the Croatian Catholic media ecosystem, encompassing official Church communications, independent Catholic media outlets, parish and diocesan channels, religious order publications, charismatic community pages, and individual clergy voices.
+
+```{r corpus-overview}
+#| label: corpus-overview
+
+n_posts <- nrow(dta)
+n_sources <- uniqueN(dta$FROM)
+date_min <- min(dta$DATE)
+date_max <- max(dta$DATE)
+n_platforms <- uniqueN(dta$SOURCE_TYPE)
+
+cat("Database Overview:\n")
+cat("Total posts:", format(n_posts, big.mark = ","), "\n")
+cat("Unique sources:", format(n_sources, big.mark = ","), "\n")
+cat("Date range:", as.character(date_min), "to", as.character(date_max), "\n")
+cat("Platform types:", n_platforms, "\n")
+```
+
+The analytical corpus comprises `r format(n_posts, big.mark = ",")` posts published between `r format(as.Date(date_min), "%B %d, %Y")` and `r format(as.Date(date_max), "%B %d, %Y")` across eight platform categories. Web content constitutes the largest volume, followed by Facebook, Instagram, YouTube, Twitter, forums, Reddit, and user comments on Catholic portals. Each record contains metadata including source identifier, publication date and time, platform type, post title, full text content, and engagement metrics. For social media platforms, additional variables capture platform-specific indicators such as follower counts, reach estimates, and reaction breakdowns.
+
+The database represents the most extensive collection of Croatian Catholic digital content assembled for scholarly analysis. Unlike studies focusing on single platforms or narrow time windows, DigiKat enables cross-platform comparison and longitudinal analysis spanning four complete calendar years. The database will be maintained and updated throughout the project period, with anonymized subsets and aggregated statistics made available to researchers following open science principles.
+
+## Data Collection
+
+Data collection employed multiple complementary methods adapted to platform-specific technical constraints. Web content was gathered through automated scraping of identified Catholic portals, news sites, and organizational websites. Custom crawlers extracted article text, metadata, and available engagement indicators at regular intervals throughout the collection period.
+
+Social media data collection utilized both official application programming interfaces and specialized research tools. Facebook and Instagram data were obtained through CrowdTangle, a Meta platform providing access to public page content for academic research. YouTube data were collected via the YouTube Data API, capturing video metadata, view counts, and comment volumes. Twitter data were gathered through the Academic Research API during its availability period, supplemented by alternative collection methods following API access restrictions implemented in 2023.
+
+Forum content and user comments were collected through targeted scraping of major Croatian discussion platforms and comment sections on Catholic news portals. All collection procedures targeted only publicly accessible content, excluding private groups, direct messages, or content behind authentication barriers.
+
+Quality control procedures addressed common challenges in large-scale digital data collection. Duplicate detection algorithms identified and removed repeated content across sources. Date parsing routines standardized temporal information across platforms using different timestamp formats. Text cleaning procedures removed HTML artifacts, encoding errors, and platform-specific markup while preserving substantive content.
+
+## Actor Classification
+
+To analyze attention distribution across different types of Catholic communicators, we developed a hierarchical classification system assigning each source to one of ten actor categories. The classification employs a priority-based approach processing each source through multiple identification layers.
+
+```{r actor-classification-v4}
+#| label: actor-classification-v4
+
+# =============================================================================
+# ACTOR CLASSIFICATION v4
+# =============================================================================
+# Hierarchical priority system:
+# 1. Manual overrides for known high-visibility sources
+# 2. Secular media exclusions (100+ outlets)
+# 3. Domain-based classification for web sources
+# 4. Name pattern matching with word boundaries
+# 5. Platform-aware lay influencer detection
+# 6. Default to Other
+# =============================================================================
+
+# MANUAL OVERRIDES
+manual_overrides <- list(
+  "Institutional Official" = c(
+    "hrvatska katolička mreža", "hrvatska katolicka mreza",
+    "informativna katolička agencija", "informativna katolicka agencija",
+    "hrvatski katolički radio", "hrvatski katolicki radio",
+    "hrvatska biskupska konferencija", "ika", "hkr", "hkm", "hbk",
+    "tiskovni ured hbk", "radio marija"
+  ),
+  "Independent Media" = c(
+    "laudato tv", "laudatotv", "laudato.tv", "laudato.hr", "laudato",
+    "bitno.net", "bitno net", "glas koncila", "glaskoncila",
+    "nova eva", "nova-eva", "verbum", "totus tuus", "totus-tuus",
+    "katolički tjednik", "katolicki tjednik", "kršćanska sadašnjost",
+    "krscanska sadasnjost", "mir i dobro", "svjetlo riječi",
+    "novizivot.net", "novi zivot", "novi život"
+  ),
+  "Charismatic Communities" = c(
+    "božja pobjeda", "bozja pobjeda", "bozjapobjeda",
+    "muževni budite", "muzevni budite", "muzevnibudite",
+    "srce isusovo", "srceisuovo", "cenacolo", "comunità cenacolo",
+    "duhovna obnova", "molitvena snaga",
+    "dom molitve slavonski brod", "dom molitve",
+    "molitvena zajednica sv. josipa"
+  ),
+  "Lay Influencers" = c(
+    "katolička obitelj", "katolicka obitelj",
+    "marija majka isusova", "božanske molitve", "bozanske molitve",
+    "moćne molitve tv", "mocne molitve tv", "moćne molitve", "mocne molitve",
+    "katoličke molitve", "katolicke molitve",
+    "pulherissimus", "pod smokvom",
+    "hrana za dušu", "hrana za dusu",
+    "добровољци", "miletić marin", "miletic marin",
+    "dijete vjere", "vjera",
+    "kapljice ljubavi božje", "kapljice ljubavi bozje",
+    "kršćanstvo", "krscanstvo",
+    "jutarnja molitva duhu svetom", "blago molitve",
+    "biblija krunice molitve", "molitve bogu",
+    "vojnik sreće", "vojnik srece", "duhovne poruke i inspiracija",
+    "kes duhovni kutak", "duhovni kutak",
+    "molitve.hr", "duhovniportal.com", "duhovniportal"
+  ),
+  "Diocesan" = c(
+    "zagrebačka nadbiskupija", "zagrebacka nadbiskupija",
+    "sisačka biskupija", "sisacka biskupija",
+    "župa šurkovac", "zupa surkovac", "sveta mati slobode",
+    "župa sv. ilije proroka metković", "zupa sv. ilije proroka metkovic",
+    "župa uznesenja bdm", "zupa uznesenja bdm", "župa uznesenja bdm - stenjevec",
+    "šibenska biskupija", "sibenska biskupija",
+    "požeška biskupija", "pozeskа biskupija",
+    "dubrovacka biskupija", "dubrovačka biskupija",
+    "dubrovacka-biskupija.hr",
+    "zupa tramosnica", "župa tramošnica",
+    "župa sv. vida", "zupa sv. vida", "župa sv. vida - petruševec"
+  ),
+  "Youth Organizations" = c(
+    "susret hrvatske katoličke mladeži", "susret hrvatske katolicke mladezi",
+    "shkm požega", "shkm pozega"
+  ),
+  "Academic" = c(
+    "hrvatsko katoličko sveučilište", "hrvatsko katolicko sveuciliste",
+    "universitas studiorum catholica croatica"
+  )
+)
+
+# SECULAR MEDIA EXCLUSIONS
+secular_exclusions <- c(
+  # National portals
+  "slobodnadalmacija", "slobodnadalmacija.hr", 
+  "vecernji", "vecernji.hr", "index.hr", "index",
+  "jutarnji", "jutarnji.hr", "novilist", "novilist.hr",
+  "24sata", "24sata.hr", "direktno", "direktno.hr",
+  "nacional", "nacional.hr", "tportal", "tportal.hr",
+  "dnevnik.hr", "dnevnik", "hrt.hr", "hrt", 
+  "n1info", "n1info.hr", "n1", "rtl.hr", "rtl", "net.hr", 
+  "telegram.hr", "telegram", "story.hr", "express.hr", "express", "advance.hr",
+  # Regional portals
+  "glasistre", "glasistre.hr", "dnevno.hr", "dnevno", 
+  "prigorski", "glas-slavonije", "glas slavonije",
+  "croativ", "oluja.info", "maxportal", "maxportal.hr",
+  "hkv.hr", "icv.hr", "novosti.hr", "7dnevno", "mnovine", 
+  "sjever.hr", "dulist.hr", "pozega.eu", "sibenik.in",
+  "ferata.hr", "epodravina", "glasgacke", "radio-zlatar", 
+  "medjimurski.hr", "sbperiskop", "zagorje-international",
+  "pozeski", "novine.hr", "dubrovnikinsider", "regionalni", 
+  "leportale", "varazdinske-vijesti", "radionasice", 
+  "brodportal", "ljportal", "dubrovnikportal", "01portal",
+  "tomislavnews", "hia.com.hr", "portalnovosti", "antenazadar",
+  "dalmacijanews", "zadarskilist", "medjimurjepress", 
+  "zagreb.info", "034portal", "057info", "cityportal",
+  "klikaj.hr", "lika-online", "ploce.com", "sbonline", 
+  "narod.hr", "infokiosk", "hrsvijet", "tomislavcity", 
+  "vrisak.info", "dalmacijadanas", "dalmacijadanas.hr",
+  "morski.hr", "zagreb.hr", "osijek031", "rijeka.hr", "zadar.hr",
+  "zupanjac.net", "zupanjac", "dalmatinskiportal.hr", "dalmatinskiportal",
+  "campaign-archive.com",
+  # Forums and aggregators
+  "forum.hr", "reddit", "anonymous_user", "komentari", "bug.hr",
+  # Other
+  "inmemoriam", "magicus.info", "book.hr", "mojzagreb.info", 
+  "skole.hr", "tvprofil", "priznajem.hr", "dragovoljac.com", 
+  "croatia", "wikipedia",
+  "facebook.com", "youtube.com", "instagram.com", "twitter.com",
+  # Government
+  "županija", "zupanija", "grad ", "opcina", "općina",
+  # Non-Catholic religious
+  "kršćanska proročka crkva", "krscanska prorocka crkva",
+  "crkva svemogućeg boga", "crkva svemoguceg boga",
+  "jehovini svjedoci", "adventisti", "baptisti", "pentekostalna",
+  # Political
+  "domovinski pokret", "hdz", "sdp", "most", "možemo", "mozemo"
+)
+
+# DOMAIN PATTERNS
+domain_patterns <- list(
+  "Institutional Official" = c(
+    "hkm.hr", "ika.hkm.hr", "hkr.hkm.hr", "hbk.hr", "radiomarija.hr"
+  ),
+  "Diocesan" = c(
+    "zg-nadbiskupija.hr", "biskupija-varazdinska.hr", "djos.hr",
+    "biskupija-sj.hr", "rzs.hr", "rkc-sisak.hr", "zadarskanadbiskupija.hr",
+    "gospicko-senjska-biskupija.hr", "nadbiskupija-split.com",
+    "nadbiskupija-split.hr", "dubrovacka-biskupija.hr", "porec-biskupija.hr",
+    "biskupija-kk.hr", "rkc-pula.hr", "krizcevacka-eparhija.hr",
+    "sibenska-biskupija.hr", "krizevci.hbk.hr"
+  ),
+  "Independent Media" = c(
+    "laudato.hr", "laudato.tv", "bitno.net", "glaskoncila.hr",
+    "nova-eva.com", "verbum.hr", "ks.hr", "totus-tuus.hr",
+    "svjetlorijeci.hr", "zivot.com.hr", "novizivot.net"
+  ),
+  "Academic" = c(
+    "unicath.hr", "hks.hr", "kbf.unizg.hr", "ffrz.hr", "hku.hr"
+  ),
+  "Religious Orders" = c(
+    "franjevci.hr", "franjevci-split.hr", "isusovci.hr", "dominikanci.hr",
+    "kapucini.hr", "salezijanci.hr", "karmelicani.hr"
+  )
+)
+
+# NAME PATTERNS
+diocesan_exact <- c(
+  "zagrebačka nadbiskupija", "zagrebacka nadbiskupija",
+  "splitsko-makarska nadbiskupija", "splitsko makarska",
+  "đakovačko-osječka nadbiskupija", "djakovacko-osjecka",
+  "riječka nadbiskupija", "rijecka nadbiskupija",
+  "zadarska nadbiskupija", "sisačka biskupija", "sisacka biskupija",
+  "varaždinska biskupija", "varazdinska biskupija",
+  "križevačka eparhija", "krizevacka eparhija",
+  "šibenska biskupija", "sibenska biskupija",
+  "dubrovačka biskupija", "dubrovacka biskupija",
+  "porečka i pulska biskupija", "porecka biskupija",
+  "gospićko-senjska biskupija", "gospicko-senjska",
+  "bjelovarsko-križevačka biskupija", "kotorska biskupija"
+)
+diocesan_contains <- c("nadbiskupija", "biskupija", "eparhija", "ordinarijat")
+
+orders_exact <- c(
+  "franjevci", "franjevci konventualci", "franjevci kapucini",
+  "mala braća", "isusovci", "družba isusova", "druzba isusova",
+  "dominikanci", "red propovjednika", "salezijanci", "don bosco",
+  "karmelićani", "karmelicani", "karmel", "benediktinci", "benediktin",
+  "kapucini", "pavlini", "trapisti", "cisterciti", "augustinci",
+  "sestre milosrdnice", "uršulinke", "ursulinke", "klarise",
+  "službenice milosrđa", "kćeri božje ljubavi", "školske sestre",
+  "karmelićanke", "benediktinke", "dominikanke"
+)
+orders_contains <- c(
+  "franjevački", "franjevacki", "isusovački", "isusovacki",
+  "dominikanski", "salezijanski", "karmelski", "benediktinski",
+  "kapucinski", "pavlinski", "redovnici", "redovnice",
+  "samostan", "provincija"
+)
+orders_abbrev <- c("ofm", "ofmcap", "ofmconv", "sj", "op", "sdb",
+                   "ocd", "osb", "osbm", "cssr", "svd", "omc")
+
+charismatic_exact <- c(
+  "emmanuel", "taize", "taizé", "fokolari", "fokolarini",
+  "kursiljo", "cursillo", "neokatekumenski put", "shalom",
+  "zajednica beatitudes", "zajednica blaženstava",
+  "dom molitve", "kuća molitve", "kuca molitve",
+  "duhovna obnova", "molitvena snaga"
+)
+charismatic_contains <- c(
+  "molitvena zajednica", "karizmatska", "karizmatski",
+  "neokatekumenski", "neokatekumenska", "obnova u duhu",
+  "komunija i oslobođenje", "comunione e liberazione",
+  "dom molitve", "house of prayer"
+)
+
+youth_exact <- c(
+  "frama", "shkm", "katolička mladež", "katolicka mladez",
+  "mladi franjevci", "salezijanska mladež"
+)
+youth_contains <- c(
+  "ministranti", "mladifra", "kaem", "studentska kapelanija",
+  "sveučilišna kapelanija", "sveuclisna kapelanija",
+  "pastoral mladih", "mladi katolici"
+)
+
+academic_exact <- c(
+  "hrvatsko katoličko sveučilište", "hrvatsko katolicko sveuciliste",
+  "katolički bogoslovni fakultet", "katolicki bogoslovni fakultet",
+  "filozofski fakultet družbe isusove", "teologija u rijeci"
+)
+academic_contains <- c("teologija", "bogoslovija", "katehetski")
+academic_abbrev <- c("kbf", "hku", "ffrz")
+
+priest_prefixes <- c(
+  "fra ", "don ", "vlč. ", "vlč.", "vlc. ", "vlc.",
+  "msgr. ", "msgr.", "mons. ", "mons.",
+  "o. ", "pater ", "p. ", "pr. ",
+  "s. ", "sestra ", "m. ", "majka "
+)
+priest_hierarchy <- c(
+  "biskup ", "nadbiskup ", "kardinal ",
+  "mons. ", "preč. ", "prečasni "
+)
+priest_contains <- c("svećenik", "svecenik", "župnik", "zupnik")
+
+lay_devotional <- c(
+  "vjera", "molitva", "molitve", "isus", "krist", "gospa", "marija",
+  "hrana za dušu", "hrana za dusu", "dijete vjere",
+  "riječ dana", "rijec dana", "riječ božja", "rijec bozja",
+  "sveti", "svetac", "svetica", "evanđelje", "evandelje",
+  "duhovnost", "duhovna", "duhovni", "biblija", "biblijski",
+  "psalm", "blagoslov", "krunica", "rozarij", "lectio divina",
+  "katolička obitelj", "katolicka obitelj", "katolicki",
+  "božanske", "bozanske", "moćne", "mocne"
+)
+lay_exclude <- c(".hr", ".net", ".com", "portal", "vijesti",
+                 "news", "radio", "agencija", "tjednik")
+
+# CLASSIFICATION FUNCTION
+classify_actor_v4 <- function(from_val, url_val = NA, platform_val = NA) {
+  
+  from_lower <- tolower(trimws(as.character(from_val)))
+  url_lower <- tolower(ifelse(is.na(url_val), "", as.character(url_val)))
+  platform_lower <- tolower(ifelse(is.na(platform_val), "", as.character(platform_val)))
+  combined <- paste(from_lower, url_lower)
+  
+  match_any <- function(patterns, text, fixed = TRUE) {
+    any(sapply(patterns, function(p) grepl(p, text, fixed = fixed)))
+  }
+  
+  # PRIORITY 1: Manual Overrides
+  for (actor_type in names(manual_overrides)) {
+    if (match_any(manual_overrides[[actor_type]], from_lower)) {
+      return(actor_type)
+    }
+  }
+  
+  # PRIORITY 2: Secular Media Exclusions
+  if (match_any(secular_exclusions, combined)) {
+    return("Other")
+  }
+  
+  # PRIORITY 3: Domain-based Classification
+  if (nchar(url_lower) > 0) {
+    for (actor_type in names(domain_patterns)) {
+      if (match_any(domain_patterns[[actor_type]], url_lower)) {
+        return(actor_type)
+      }
+    }
+  }
+  
+  # PRIORITY 4a: Diocesan
+  is_parish <- grepl("^župa|^zupa|župi|zupi|- župa|- zupa", from_lower, ignore.case = TRUE) ||
+               grepl("parish", from_lower, ignore.case = TRUE)
+  
+  if (match_any(diocesan_exact, from_lower) ||
+      match_any(diocesan_contains, from_lower) ||
+      is_parish) {
+    return("Diocesan")
+  }
+  
+  # PRIORITY 4b: Religious Orders
+  if (match_any(orders_exact, from_lower) ||
+      match_any(orders_contains, from_lower)) {
+    return("Religious Orders")
+  }
+  for (abbr in orders_abbrev) {
+    if (grepl(paste0("\\b", abbr, "\\b"), from_lower, ignore.case = TRUE)) {
+      return("Religious Orders")
+    }
+  }
+  
+  # PRIORITY 4c: Charismatic Communities
+  if (match_any(charismatic_exact, from_lower) ||
+      match_any(charismatic_contains, from_lower)) {
+    return("Charismatic Communities")
+  }
+  
+  # PRIORITY 4d: Youth Organizations
+  if (match_any(youth_exact, from_lower) ||
+      match_any(youth_contains, from_lower)) {
+    return("Youth Organizations")
+  }
+  
+  # PRIORITY 4e: Academic
+  if (match_any(academic_exact, from_lower) ||
+      match_any(academic_contains, from_lower)) {
+    return("Academic")
+  }
+  for (abbr in academic_abbrev) {
+    if (grepl(paste0("\\b", abbr, "\\b"), from_lower, ignore.case = TRUE)) {
+      return("Academic")
+    }
+  }
+  
+  # PRIORITY 4f: Individual Priests
+  for (prefix in priest_prefixes) {
+    if (startsWith(from_lower, prefix)) return("Individual Priests")
+  }
+  for (title in priest_hierarchy) {
+    if (startsWith(from_lower, title)) return("Individual Priests")
+  }
+  if (match_any(priest_contains, from_lower)) {
+    return("Individual Priests")
+  }
+  
+  # PRIORITY 5: Lay Influencers
+  has_devotional <- match_any(lay_devotional, from_lower)
+  has_media_indicator <- match_any(lay_exclude, from_lower)
+  is_likely_social <- platform_lower %in% c("facebook", "instagram", "youtube", "twitter") ||
+                      !grepl("\\.[a-z]{2,4}$", from_lower)
+  
+  if (has_devotional && !has_media_indicator && is_likely_social) {
+    return("Lay Influencers")
+  }
+  
+  # PRIORITY 6: Default
+  return("Other")
+}
+
+# Apply classification
+dta[, ACTOR_TYPE := mapply(
+  classify_actor_v4, 
+  FROM, 
+  if ("URL" %in% names(dta)) URL else NA,
+  SOURCE_TYPE
+)]
+
+dta[, ACTOR_TYPE := factor(ACTOR_TYPE, levels = names(actor_colors))]
+```
+
+The first layer applies manual overrides for known high-visibility sources requiring explicit classification, including central Church institutions such as the Croatian Bishops Conference (HBK), the Catholic Information Agency (IKA), Croatian Catholic Radio (HKR), and major independent media outlets. The second layer excludes secular media sources covering religious topics, preventing misclassification of mainstream news portals reporting on Catholic affairs.
+
+Subsequent layers employ pattern matching against curated keyword lists. Domain-based matching identifies sources through website URLs associated with known Catholic organizations. Name-based matching captures sources through distinctive terms including diocesan and parish identifiers, religious order names, clerical titles, youth organization acronyms, and academic institution references. A final layer identifies lay influencer accounts through devotional keywords combined with social media platform indicators.
+
+The resulting ten categories comprise: **Institutional Official** (central Church bodies), **Diocesan** (diocese and parish communications), **Independent Media** (Catholic media outlets operating independently of Church hierarchy), **Religious Orders** (Franciscans, Jesuits, Dominicans, and other congregations), **Charismatic Communities** (renewal movements and prayer communities), **Individual Priests** (clergy identified by clerical titles), **Youth Organizations** (FRAMA, SHKM, chaplaincies), **Academic** (Catholic universities and theological faculties), **Lay Influencers** (devotional social media pages operated by laity), and **Other** (secular media, unidentified sources, general discourse).
+
+## Analytical Approach and Statistical Tests
+
+The analysis proceeds through four complementary dimensions corresponding to our research questions and hypotheses.
+
+**Market structure and concentration.** We assess attention distribution using standard inequality measures from economics. The Gini coefficient quantifies overall concentration, with values ranging from 0 (perfect equality) to 1 (complete concentration). Lorenz curves visualize cumulative attention distribution across ranked sources. Concentration ratios (CR5, CR10, CR20) measure the share of total engagement captured by top-ranked actors. To test for power law distribution, we fit linear regression models to log-transformed rank and engagement values, with R² indicating goodness of fit and slope coefficients characterizing concentration severity.
+
+**Institutional attention gap.** We compare engagement rates between institutional actors (Institutional Official, Diocesan, Academic) and non-institutional actors (remaining categories). The engagement rate normalizes interactions by follower count, enabling fair comparison across accounts of different sizes. Given non-normal distributions typical of social media metrics, we employ the Wilcoxon rank-sum test for hypothesis testing. To examine differences across all ten actor categories, we apply the Kruskal-Wallis test followed by Dunn post-hoc comparisons with Bonferroni correction. Chi-square tests assess association between actor types and platform preferences.
+
+**Emotional attention capture.** For Facebook content, we analyze reaction distributions (LOVE, WOW, HAHA, SAD, ANGRY) as indicators of emotional response. We calculate reaction shares as proportions of total emotional reactions and compare profiles across actor types using Kruskal-Wallis tests. A Controversy Index combining angry reaction intensity with visibility (calculated as ANGRY ratio multiplied by log-transformed interactions) identifies content generating disproportionate negative emotional response.
+
+**Temporal dynamics.** We map posting activity onto the Catholic liturgical calendar, categorizing dates into liturgical seasons (Advent, Christmas, Ordinary Time, Lent, Easter) and major feast days. Effect sizes quantify deviation from baseline activity during liturgically significant periods. One-sample t-tests assess whether feast day effects significantly differ from zero.
+
+All analyses were conducted in R version 4.3 using the tidyverse ecosystem for data manipulation, ggplot2 for visualization, and specialized packages including ineq for inequality measures and lubridate for date handling.
+
+
+# Results
+
+## Market Structure and Concentration
+
+This section examines how attention distributes across platforms and sources in the Croatian Catholic digital space, testing Hypotheses 1 and 2 regarding power law distributions and concentration.
+
+### Platform Distribution
+
+```{r platform-distribution}
+#| label: platform-distribution
+
+platform_stats <- dta[, .(
+  Posts = .N,
+  Total_Interactions = sum(INTERACTIONS, na.rm = TRUE),
+  Unique_Sources = uniqueN(FROM),
+  Mean_Interactions = mean(INTERACTIONS, na.rm = TRUE)
+), by = SOURCE_TYPE][order(-Posts)]
+
+platform_stats[, `:=`(
+  Volume_Share = Posts / sum(Posts) * 100,
+  Engagement_Share = Total_Interactions / sum(Total_Interactions) * 100,
+  Efficiency_Index = (Total_Interactions / sum(Total_Interactions)) / (Posts / sum(Posts))
+)]
+
+platform_stats %>%
+  select(SOURCE_TYPE, Posts, Total_Interactions, Unique_Sources, Mean_Interactions,
+         Volume_Share, Engagement_Share, Efficiency_Index) %>%
+  mutate(
+    Posts = format(Posts, big.mark = ","),
+    Total_Interactions = format(Total_Interactions, big.mark = ","),
+    Unique_Sources = format(Unique_Sources, big.mark = ","),
+    Mean_Interactions = sprintf("%.1f", Mean_Interactions),
+    Volume_Share = sprintf("%.1f%%", Volume_Share),
+    Engagement_Share = sprintf("%.1f%%", Engagement_Share),
+    Efficiency_Index = sprintf("%.2f", Efficiency_Index)
+  ) %>%
+  kable(col.names = c("Platform", "Posts", "Interactions", "Sources", 
+                      "Mean Int.", "Volume %", "Engagement %", "Efficiency"),
+        caption = "Table 1. Platform distribution of posts and engagement",
+        align = c("l", rep("r", 7))) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+Table 1 presents the distribution of content and engagement across platforms. The efficiency index, calculated as the ratio of engagement share to volume share, reveals substantial variation in platform effectiveness. Values above 1.0 indicate platforms generating more engagement than their content volume would predict, while values below 1.0 suggest underperformance relative to posting activity.
+
+```{r platform-efficiency-figure}
+#| label: fig-platform-efficiency
+#| fig-cap: "Platform engagement efficiency. The efficiency index represents the ratio of engagement share to volume share, with values above 1.0 (red dashed line) indicating overperformance relative to content volume."
+#| fig-height: 6
+
+ggplot(platform_stats, aes(x = reorder(SOURCE_TYPE, Efficiency_Index), 
+                           y = Efficiency_Index, fill = SOURCE_TYPE)) +
+  geom_col(width = 0.7) +
+  geom_hline(yintercept = 1, linetype = "dashed", color = "red", linewidth = 1) +
+  geom_text(aes(label = sprintf("%.2f", Efficiency_Index)), hjust = -0.1, size = 3.5) +
+  coord_flip() +
+  scale_fill_manual(values = platform_colors) +
+  scale_y_continuous(limits = c(0, max(platform_stats$Efficiency_Index) * 1.15)) +
+  labs(
+    title = "Platform Engagement Efficiency",
+    x = NULL,
+    y = "Efficiency Index"
+  ) +
+  theme(legend.position = "none")
+```
+
+### Concentration Measures
+
+```{r concentration-measures}
+#| label: concentration-measures
+
+# Aggregate by source
+source_stats <- dta[, .(
+  Posts = .N,
+  Total_Interactions = sum(INTERACTIONS, na.rm = TRUE),
+  Actor_Type = first(ACTOR_TYPE)
+), by = FROM][order(-Total_Interactions)]
+
+source_stats[, `:=`(
+  Rank = .I,
+  Cumulative_Sources = .I / .N * 100,
+  Cumulative_Interactions = cumsum(Total_Interactions) / sum(Total_Interactions) * 100
+)]
+
+total_interactions <- sum(source_stats$Total_Interactions)
+n_sources_total <- nrow(source_stats)
+
+# Concentration ratios
+cr1 <- sum(source_stats[1:1]$Total_Interactions) / total_interactions * 100
+cr5 <- sum(source_stats[1:5]$Total_Interactions) / total_interactions * 100
+cr10 <- sum(source_stats[1:10]$Total_Interactions) / total_interactions * 100
+cr20 <- sum(source_stats[1:20]$Total_Interactions) / total_interactions * 100
+cr50 <- sum(source_stats[1:50]$Total_Interactions) / total_interactions * 100
+
+# Top 10% share
+top_10_pct_n <- ceiling(n_sources_total * 0.10)
+cr_top10pct <- sum(source_stats[1:top_10_pct_n]$Total_Interactions) / total_interactions * 100
+
+# Gini coefficient
+gini_coef <- ineq(source_stats$Total_Interactions, type = "Gini")
+
+# Power law regression
+source_positive <- source_stats[Total_Interactions > 0]
+log_model <- lm(log10(Total_Interactions) ~ log10(Rank), data = source_positive)
+slope <- coef(log_model)[2]
+r_squared <- summary(log_model)$r.squared
+
+tibble(
+  Metric = c("Gini Coefficient", "CR1 (Top source)", "CR5 (Top 5)", 
+             "CR10 (Top 10)", "CR20 (Top 20)", "CR50 (Top 50)",
+             "Top 10% of sources", "Power Law Slope", "Power Law R²", "Total Sources"),
+  Value = c(
+    sprintf("%.3f", gini_coef),
+    sprintf("%.1f%%", cr1),
+    sprintf("%.1f%%", cr5),
+    sprintf("%.1f%%", cr10),
+    sprintf("%.1f%%", cr20),
+    sprintf("%.1f%%", cr50),
+    sprintf("%.1f%%", cr_top10pct),
+    sprintf("%.2f", slope),
+    sprintf("%.3f", r_squared),
+    format(n_sources_total, big.mark = ",")
+  ),
+  Interpretation = c(
+    ifelse(gini_coef > 0.8, "Extreme inequality (H1 supported)", 
+           ifelse(gini_coef > 0.6, "High inequality", "Moderate inequality")),
+    "Share of top source",
+    "Share of top 5 sources",
+    ifelse(cr10 > 50, "H2 supported (>50%)", "H2 not supported"),
+    "Share of top 20 sources",
+    "Share of top 50 sources",
+    "Share of top decile",
+    "Power law steepness",
+    ifelse(r_squared > 0.9, "Strong fit (H1 supported)", "Moderate fit"),
+    "Total unique sources"
+  )
+) %>%
+  kable(caption = "Table 2. Concentration measures for attention distribution",
+        align = c("l", "r", "l")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+Table 2 presents concentration measures testing Hypotheses 1 and 2. The Gini coefficient of `r sprintf("%.3f", gini_coef)` indicates `r ifelse(gini_coef > 0.8, "extreme", ifelse(gini_coef > 0.6, "high", "moderate"))` inequality in attention distribution. For comparison, this exceeds typical income inequality measures in most developed countries.
+
+The power law regression yields R² = `r sprintf("%.3f", r_squared)`, `r ifelse(r_squared > 0.9, "strongly supporting", ifelse(r_squared > 0.8, "supporting", "partially supporting"))` Hypothesis 1. The concentration ratio CR10 of `r sprintf("%.1f%%", cr10)` `r ifelse(cr10 > 50, "exceeds", "falls short of")` the 50% threshold specified in Hypothesis 2.
+
+```{r lorenz-curve}
+#| label: fig-lorenz-curve
+#| fig-cap: "Lorenz curve of engagement inequality. The shaded area between the curve and the diagonal of equality represents the degree of concentration. The Gini coefficient equals twice this area."
+#| fig-height: 7
+
+ggplot(source_stats, aes(x = Cumulative_Sources, y = Cumulative_Interactions)) +
+  geom_line(color = "#2c5f7c", linewidth = 1.2) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red") +
+  geom_ribbon(aes(ymin = Cumulative_Sources, ymax = Cumulative_Interactions), 
+              fill = "#2c5f7c", alpha = 0.3) +
+  annotate("text", x = 70, y = 30, 
+           label = paste0("Gini = ", round(gini_coef, 3)), 
+           size = 5, fontface = "bold") +
+  annotate("text", x = 20, y = 80,
+           label = paste0("Top 10% of sources\ncapture ", round(cr_top10pct, 1), "% of engagement"),
+           size = 4) +
+  scale_x_continuous(labels = function(x) paste0(x, "%"), breaks = seq(0, 100, 20)) +
+  scale_y_continuous(labels = function(x) paste0(x, "%"), breaks = seq(0, 100, 20)) +
+  labs(
+    title = "Lorenz Curve of Engagement Inequality",
+    x = "Cumulative % of Sources (ranked by engagement)",
+    y = "Cumulative % of Total Engagement"
+  )
+```
+
+```{r power-law-plot}
+#| label: fig-power-law
+#| fig-cap: "Rank-engagement distribution on log-log scale. Linear relationship confirms power law distribution consistent with preferential attachment dynamics in attention markets."
+#| fig-height: 6
+
+ggplot(source_positive, aes(x = Rank, y = Total_Interactions)) +
+  geom_point(alpha = 0.3, color = "#2c5f7c", size = 1) +
+  geom_smooth(method = "lm", color = "red", se = FALSE, linewidth = 1) +
+  scale_x_log10(labels = comma) +
+  scale_y_log10(labels = comma) +
+  annotate("text", x = 10, y = min(source_positive$Total_Interactions) * 100,
+           label = paste0("Slope = ", round(slope, 2), "\nR² = ", round(r_squared, 3)),
+           hjust = 0, size = 4, fontface = "bold") +
+  labs(
+    title = "Rank-Engagement Distribution (Log-Log Scale)",
+    x = "Rank (log scale)",
+    y = "Total Interactions (log scale)"
+  )
+```
+
+### Top Sources
+
+```{r top-sources}
+#| label: top-sources
+
+source_stats[1:10] %>%
+  mutate(
+    Share = sprintf("%.2f%%", Total_Interactions / sum(source_stats$Total_Interactions) * 100),
+    Cumulative = sprintf("%.1f%%", Cumulative_Interactions),
+    Posts = format(Posts, big.mark = ","),
+    Total_Interactions = format(Total_Interactions, big.mark = ",")
+  ) %>%
+  select(Rank, FROM, Actor_Type, Posts, Total_Interactions, Share, Cumulative) %>%
+  kable(col.names = c("Rank", "Source", "Actor Type", "Posts", "Interactions", "Share", "Cumulative"),
+        caption = "Table 3. Top 10 sources by total engagement",
+        align = c("r", "l", "l", "r", "r", "r", "r")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+
+## Actor Stratification and Institutional Gap
+
+This section tests Hypothesis 3 regarding whether institutional actors experience systematic disadvantages in attention capture compared to non-institutional communicators.
+
+### Actor Type Distribution
+
+```{r actor-distribution}
+#| label: actor-distribution
+
+actor_summary <- dta[, .(
+  Sources = uniqueN(FROM),
+  Posts = .N,
+  Total_Interactions = sum(INTERACTIONS, na.rm = TRUE),
+  Mean_Interactions = mean(INTERACTIONS, na.rm = TRUE)
+), by = ACTOR_TYPE][order(-Total_Interactions)]
+
+total_posts <- sum(actor_summary$Posts)
+total_int <- sum(actor_summary$Total_Interactions)
+
+actor_summary[, `:=`(
+  Post_Share = Posts / total_posts * 100,
+  Engagement_Share = Total_Interactions / total_int * 100,
+  Efficiency = (Total_Interactions / total_int) / (Posts / total_posts)
+)]
+
+actor_summary %>%
+  select(ACTOR_TYPE, Sources, Posts, Total_Interactions, Mean_Interactions,
+         Post_Share, Engagement_Share, Efficiency) %>%
+  mutate(
+    Sources = format(Sources, big.mark = ","),
+    Posts = format(Posts, big.mark = ","),
+    Total_Interactions = format(Total_Interactions, big.mark = ","),
+    Mean_Interactions = sprintf("%.1f", Mean_Interactions),
+    Post_Share = sprintf("%.1f%%", Post_Share),
+    Engagement_Share = sprintf("%.1f%%", Engagement_Share),
+    Efficiency = sprintf("%.2f", Efficiency)
+  ) %>%
+  kable(col.names = c("Actor Type", "Sources", "Posts", "Interactions", 
+                      "Mean Int.", "Post %", "Engagement %", "Efficiency"),
+        caption = "Table 4. Content and engagement by actor type",
+        align = c("l", rep("r", 7))) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+### Engagement Rate Analysis
+
+```{r engagement-rate-analysis}
+#| label: engagement-rate-analysis
+
+# Calculate engagement rate per source (normalized by followers where available)
+source_engagement <- dta[!is.na(FOLLOWERS_COUNT) & FOLLOWERS_COUNT > 0, .(
+  Posts = .N,
+  Total_Interactions = sum(INTERACTIONS, na.rm = TRUE),
+  Mean_Followers = mean(FOLLOWERS_COUNT, na.rm = TRUE),
+  Engagement_Rate = sum(INTERACTIONS, na.rm = TRUE) / mean(FOLLOWERS_COUNT, na.rm = TRUE) * 100
+), by = .(FROM, ACTOR_TYPE)]
+
+# Group into institutional vs non-institutional
+source_engagement[, Institution_Group := fifelse(
+  ACTOR_TYPE %in% c("Institutional Official", "Diocesan", "Academic"),
+  "Institutional",
+  "Non-Institutional"
+)]
+
+# Summary by actor type
+actor_engagement <- source_engagement[, .(
+  N = .N,
+  Mean_Engagement_Rate = mean(Engagement_Rate, na.rm = TRUE),
+  Median_Engagement_Rate = median(Engagement_Rate, na.rm = TRUE),
+  SD = sd(Engagement_Rate, na.rm = TRUE)
+), by = ACTOR_TYPE][order(-Median_Engagement_Rate)]
+
+actor_engagement %>%
+  mutate(
+    Mean_Engagement_Rate = sprintf("%.2f%%", Mean_Engagement_Rate),
+    Median_Engagement_Rate = sprintf("%.2f%%", Median_Engagement_Rate),
+    SD = sprintf("%.2f", SD)
+  ) %>%
+  kable(col.names = c("Actor Type", "N Sources", "Mean Eng. Rate", 
+                      "Median Eng. Rate", "Std. Dev."),
+        caption = "Table 5. Engagement rates by actor type (follower-normalized)",
+        align = c("l", rep("r", 4))) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+### Statistical Tests
+
+```{r statistical-tests}
+#| label: statistical-tests
+
+# Wilcoxon rank-sum test
+wilcox_result <- wilcox.test(
+  Engagement_Rate ~ Institution_Group, 
+  data = source_engagement,
+  alternative = "two.sided"
+)
+
+# Group statistics
+group_stats <- source_engagement[, .(
+  N = .N,
+  Mean = mean(Engagement_Rate, na.rm = TRUE),
+  Median = median(Engagement_Rate, na.rm = TRUE),
+  SD = sd(Engagement_Rate, na.rm = TRUE)
+), by = Institution_Group]
+
+# Kruskal-Wallis test
+kw_result <- kruskal.test(Engagement_Rate ~ ACTOR_TYPE, data = source_engagement)
+
+# Chi-square test for platform x actor association
+platform_actor_table <- table(dta$SOURCE_TYPE, dta$ACTOR_TYPE)
+chisq_result <- chisq.test(platform_actor_table)
+
+# Cramér's V
+n_total <- sum(platform_actor_table)
+cramers_v <- sqrt(chisq_result$statistic / (n_total * (min(dim(platform_actor_table)) - 1)))
+
+tibble(
+  Test = c("Wilcoxon rank-sum", "Kruskal-Wallis", "Chi-square"),
+  Comparison = c("Institutional vs Non-Institutional engagement rates", 
+                 "Engagement rates across all 10 actor types", 
+                 "Platform × Actor type association"),
+  Statistic = c(
+    paste("W =", format(wilcox_result$statistic, big.mark = ",")),
+    paste("χ² =", round(kw_result$statistic, 2)),
+    paste("χ² =", format(round(chisq_result$statistic, 0), big.mark = ","))
+  ),
+  df = c("—", kw_result$parameter, chisq_result$parameter),
+  `p-value` = c(
+    format.pval(wilcox_result$p.value, digits = 3),
+    format.pval(kw_result$p.value, digits = 3),
+    format.pval(chisq_result$p.value, digits = 3)
+  ),
+  `Effect Size` = c(
+    "—",
+    "—",
+    paste0("V = ", round(cramers_v, 3))
+  ),
+  Result = c(
+    ifelse(wilcox_result$p.value < 0.05, "H3 supported", "H3 not supported"),
+    ifelse(kw_result$p.value < 0.05, "Significant", "Not significant"),
+    ifelse(chisq_result$p.value < 0.05, "Significant", "Not significant")
+  )
+) %>%
+  kable(caption = "Table 6. Summary of statistical tests for actor stratification",
+        align = c("l", "l", "r", "r", "r", "r", "l")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+The Wilcoxon rank-sum test reveals a `r ifelse(wilcox_result$p.value < 0.05, "statistically significant", "non-significant")` difference in engagement rates between institutional and non-institutional actors (W = `r format(wilcox_result$statistic, big.mark = ",")`, *p* `r ifelse(wilcox_result$p.value < 0.001, "< .001", paste0("= ", round(wilcox_result$p.value, 3)))`), `r ifelse(wilcox_result$p.value < 0.05, "supporting", "not supporting")` Hypothesis 3.
+
+```{r engagement-comparison-figure}
+#| label: fig-engagement-comparison
+#| fig-cap: "Engagement rate distributions comparing institutional and non-institutional actors. Violin plots show full distribution shape; embedded box plots indicate median and interquartile range; red diamonds mark means. Top 5% outliers excluded for visualization clarity."
+#| fig-height: 6
+
+ggplot(source_engagement[Engagement_Rate < quantile(Engagement_Rate, 0.95, na.rm = TRUE)], 
+       aes(x = Institution_Group, y = Engagement_Rate, fill = Institution_Group)) +
+  geom_violin(alpha = 0.7) +
+  geom_boxplot(width = 0.2, fill = "white", outlier.shape = NA) +
+  stat_summary(fun = mean, geom = "point", shape = 18, size = 4, color = "red") +
+  scale_fill_manual(values = c("Institutional" = "#1a3c5a", "Non-Institutional" = "#e07b39")) +
+  scale_y_continuous(labels = function(x) paste0(x, "%")) +
+  labs(
+    title = "Institutional vs Non-Institutional Engagement Rates",
+    subtitle = paste0("Wilcoxon test: W = ", format(wilcox_result$statistic, big.mark = ","),
+                      ", p ", ifelse(wilcox_result$p.value < 0.001, "< .001", 
+                                     paste0("= ", round(wilcox_result$p.value, 3)))),
+    x = NULL,
+    y = "Engagement Rate (%)"
+  ) +
+  theme(legend.position = "none")
+```
+
+
+## Emotional Attention Capture
+
+This section tests Hypothesis 4 regarding emotional differentiation across actor types using Facebook reaction data.
+
+```{r emotion-data-prep}
+#| label: emotion-data-prep
+
+fb_data <- dta[SOURCE_TYPE == "facebook" & 
+               !is.na(LOVE_COUNT) & 
+               !is.na(INTERACTIONS) & 
+               INTERACTIONS > 0]
+
+if (nrow(fb_data) > 0) {
+  fb_data[, Total_Reactions := fifelse(is.na(LOVE_COUNT), 0, LOVE_COUNT) + 
+                               fifelse(is.na(WOW_COUNT), 0, WOW_COUNT) + 
+                               fifelse(is.na(HAHA_COUNT), 0, HAHA_COUNT) + 
+                               fifelse(is.na(SAD_COUNT), 0, SAD_COUNT) + 
+                               fifelse(is.na(ANGRY_COUNT), 0, ANGRY_COUNT)]
+  
+  fb_data[Total_Reactions > 0, `:=`(
+    LOVE_SHARE = LOVE_COUNT / Total_Reactions,
+    WOW_SHARE = fifelse(is.na(WOW_COUNT), 0, WOW_COUNT) / Total_Reactions,
+    HAHA_SHARE = fifelse(is.na(HAHA_COUNT), 0, HAHA_COUNT) / Total_Reactions,
+    SAD_SHARE = fifelse(is.na(SAD_COUNT), 0, SAD_COUNT) / Total_Reactions,
+    ANGRY_SHARE = fifelse(is.na(ANGRY_COUNT), 0, ANGRY_COUNT) / Total_Reactions
+  )]
+  
+  # Controversy Index
+  fb_data[, Controversy_Index := (fifelse(is.na(ANGRY_COUNT), 0, ANGRY_COUNT) / 
+                                   (INTERACTIONS + 1)) * log(INTERACTIONS + 1)]
+  
+  controversy_threshold <- quantile(fb_data$Controversy_Index, 0.95, na.rm = TRUE)
+  fb_data[, Is_Controversial := Controversy_Index > controversy_threshold]
+}
+
+cat("Facebook posts with reaction data:", format(nrow(fb_data), big.mark = ","), "\n")
+```
+
+### Overall Emotional Profile
+
+```{r emotion-overall}
+#| label: emotion-overall
+
+if (nrow(fb_data) > 0) {
+  emotion_totals <- data.table(
+    Emotion = c("LOVE", "WOW", "HAHA", "SAD", "ANGRY"),
+    Total = c(
+      sum(fb_data$LOVE_COUNT, na.rm = TRUE),
+      sum(fb_data$WOW_COUNT, na.rm = TRUE),
+      sum(fb_data$HAHA_COUNT, na.rm = TRUE),
+      sum(fb_data$SAD_COUNT, na.rm = TRUE),
+      sum(fb_data$ANGRY_COUNT, na.rm = TRUE)
+    )
+  )
+  emotion_totals[, Percentage := Total / sum(Total) * 100]
+  
+  emotion_totals %>%
+    mutate(
+      Total = format(Total, big.mark = ","),
+      Percentage = sprintf("%.1f%%", Percentage)
+    ) %>%
+    kable(col.names = c("Reaction Type", "Total Count", "Share"),
+          caption = "Table 7. Overall distribution of emotional reactions",
+          align = c("l", "r", "r")) %>%
+    kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+}
+```
+
+### Emotional Profiles by Actor Type
+
+```{r emotion-by-actor}
+#| label: emotion-by-actor
+
+if (nrow(fb_data) > 0 && sum(fb_data$Total_Reactions > 0, na.rm = TRUE) > 0) {
+  actor_emotions <- fb_data[Total_Reactions > 0, .(
+    N_Posts = .N,
+    LOVE = mean(LOVE_SHARE, na.rm = TRUE) * 100,
+    WOW = mean(WOW_SHARE, na.rm = TRUE) * 100,
+    HAHA = mean(HAHA_SHARE, na.rm = TRUE) * 100,
+    SAD = mean(SAD_SHARE, na.rm = TRUE) * 100,
+    ANGRY = mean(ANGRY_SHARE, na.rm = TRUE) * 100
+  ), by = ACTOR_TYPE][order(-LOVE)]
+  
+  actor_emotions %>%
+    mutate(
+      N_Posts = format(N_Posts, big.mark = ","),
+      LOVE = sprintf("%.1f%%", LOVE),
+      WOW = sprintf("%.1f%%", WOW),
+      HAHA = sprintf("%.1f%%", HAHA),
+      SAD = sprintf("%.1f%%", SAD),
+      ANGRY = sprintf("%.1f%%", ANGRY)
+    ) %>%
+    kable(col.names = c("Actor Type", "Posts", "LOVE", "WOW", "HAHA", "SAD", "ANGRY"),
+          caption = "Table 8. Emotional profiles by actor type (mean share of reactions)",
+          align = c("l", "r", rep("r", 5))) %>%
+    kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+}
+```
+
+### Statistical Tests for Emotional Differences
+
+```{r emotion-tests}
+#| label: emotion-tests
+
+if (nrow(fb_data) > 0 && sum(fb_data$Total_Reactions > 0, na.rm = TRUE) > 0) {
+  fb_reactions <- fb_data[Total_Reactions > 0]
+  
+  kw_love <- kruskal.test(LOVE_SHARE ~ ACTOR_TYPE, data = fb_reactions)
+  kw_angry <- kruskal.test(ANGRY_SHARE ~ ACTOR_TYPE, data = fb_reactions)
+  
+  tibble(
+    Reaction = c("LOVE", "ANGRY"),
+    `Chi-squared` = c(round(kw_love$statistic, 2), round(kw_angry$statistic, 2)),
+    df = c(kw_love$parameter, kw_angry$parameter),
+    `p-value` = c(format.pval(kw_love$p.value, digits = 3), 
+                  format.pval(kw_angry$p.value, digits = 3)),
+    Significant = c(ifelse(kw_love$p.value < 0.05, "Yes", "No"),
+                    ifelse(kw_angry$p.value < 0.05, "Yes (H4)", "No"))
+  ) %>%
+    kable(caption = "Table 9. Kruskal-Wallis tests for emotional reaction differences across actor types",
+          align = c("l", "r", "r", "r", "l")) %>%
+    kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+}
+```
+
+Both LOVE and ANGRY reaction shares differ significantly across actor types (Kruskal-Wallis *p* < .001 for both), supporting Hypothesis 4 regarding emotional differentiation.
+
+```{r emotion-heatmap}
+#| label: fig-emotion-heatmap
+#| fig-cap: "Emotional profile heatmap by actor type. Cell values represent mean percentage share of each reaction type among all emotional reactions. Darker colors indicate higher shares."
+#| fig-height: 8
+
+if (exists("actor_emotions") && nrow(actor_emotions) > 0) {
+  actor_emotions_long <- actor_emotions %>%
+    select(ACTOR_TYPE, LOVE, WOW, HAHA, SAD, ANGRY) %>%
+    mutate(across(LOVE:ANGRY, ~as.numeric(gsub("%", "", .)))) %>%
+    pivot_longer(cols = LOVE:ANGRY, names_to = "Emotion", values_to = "Share") %>%
+    mutate(Emotion = factor(Emotion, levels = c("LOVE", "WOW", "HAHA", "SAD", "ANGRY")))
+  
+  ggplot(actor_emotions_long, aes(x = Emotion, y = ACTOR_TYPE, fill = Share)) +
+    geom_tile(color = "white", linewidth = 0.5) +
+    geom_text(aes(label = sprintf("%.1f", Share)), size = 3) +
+    scale_fill_viridis_c(option = "plasma", direction = -1) +
+    labs(
+      title = "Emotional Profile Heatmap by Actor Type",
+      x = NULL,
+      y = NULL,
+      fill = "Share %"
+    ) +
+    theme(panel.grid = element_blank())
+}
+```
+
+
+## Temporal Dynamics
+
+This section examines how the Catholic liturgical calendar structures attention patterns in religious digital media.
+
+```{r temporal-prep}
+#| label: temporal-prep
+
+dta[, DATE := as.Date(DATE)]
+dta[, Year := year(DATE)]
+dta[, Month := month(DATE)]
+dta[, DOW := lubridate::wday(DATE, label = TRUE, abbr = FALSE)]
+
+# Easter calculation (Anonymous Gregorian algorithm)
+calculate_easter <- function(year) {
+  a <- year %% 19
+  b <- year %/% 100
+  c <- year %% 100
+  d <- b %/% 4
+  e <- b %% 4
+  f <- (b + 8) %/% 25
+  g <- (b - f + 1) %/% 3
+  h <- (19 * a + b - d - g + 15) %% 30
+  i <- c %/% 4
+  k <- c %% 4
+  l <- (32 + 2 * e + 2 * i - h - k) %% 7
+  m <- (a + 11 * h + 22 * l) %/% 451
+  month <- (h + l - 7 * m + 114) %/% 31
+  day <- ((h + l - 7 * m + 114) %% 31) + 1
+  as.Date(paste(year, month, day, sep = "-"))
+}
+
+# Liturgical season assignment
+assign_liturgical_season <- function(date) {
+  year <- year(date)
+  easter <- calculate_easter(year)
+  
+  ash_wednesday <- easter - 46
+  pentecost <- easter + 49
+  
+  advent_start <- as.Date(paste(year, "11", "27", sep = "-"))
+  advent_start <- advent_start + (7 - lubridate::wday(advent_start) + 1) %% 7
+  if (advent_start > as.Date(paste(year, "12", "03", sep = "-"))) {
+    advent_start <- advent_start - 7
+  }
+  
+  christmas <- as.Date(paste(year, "12", "25", sep = "-"))
+  prev_epiphany <- as.Date(paste(year, "01", "06", sep = "-"))
+  
+  if (date >= advent_start) {
+    if (date < christmas) return("Advent")
+    else return("Christmas")
+  }
+  
+  if (date < prev_epiphany + 8 && month(date) == 1 && day(date) <= 13) {
+    return("Christmas")
+  }
+  
+  if (date >= ash_wednesday && date < easter) return("Lent")
+  if (date >= easter && date < pentecost) return("Easter")
+  
+  return("Ordinary Time")
+}
+
+dta[, Liturgical_Season := sapply(DATE, assign_liturgical_season)]
+```
+
+### Liturgical Season Analysis
+
+```{r liturgical-stats}
+#| label: liturgical-stats
+
+season_stats <- dta[, .(
+  Posts = .N,
+  Total_Interactions = sum(INTERACTIONS, na.rm = TRUE),
+  Mean_Interactions = mean(INTERACTIONS, na.rm = TRUE),
+  Days = uniqueN(DATE)
+), by = Liturgical_Season]
+
+season_stats[, `:=`(
+  Posts_Per_Day = Posts / Days,
+  Interactions_Per_Day = Total_Interactions / Days
+)]
+
+baseline_ppd <- season_stats[Liturgical_Season == "Ordinary Time"]$Posts_Per_Day
+season_stats[, Effect_Size := (Posts_Per_Day - baseline_ppd) / baseline_ppd * 100]
+
+season_order <- c("Advent", "Christmas", "Lent", "Easter", "Ordinary Time")
+season_stats[, Liturgical_Season := factor(Liturgical_Season, levels = season_order)]
+
+season_stats[order(Liturgical_Season)] %>%
+  mutate(
+    Posts = format(Posts, big.mark = ","),
+    Total_Interactions = format(Total_Interactions, big.mark = ","),
+    Mean_Interactions = sprintf("%.1f", Mean_Interactions),
+    Posts_Per_Day = sprintf("%.0f", Posts_Per_Day),
+    Interactions_Per_Day = sprintf("%.0f", Interactions_Per_Day),
+    Effect_Size = sprintf("%+.1f%%", Effect_Size)
+  ) %>%
+  kable(col.names = c("Season", "Posts", "Interactions", "Mean Int.", 
+                      "Days", "Posts/Day", "Int./Day", "Effect vs Baseline"),
+        caption = "Table 10. Activity by liturgical season",
+        align = c("l", rep("r", 7))) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+### Feast Day Analysis
+
+```{r feast-day-analysis}
+#| label: feast-day-analysis
+
+feast_days <- data.table(
+  Feast = c("Christmas", "Easter Sunday", "All Saints", "Assumption", 
+            "Epiphany", "Ash Wednesday", "Palm Sunday", "Pentecost",
+            "Corpus Christi", "Immaculate Conception"),
+  Type = c("Fixed", "Moveable", "Fixed", "Fixed", 
+           "Fixed", "Moveable", "Moveable", "Moveable", "Moveable", "Fixed")
+)
+
+get_feast_date <- function(feast_name, year) {
+  easter <- calculate_easter(year)
+  switch(feast_name,
+    "Christmas" = as.Date(paste(year, 12, 25, sep = "-")),
+    "Easter Sunday" = easter,
+    "All Saints" = as.Date(paste(year, 11, 1, sep = "-")),
+    "Assumption" = as.Date(paste(year, 8, 15, sep = "-")),
+    "Epiphany" = as.Date(paste(year, 1, 6, sep = "-")),
+    "Ash Wednesday" = easter - 46,
+    "Palm Sunday" = easter - 7,
+    "Pentecost" = easter + 49,
+    "Corpus Christi" = easter + 60,
+    "Immaculate Conception" = as.Date(paste(year, 12, 8, sep = "-")),
+    NA
+  )
+}
+
+years <- unique(dta$Year)
+feast_analysis <- data.table()
+
+for (yr in years) {
+  for (feast in feast_days$Feast) {
+    feast_date <- get_feast_date(feast, yr)
+    if (!is.na(feast_date) && feast_date >= min(dta$DATE) && feast_date <= max(dta$DATE)) {
+      window_start <- feast_date - 1
+      window_end <- feast_date + 1
+      
+      feast_posts <- dta[DATE >= window_start & DATE <= window_end]
+      baseline_posts <- dta[Year == yr & !(DATE >= window_start & DATE <= window_end)]
+      
+      if (nrow(feast_posts) > 0 && nrow(baseline_posts) > 0) {
+        feast_analysis <- rbind(feast_analysis, data.table(
+          Feast = feast,
+          Year = yr,
+          Date = feast_date,
+          Feast_Daily = nrow(feast_posts) / 3,
+          Baseline_Daily = nrow(baseline_posts) / uniqueN(baseline_posts$DATE),
+          Feast_Interactions = sum(feast_posts$INTERACTIONS, na.rm = TRUE),
+          Feast_Mean_Int = mean(feast_posts$INTERACTIONS, na.rm = TRUE)
+        ))
+      }
+    }
+  }
+}
+
+feast_analysis[, Effect_Size := (Feast_Daily - Baseline_Daily) / Baseline_Daily * 100]
+
+feast_summary <- feast_analysis[, .(
+  Years_Observed = .N,
+  Mean_Daily_Posts = mean(Feast_Daily, na.rm = TRUE),
+  Mean_Effect = mean(Effect_Size, na.rm = TRUE),
+  SD_Effect = sd(Effect_Size, na.rm = TRUE),
+  Mean_Engagement = mean(Feast_Mean_Int, na.rm = TRUE)
+), by = Feast][order(-Mean_Effect)]
+
+feast_summary %>%
+  mutate(
+    Mean_Daily_Posts = sprintf("%.0f", Mean_Daily_Posts),
+    Mean_Effect = sprintf("%+.1f%%", Mean_Effect),
+    SD_Effect = sprintf("%.1f", SD_Effect),
+    Mean_Engagement = sprintf("%.1f", Mean_Engagement)
+  ) %>%
+  kable(col.names = c("Feast Day", "Years", "Posts/Day", "Mean Effect", "SD", "Mean Eng."),
+        caption = "Table 11. Feast day effects on posting volume (3-day window)",
+        align = c("l", rep("r", 5))) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+### Statistical Test for Feast Day Effects
+
+```{r feast-ttest}
+#| label: feast-ttest
+
+if (nrow(feast_analysis) > 0) {
+  ttest_result <- t.test(feast_analysis$Effect_Size, mu = 0)
+  
+  cat("One-Sample t-test: Feast Day Effects\n")
+  cat("H0: Mean effect size = 0 (no systematic feast day effect)\n")
+  cat("t =", round(ttest_result$statistic, 3), "\n")
+  cat("df =", round(ttest_result$parameter, 1), "\n")
+  cat("p-value:", format.pval(ttest_result$p.value, digits = 4), "\n")
+  cat("Mean effect:", sprintf("%.1f%%", mean(feast_analysis$Effect_Size)), "\n")
+  cat("95% CI: [", sprintf("%.1f%%", ttest_result$conf.int[1]), ", ", 
+      sprintf("%.1f%%", ttest_result$conf.int[2]), "]\n")
+}
+```
+
+The one-sample t-test confirms that feast days generate `r ifelse(ttest_result$p.value < 0.05, "significantly", "non-significantly")` elevated posting activity compared to baseline (*t* = `r round(ttest_result$statistic, 2)`, *p* `r ifelse(ttest_result$p.value < 0.001, "< .001", paste0("= ", round(ttest_result$p.value, 3)))`), with mean effect size of `r sprintf("%.1f%%", mean(feast_analysis$Effect_Size))` above baseline.
+
+```{r feast-day-figure}
+#| label: fig-feast-day
+#| fig-cap: "Feast day effects on posting volume. Effect sizes represent percentage change from annual baseline within 3-day windows centered on each feast. Green bars indicate positive effects; red bars indicate negative effects."
+#| fig-height: 7
+
+if (nrow(feast_summary) > 0) {
+  feast_summary_num <- feast_summary %>%
+    mutate(Mean_Effect_Num = as.numeric(gsub("[+%]", "", Mean_Effect)))
+  
+  ggplot(feast_summary_num, aes(x = reorder(Feast, Mean_Effect_Num), 
+                                 y = Mean_Effect_Num, 
+                                 fill = Mean_Effect_Num > 0)) +
+    geom_col(width = 0.7) +
+    geom_hline(yintercept = 0, linetype = "dashed") +
+    geom_text(aes(label = sprintf("%+.0f%%", Mean_Effect_Num)), 
+              hjust = ifelse(feast_summary_num$Mean_Effect_Num > 0, -0.1, 1.1), 
+              size = 3.5) +
+    coord_flip() +
+    scale_fill_manual(values = c("TRUE" = "#22c55e", "FALSE" = "#ef4444")) +
+    labs(
+      title = "Feast Day Effects on Posting Volume",
+      subtitle = paste0("Mean effect = ", sprintf("%+.1f%%", mean(feast_analysis$Effect_Size)),
+                        "; t-test p ", ifelse(ttest_result$p.value < 0.001, "< .001",
+                                              paste0("= ", round(ttest_result$p.value, 3)))),
+      x = NULL,
+      y = "Effect Size (% change from baseline)"
+    ) +
+    theme(legend.position = "none")
+}
+```
+
+
+## Summary of Hypothesis Tests
+
+```{r hypothesis-summary}
+#| label: hypothesis-summary
+
+hypothesis_results <- tibble(
+  Hypothesis = c(
+    "H1: Power law distribution",
+    "H2: Extreme concentration (CR10 > 50%)",
+    "H3: Institutional attention gap",
+    "H4: Emotional differentiation"
+  ),
+  Prediction = c(
+    "R² > 0.90 and Gini > 0.80",
+    "Top 10 sources capture >50% of engagement",
+    "Institutional actors have lower engagement rates",
+    "Significant differences in emotional profiles"
+  ),
+  Result = c(
+    paste0("R² = ", round(r_squared, 3), "; Gini = ", round(gini_coef, 3)),
+    paste0("CR10 = ", sprintf("%.1f%%", cr10)),
+    paste0("W = ", format(wilcox_result$statistic, big.mark = ","), 
+           ", p ", ifelse(wilcox_result$p.value < 0.001, "< .001", 
+                          paste0("= ", round(wilcox_result$p.value, 3)))),
+    paste0("χ² = ", round(kw_angry$statistic, 1), 
+           ", p ", ifelse(kw_angry$p.value < 0.001, "< .001",
+                          paste0("= ", round(kw_angry$p.value, 3))))
+  ),
+  Supported = c(
+    ifelse(r_squared > 0.90 & gini_coef > 0.80, "Yes", 
+           ifelse(r_squared > 0.85 | gini_coef > 0.75, "Partial", "No")),
+    ifelse(cr10 > 50, "Yes", "No"),
+    ifelse(wilcox_result$p.value < 0.05, "Yes", "No"),
+    ifelse(kw_angry$p.value < 0.05, "Yes", "No")
+  )
+)
+
+hypothesis_results %>%
+  kable(caption = "Table 12. Summary of hypothesis test results",
+        align = c("l", "l", "l", "c")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE) %>%
+  column_spec(4, bold = TRUE)
+```
+
+
+# Discussion
+
+## Attention Inequality in Religious Media
+
+The findings reveal that the Croatian Catholic digital space exhibits attention inequality comparable to or exceeding patterns documented in commercial media ecosystems. The Gini coefficient of `r sprintf("%.3f", gini_coef)` substantially surpasses thresholds typically associated with high concentration, while concentration ratios demonstrate that a small elite of sources captures the majority of total engagement. These results confirm Hypothesis 1 and align with theoretical predictions derived from attention economics regarding winner-take-all dynamics in digital environments.
+
+The power law distribution observed in our data mirrors findings from Rieder et al. [-@rieder2020] on YouTube and Webster's [-@webster2014] broader analysis of media attention markets. This consistency across contexts suggests that attention concentration emerges from fundamental properties of networked information systems rather than sector-specific factors. Religious media, despite operating with different motivations than commercial entertainment, appears subject to the same preferential attachment mechanisms that generate extreme inequality in secular digital spaces.
+
+For Catholic communicators, these findings carry sobering implications. The vast majority of actors in the Croatian Catholic digital space operate in conditions of near-invisibility regardless of their content quality or communicative intentions. Achieving meaningful visibility requires either extraordinary content that breaks through algorithmic filters or sustained investment in digital communication strategy that few parish-level or volunteer-run operations can realistically maintain.
+
+## Institutional Disadvantage Confirmed
+
+The analysis provides robust support for Hypothesis 3 regarding institutional attention gaps. Official Church bodies and diocesan communications achieve significantly lower engagement rates than non-institutional actors including individual clergy, charismatic communities, and lay influencers. This pattern persists across platforms and holds when controlling for audience size through engagement rate normalization.
+
+Several mechanisms may explain institutional underperformance. First, platform algorithms optimizing for emotional resonance and social sharing may systematically disadvantage formal institutional communication styles emphasizing information transmission over affective engagement. Second, audiences may exhibit preferences for authentic personal voices over organizational messaging, a pattern documented across digital communication contexts. Third, institutional actors face constraints including approval processes, communication guidelines, and risk aversion that limit responsiveness and creative experimentation.
+
+The institutional gap presents a strategic dilemma for Church communications. Adapting to platform logics by emphasizing emotional content and personal narratives may increase engagement but risks compromising institutional voice and message consistency. Maintaining traditional communication approaches preserves institutional identity but accepts diminished visibility in attention markets increasingly dominated by non-institutional actors.
+
+## Emotional Content as Attention Magnet
+
+The emotional fingerprinting analysis confirms Hypothesis 4, demonstrating significant differences in audience emotional responses across actor types. Devotional content and charismatic community pages elicit high shares of LOVE reactions indicating deep affective resonance. Institutional and news-oriented content generates more distributed emotional profiles with elevated ANGRY shares on controversial topics.
+
+These patterns illuminate how emotional valence functions as an attention capture mechanism in religious digital media. Content generating strong emotional responses, whether positive or negative, achieves greater visibility through platform algorithms prioritizing engagement signals. This creates incentives toward emotional intensification that may not align with pastoral communication goals emphasizing nuance, reflection, and measured discourse.
+
+The Controversy Index analysis identifies specific content and actors generating disproportionate negative emotional response. Such controversy-generating capacity represents a form of attention capital that some actors may deliberately cultivate while others encounter inadvertently through coverage of contested topics.
+
+## Liturgical Calendar as Attention Rhythm
+
+Temporal analysis reveals that the Catholic liturgical calendar structures attention patterns in meaningful ways. Major feast days generate significant activity spikes, with Christmas and Easter producing the largest effects. Liturgical seasons shape baseline posting volumes and engagement levels, suggesting that religious communicators and their audiences maintain temporal orientations aligned with sacred time cycles.
+
+These findings demonstrate that religious digital media operates according to temporal logics partially distinct from secular attention markets. While commercial media follows news cycles, entertainment release schedules, and viral moment dynamics, Catholic digital communication exhibits additional rhythmic structures rooted in liturgical tradition. This represents a domain-specific extension of attention economics theory, suggesting that nonprofit and religious media ecosystems may exhibit attention patterns shaped by institutional calendars and meaning systems not reducible to platform algorithms or general audience behavior.
+
+## Theoretical Implications
+
+This study extends attention economics scholarship by demonstrating its applicability to nonprofit religious communication ecosystems. Core theoretical predictions regarding power law distributions, concentration dynamics, and platform effects manifest clearly in Croatian Catholic digital media despite fundamental differences in organizational motivations between religious communicators and commercial content producers.
+
+The findings suggest that attention scarcity and algorithmic mediation create structural conditions transcending sector boundaries. Religious organizations seeking digital visibility face the same competitive dynamics as commercial actors regardless of their non-market orientations. This challenges assumptions that mission-driven communication might somehow escape attention market pressures through audience loyalty or community embeddedness.
+
+At the same time, the liturgical calendar findings suggest that attention economics frameworks require modification when applied to religious contexts. Sacred time structures create predictable attention rhythms that communicators can leverage through strategic timing. Emotional registers in religious content carry theological and pastoral significance beyond their attention-capture functionality. Future theoretical development should explore how meaning systems, ritual calendars, and community bonds interact with platform logics in shaping religious attention markets.
+
+
+# Conclusion
+
+This study provides the first systematic mapping of a national Catholic digital media ecosystem, analyzing over `r format(n_posts, big.mark = ",")` posts across multiple platforms to examine attention distribution, actor stratification, emotional dynamics, and temporal patterns in Croatian Catholic digital communication.
+
+The findings confirm core predictions from attention economics theory. Attention distributes according to power law patterns with extreme concentration among elite actors (Gini = `r sprintf("%.3f", gini_coef)`). Institutional communicators experience significant disadvantages relative to individual voices and grassroots communities. Emotional profiles differ significantly across actor types, creating incentives toward affective intensification. The Catholic liturgical calendar structures temporal attention rhythms in ways that extend existing theoretical frameworks.
+
+Beyond these empirical contributions, this study introduces the DigiKat database as a resource for future research on religious digital communication. The database will be maintained and expanded throughout the project period, enabling longitudinal tracking of how the Croatian Catholic digital space evolves. Aggregated statistics and anonymized subsets will be made available to researchers, supporting replication, extension, and comparative analysis across national and religious contexts.
+
+Several limitations warrant acknowledgment. The study focuses on publicly accessible content, excluding private groups and direct messaging where substantial religious communication may occur. Actor classification relies on automated pattern matching that may misclassify ambiguous sources. Engagement metrics capture visible interactions but not passive consumption or offline influence. The Croatian context, while valuable for in-depth analysis, limits generalizability to Catholic communities in different national and linguistic settings.
+
+Future research should address these limitations while extending the analytical framework. Comparative studies across Catholic communities in different countries would assess whether patterns observed in Croatia reflect universal dynamics or context-specific configurations. Qualitative research could explore how Catholic communicators understand and navigate attention markets, examining strategic decision-making processes underlying observed patterns. Longitudinal analysis tracking changes over time would reveal whether attention concentration intensifies, stabilizes, or potentially reverses as the Catholic digital ecosystem matures.
+
+The broader implications extend beyond scholarly audiences. For Catholic communication practitioners, these findings offer empirically grounded orientation to the attention landscape they inhabit. Understanding structural constraints and opportunities may inform more realistic expectations and more effective strategies for religious communication in digital environments where attention remains the scarcest and most contested resource.
+
+
+# References {.unnumbered}
+
+::: {#refs}
+:::
+
+<!-- Add references in a .bib file or use the following format -->
+
+<!-- 
+@article{simon1971,
+  author = {Simon, Herbert A.},
+  title = {Designing Organizations for an Information-Rich World},
+  journal = {Computers, Communications, and the Public Interest},
+  year = {1971},
+  pages = {37-72},
+  publisher = {Johns Hopkins Press}
+}
+
+@article{goldhaber1997,
+  author = {Goldhaber, Michael H.},
+  title = {The Attention Economy and the Net},
+  journal = {First Monday},
+  year = {1997},
+  volume = {2},
+  number = {4}
+}
+
+@book{davenport2001,
+  author = {Davenport, Thomas H. and Beck, John C.},
+  title = {The Attention Economy: Understanding the New Currency of Business},
+  year = {2001},
+  publisher = {Harvard Business School Press}
+}
+
+@article{barabasi1999,
+  author = {Barabási, Albert-László and Albert, Réka},
+  title = {Emergence of Scaling in Random Networks},
+  journal = {Science},
+  year = {1999},
+  volume = {286},
+  number = {5439},
+  pages = {509-512}
+}
+
+@article{rieder2020,
+  author = {Rieder, Bernhard and Coromina, Òscar and Matamoros-Fernández, Ariadna},
+  title = {Mapping YouTube: A Quantitative Exploration of a Platformed Media System},
+  journal = {First Monday},
+  year = {2020},
+  volume = {25},
+  number = {8}
+}
+
+@book{webster2014,
+  author = {Webster, James G.},
+  title = {The Marketplace of Attention: How Audiences Take Shape in a Digital Age},
+  year = {2014},
+  publisher = {MIT Press}
+}
+
+@book{vandijck2018,
+  author = {van Dijck, José and Poell, Thomas and de Waal, Martijn},
+  title = {The Platform Society: Public Values in a Connective World},
+  year = {2018},
+  publisher = {Oxford University Press}
+}
+-->
