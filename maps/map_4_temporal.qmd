@@ -79,19 +79,44 @@ season_colors <- c(
 
 This document presents **Map 4 of the DigiKat project**, analyzing the temporal dynamics of Croatian Catholic digital media. The core question driving this analysis is **How does Croatian Catholic digital communication evolve over time, and how does it respond to events?**
 
-Understanding temporal patterns reveals the rhythms of religious communication online, from daily posting cycles to annual liturgical seasons. This analysis examines over 600,000 posts from 2021 to 2025 to uncover when Croatian Catholics communicate, how patterns shift across platforms, and how the digital sphere responds to significant religious and secular events.
+Understanding temporal patterns reveals the rhythms of religious communication online, from daily posting cycles to annual liturgical seasons. This analysis examines over 600,000 posts from 2021 to 2024 to uncover when Croatian Catholics communicate, how patterns shift across platforms, and how the digital sphere responds to significant religious and secular events.
+
+## Methodological Overview
+
+**Temporal analysis** examines how communication patterns change across multiple time scales. This includes macro trends (yearly, monthly), meso patterns (weekly, liturgical seasons), and micro rhythms (daily, hourly).
+
+**Key metrics in this analysis:**
+
+| Metric | Definition | Interpretation |
+|--------|------------|----------------|
+| Rolling average | Smoothed trend over N days | Removes noise to reveal underlying patterns |
+| Year over Year (YoY) | Current vs same period last year | Shows growth or decline trajectory |
+| CAGR | Compound Annual Growth Rate | Standardized multi year growth measure |
+| Effect size | (Event period - Baseline) / Baseline | Quantifies impact of events or seasons |
+| Sunday Index | Sunday activity / Weekday average | Measures distinctive Sunday patterns |
+
+**Interpretation guidance:**
+
+- Rising rolling averages indicate growth; declining suggests contraction
+- Positive YoY change shows expansion; negative indicates decline
+- Effect sizes above 0% show increased activity during events/seasons
+- Sunday Index above 1.0 indicates higher Sunday activity than weekday average
+- Platform correlations reveal synchronized vs independent communication patterns
+
+**Liturgical calendar mapping:**
+
+The Catholic liturgical year structures religious communication. Key seasons include Advent (preparation for Christmas), Christmas (Dec 25 to Epiphany), Lent (40 days before Easter), Easter (50 days to Pentecost), and Ordinary Time (remainder). Feast days create additional activity spikes.
 
 ```{r load-data}
 #| label: load-data
 
 dta <- readRDS("C:/Users/lsikic/Luka C/HKS/Projekti/Digitalni Kat/SHKM/DigiKat/data/merged_comprehensive.rds") %>%
   filter(SOURCE_TYPE != "tiktok", !is.na(SOURCE_TYPE)) %>%
-  filter(DATE >= as.Date("2021-01-01") & DATE <= as.Date("2024-12-31")) %>%
-  filter(year >= 2021 & year <= 2024)
+  filter(DATE >= as.Date("2021-01-01") & DATE <= as.Date("2025-12-31")) %>%
+  filter(year >= 2021 & year <= 2025)
 
 setDT(dta)
 
-# Check data loaded
 cat("Data loaded:", nrow(dta), "rows\n")
 if (nrow(dta) == 0) stop("No data after filtering! Check your date filters.")
 
@@ -111,46 +136,163 @@ date_range <- paste(min(dta$DATE, na.rm = TRUE), "to", max(dta$DATE, na.rm = TRU
 ```{r actor-classification}
 #| label: actor-classification
 
-secular_media_exclusions <- c(
-  "slobodnadalmacija", "vecernji", "index.hr", "jutarnji", "novilist",
-  "24sata", "direktno.hr", "nacional", "tportal", "dnevnik.hr", "hrt.hr",
-  "n1info", "rtl.hr", "net.hr", "telegram.hr", "story.hr", "forum.hr",
-  "glasistre", "dnevno.hr", "prigorski", "glas-slavonije", "croativ",
-  "oluja.info", "maxportal", "hkv.hr", "icv.hr", "novosti.hr", "7dnevno",
-  "mnovine", "sjever.hr", "dulist.hr", "pozega.eu", "sibenik.in",
-  "ferata.hr", "epodravina", "glasgacke", "radio-zlatar", "medjimurski.hr",
-  "sbperiskop", "zagorje-international", "pozeski", "novine.hr",
-  "dubrovnikinsider", "regionalni", "leportale", "varazdinske-vijesti",
-  "radionasice", "brodportal", "ljportal", "dubrovnikportal", "01portal",
-  "tomislavnews", "hia.com.hr", "portalnovosti", "antenazadar",
-  "dalmacijanews", "zadarskilist", "medjimurjepress",
-  "zagreb.info", "034portal", "057info", "inmemoriam", "magicus.info",
-  "book.hr", "mojzagreb.info", "skole.hr", "tvprofil", "cityportal",
-  "klikaj.hr", "lika-online", "priznajem.hr", "ploce.com",
-  "dragovoljac.com", "sbonline", "narod.hr", "infokiosk", "hrsvijet",
-  "tomislavcity", "vrisak.info", "croatia", "anonymous_user", "reddit",
-  "dalmacijadanas"
+# =============================================================================
+# ACTOR CLASSIFICATION V4 - SYNCHRONIZED WITH MAPS 1, 2, 3
+# =============================================================================
+# Uses hierarchical priority: manual overrides -> secular exclusions -> 
+# domain matching -> pattern matching -> lay influencer detection -> default
+# =============================================================================
+
+# MANUAL OVERRIDES: Highest priority explicit classifications
+manual_overrides <- list(
+  "Institutional Official" = c(
+    "hrvatska katolička mreža", "hrvatska katolicka mreza",
+    "informativna katolička agencija", "informativna katolicka agencija",
+    "hrvatski katolički radio", "hrvatski katolicki radio",
+    "hrvatska biskupska konferencija", "ika", "hkr", "hkm", "hbk",
+    "tiskovni ured hbk", "radio marija"
+  ),
+  "Independent Media" = c(
+    "laudato tv", "laudatotv", "laudato.tv", "laudato.hr", "laudato",
+    "bitno.net", "bitno net", "glas koncila", "glaskoncila",
+    "nova eva", "nova-eva", "verbum", "totus tuus", "totus-tuus",
+    "katolički tjednik", "katolicki tjednik", "kršćanska sadašnjost",
+    "krscanska sadasnjost", "mir i dobro", "svjetlo riječi",
+    "novizivot.net", "novi zivot", "novi život"
+  ),
+  "Charismatic Communities" = c(
+    "božja pobjeda", "bozja pobjeda", "bozjapobjeda",
+    "muževni budite", "muzevni budite", "muzevnibudite",
+    "srce isusovo", "srceisuovo", "cenacolo", "comunità cenacolo",
+    "duhovna obnova", "molitvena snaga",
+    "dom molitve slavonski brod", "dom molitve",
+    "molitvena zajednica sv. josipa"
+  ),
+  "Lay Influencers" = c(
+    "katolička obitelj", "katolicka obitelj",
+    "marija majka isusova", "božanske molitve", "bozanske molitve",
+    "moćne molitve tv", "mocne molitve tv", "moćne molitve", "mocne molitve",
+    "katoličke molitve", "katolicke molitve",
+    "pulherissimus", "pod smokvom",
+    "hrana za dušu", "hrana za dusu",
+    "добровољци", "miletić marin", "miletic marin",
+    "dijete vjere", "vjera",
+    "kapljice ljubavi božje", "kapljice ljubavi bozje",
+    "kršćanstvo", "krscanstvo",
+    "jutarnja molitva duhu svetom", "blago molitve",
+    "biblija krunice molitve",
+    "molitve bogu",
+    "vojnik sreće", "vojnik srece", "duhovne poruke i inspiracija",
+    "kes duhovni kutak", "duhovni kutak",
+    "molitve.hr", "duhovniportal.com", "duhovniportal"
+  ),
+  "Diocesan" = c(
+    "zagrebačka nadbiskupija", "zagrebacka nadbiskupija",
+    "sisačka biskupija", "sisacka biskupija",
+    "župa šurkovac", "zupa surkovac", "sveta mati slobode",
+    "župa sv. ilije proroka metković", "zupa sv. ilije proroka metkovic",
+    "župa uznesenja bdm", "zupa uznesenja bdm", "župa uznesenja bdm - stenjevec",
+    "šibenska biskupija", "sibenska biskupija",
+    "požeška biskupija", "pozeskа biskupija",
+    "dubrovacka biskupija", "dubrovačka biskupija",
+    "dubrovacka-biskupija.hr",
+    "zupa tramosnica", "župa tramošnica",
+    "župa sv. vida", "zupa sv. vida", "župa sv. vida - petruševec"
+  ),
+  "Youth Organizations" = c(
+    "susret hrvatske katoličke mladeži", "susret hrvatske katolicke mladezi",
+    "shkm požega", "shkm pozega"
+  ),
+  "Academic" = c(
+    "hrvatsko katoličko sveučilište", "hrvatsko katolicko sveuciliste",
+    "universitas studiorum catholica croatica"
+  )
 )
 
-classify_actor_v2 <- function(from_value, url_value = NA) {
+# SECULAR MEDIA EXCLUSIONS: Always classify as Other
+secular_exclusions <- c(
+  # National portals
+  "slobodnadalmacija", "slobodnadalmacija.hr", 
+  "vecernji", "vecernji.hr", 
+  "index.hr", "index",
+  "jutarnji", "jutarnji.hr", 
+  "novilist", "novilist.hr",
+  "24sata", "24sata.hr",
+  "direktno", "direktno.hr",
+  "nacional", "nacional.hr", 
+  "tportal", "tportal.hr",
+  "dnevnik.hr", "dnevnik", 
+  "hrt.hr", "hrt", 
+  "n1info", "n1info.hr", "n1",
+  "rtl.hr", "rtl", 
+  "net.hr", 
+  "telegram.hr", "telegram", 
+  "story.hr", "express.hr", "express", "advance.hr",
+  # Regional portals
+  "glasistre", "glasistre.hr",
+  "dnevno.hr", "dnevno", 
+  "prigorski", "glas-slavonije", "glas slavonije",
+  "croativ", "oluja.info", 
+  "maxportal", "maxportal.hr",
+  "hkv.hr", "icv.hr", "novosti.hr", "7dnevno", "mnovine", 
+  "sjever.hr", "dulist.hr", "pozega.eu", "sibenik.in",
+  "ferata.hr", "epodravina", "glasgacke", "radio-zlatar", 
+  "medjimurski.hr", "sbperiskop", "zagorje-international",
+  "pozeski", "novine.hr", "dubrovnikinsider", "regionalni", 
+  "leportale", "varazdinske-vijesti", "radionasice", 
+  "brodportal", "ljportal", "dubrovnikportal", "01portal",
+  "tomislavnews", "hia.com.hr", "portalnovosti", "antenazadar",
+  "dalmacijanews", "zadarskilist", "medjimurjepress", 
+  "zagreb.info", "034portal", "057info", "cityportal",
+  "klikaj.hr", "lika-online", "ploce.com", "sbonline", 
+  "narod.hr", "infokiosk", "hrsvijet", "tomislavcity", 
+  "vrisak.info", "dalmacijadanas", "dalmacijadanas.hr",
+  "morski.hr", "zagreb.hr", "osijek031", "rijeka.hr", "zadar.hr",
+  "zupanjac.net", "zupanjac", 
+  "dalmatinskiportal.hr", "dalmatinskiportal",
+  "campaign-archive.com",
+  # Forums and aggregators
+  "forum.hr", "reddit", "anonymous_user", "komentari", "bug.hr",
+  # Entertainment and other
+  "inmemoriam", "magicus.info", "book.hr", "mojzagreb.info", 
+  "skole.hr", "tvprofil", "priznajem.hr", "dragovoljac.com", 
+  "croatia", "wikipedia",
+  "facebook.com", "youtube.com", "instagram.com", "twitter.com",
+  # Government and administrative
+  "županija", "zupanija", "grad ", "opcina", "općina",
+  # Non-Catholic religious groups
+  "kršćanska proročka crkva", "krscanska prorocka crkva",
+  "crkva svemogućeg boga", "crkva svemoguceg boga",
+  "jehovini svjedoci", "adventisti", "baptisti", "pentekostalna",
+  # Political parties
+  "domovinski pokret", "hdz", "sdp", "most", "možemo", "mozemo"
+)
+
+classify_actor_v4 <- function(from_value, url_value = NA, platform_value = NA) {
   from_lower <- tolower(from_value)
   url_lower <- tolower(ifelse(is.na(url_value), "", url_value))
+  platform_lower <- tolower(ifelse(is.na(platform_value), "", platform_value))
+  combined <- paste(from_lower, url_lower)
   
-  if (any(sapply(secular_media_exclusions, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+  match_any <- function(patterns, text) {
+    any(sapply(patterns, function(p) grepl(p, text, fixed = TRUE)))
+  }
+  
+  # PRIORITY 1: Manual overrides
+  for (actor_type in names(manual_overrides)) {
+    if (match_any(manual_overrides[[actor_type]], from_lower)) {
+      return(actor_type)
+    }
+  }
+  
+  # PRIORITY 2: Secular exclusions
+  if (match_any(secular_exclusions, combined)) {
     return("Other")
   }
   
+  # PRIORITY 3: Domain-based classification
   institutional_domains <- c("hkm.hr", "ika.hkm.hr", "hkr.hkm.hr", "hbk.hr")
   if (any(sapply(institutional_domains, function(x) grepl(x, url_lower, fixed = TRUE)))) {
-    return("Institutional Official")
-  }
-  
-  institutional_names <- c(
-    "hrvatska katolička mreža", "katolička mreža", "hkm", 
-    "informativna katolička agencija", "ika", "hrvatski katolički radio", "hkr",
-    "hrvatska biskupska konferencija", "hbk"
-  )
-  if (any(sapply(institutional_names, function(x) grepl(x, from_lower, fixed = TRUE)))) {
     return("Institutional Official")
   }
   
@@ -164,115 +306,105 @@ classify_actor_v2 <- function(from_value, url_value = NA) {
     return("Diocesan")
   }
   
-  diocesan_names <- c(
-    "nadbiskupija", "biskupija", "župa ", "zupa ", 
-    "zagrebačka nadbiskupija", "splitsko-makarska", "đakovačko-osječka",
-    "riječka nadbiskupija", "zadarska nadbiskupija", "sisačka biskupija",
-    "varaždinska biskupija", "križevačka eparhija"
-  )
-  if (any(sapply(diocesan_names, function(x) grepl(x, from_lower, fixed = TRUE)))) {
-    return("Diocesan")
-  }
-  
-  independent_media_exact <- c(
-    "laudatotv", "laudato tv", "laudato.tv", "laudato.hr",
-    "bitno.net", "bitno net", "glas koncila", "glaskoncila.hr",
-    "nova-eva.com", "nova eva", "katolički tjednik", "katolicki tjednik",
-    "kršćanska sadašnjost", "ks.hr", "verbum.hr", "verbum",
-    "mir i dobro", "gfranciskovic", "kfranciskovic", "totus tuus"
-  )
-  if (any(sapply(independent_media_exact, function(x) grepl(x, from_lower, fixed = TRUE)))) {
-    return("Independent Media")
-  }
-  
   independent_media_domains <- c(
     "laudato.hr", "laudato.tv", "bitno.net", "glaskoncila.hr", 
-    "nova-eva.com", "verbum.hr", "ks.hr"
+    "nova-eva.com", "verbum.hr", "ks.hr", "novizivot.net"
   )
   if (any(sapply(independent_media_domains, function(x) grepl(x, url_lower, fixed = TRUE)))) {
     return("Independent Media")
   }
   
-  religious_orders_exact <- c(
+  # PRIORITY 4: Pattern-based classification
+  is_parish <- grepl("^župa|^zupa|župi|zupi|- župa|- zupa", from_lower, ignore.case = TRUE) ||
+               grepl("parish", from_lower, ignore.case = TRUE)
+  
+  diocesan_names <- c("nadbiskupija", "biskupija")
+  if (is_parish || any(sapply(diocesan_names, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+    return("Diocesan")
+  }
+  
+  religious_orders <- c(
     "franjevci", "franjevački", "franjevacki", "ofm",
-    "isusovci", "družba isusova", "druzba isusova", "sj",
-    "dominikanci", "dominikanski", "op",
+    "isusovci", "družba isusova", "druzba isusova",
+    "dominikanci", "dominikanski",
     "salezijanci", "salezijanski", "sdb",
     "karmelićani", "karmelicani", "karmel",
     "benediktinci", "benediktinski", "osb",
     "kapucini", "kapucinski", "ofmcap",
-    "pavlini", "pavlinski",
-    "trapisti", "cisterciti",
-    "sestre milosrdnice", "uršulinke", "klarise"
+    "pavlini", "pavlinski", "trapisti", "cisterciti",
+    "sestre milosrdnice", "uršulinke", "klarise",
+    "službenice milosrđa", "kćeri božje ljubavi", "kceri bozje ljubavi"
   )
-  if (any(sapply(religious_orders_exact, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+  if (any(sapply(religious_orders, function(x) grepl(x, from_lower, fixed = TRUE)))) {
     return("Religious Orders")
   }
   
-  charismatic_exact <- c(
-    "božja pobjeda", "bozja pobjeda", "bozjapobjeda",
-    "srce isusovo", "srceisuovo", "srceisusovo",
-    "muževni budite", "muzevni budite", "muzevnibudite",
+  charismatic <- c(
     "molitvena zajednica", "karizmatska", "cenacolo",
     "emmanuel community", "emmanuel zajednica", "taize",
     "neokatekumenski", "neokatekumenska", "kursiljo",
-    "fokolari", "fokolarini", "komunija i oslobođenje"
+    "fokolari", "fokolarini", "komunija i oslobođenje",
+    "dom molitve", "kuća molitve", "kuca molitve"
   )
-  if (any(sapply(charismatic_exact, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+  if (any(sapply(charismatic, function(x) grepl(x, from_lower, fixed = TRUE)))) {
     return("Charismatic Communities")
   }
   
-  priest_patterns <- c(
-    "fra ", "don ", "vlč.", "vlc.", "msgr.", "mons.",
-    "padre ", "o. ", "pater ", "biskup ", "nadbiskup ",
-    "kardinal ", "svećenik", "svecenik"
-  )
-  if (any(sapply(priest_patterns, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+  priest_prefixes <- c("fra ", "don ", "vlč.", "vlc.", "msgr.", "mons.",
+                       "o. ", "pater ", "preč.", "prec.")
+  for (prefix in priest_prefixes) {
+    if (startsWith(from_lower, prefix)) return("Individual Priests")
+  }
+  if (grepl("svećenik|svecenik|župnik|zupnik", from_lower)) {
     return("Individual Priests")
   }
   
-  youth_exact <- c(
+  youth <- c(
     "frama", "shkm", "katolička mladež", "katolicka mladez",
-    "ministranti", "mladifra", "mladi fra", "kaem", "kud",
+    "ministranti", "mladifra", "mladi fra", "kaem",
     "sveučilišna kapelanija", "studentska kapelanija"
   )
-  if (any(sapply(youth_exact, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+  if (any(sapply(youth, function(x) grepl(x, from_lower, fixed = TRUE)))) {
     return("Youth Organizations")
   }
   
-  academic_exact <- c(
+  academic <- c(
     "unicath", "katolički bogoslovni fakultet", "kbf",
     "teologija", "filozofski fakultet družbe isusove", "hks.hr",
     "hrvatsko katoličko sveučilište", "hku"
   )
-  if (any(sapply(academic_exact, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+  if (any(sapply(academic, function(x) grepl(x, from_lower, fixed = TRUE)))) {
     return("Academic")
   }
   
-  lay_influencer_patterns <- c(
-    "vjera", "molitva", "isus", "krist", "gospa", "marija",
-    "hrana za dušu", "hrana za dusu", "dijete vjere",
-    "pulherissimus", "riječ", "rijec", "katolik",
-    "kršćan", "krscan", "evanđelje", "evandelje",
-    "duhovn", "svetac", "sveci", "biblij", "psalm",
-    "blagoslov", "nebo", "spasenje", "uskrs", "božić", "bozic"
+  # PRIORITY 5: Lay influencer detection (platform-aware)
+  lay_keywords <- c(
+    "vjera", "molitva", "molitve", "isus", "krist", "gospa", "marija",
+    "duhovnost", "duhovna", "duhovni", "biblija", "psalm", "blagoslov",
+    "krunica", "rozarij", "katolička obitelj", "evanđelje", "evandelje"
   )
   
-  is_social_media <- grepl("facebook\\.com|youtube\\.com|instagram\\.com", url_lower) |
-                     !grepl("\\.", from_lower)
+  lay_exclude <- c(".hr", ".net", ".com", "portal", "vijesti", "news", "radio")
   
-  if (is_social_media && any(sapply(lay_influencer_patterns, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+  is_likely_social <- platform_lower %in% c("facebook", "instagram", "youtube", "twitter") ||
+                      !grepl("\\.[a-z]{2,4}$", from_lower)
+  
+  has_devotional <- any(sapply(lay_keywords, function(x) grepl(x, from_lower, fixed = TRUE)))
+  has_media_marker <- any(sapply(lay_exclude, function(x) grepl(x, from_lower, fixed = TRUE)))
+  
+  if (is_likely_social && has_devotional && !has_media_marker) {
     return("Lay Influencers")
   }
   
   return("Other")
 }
 
-# FIX: Use unlist to ensure ACTOR_TYPE is a character vector, not a list
-dta[, ACTOR_TYPE := unlist(mapply(classify_actor_v2, FROM, URL, SIMPLIFY = FALSE))]
+# Apply classification
+dta[, ACTOR_TYPE := mapply(classify_actor_v4, FROM, URL, SOURCE_TYPE)]
 
-# Verify it's a character column
 cat("ACTOR_TYPE class:", class(dta$ACTOR_TYPE), "\n")
+cat("ACTOR_TYPE distribution:\n")
+print(table(dta$ACTOR_TYPE))
 ```
 
 ## Corpus Overview
@@ -296,9 +428,16 @@ tibble(
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
 ```
 
-# Analysis 4.1 Overall Temporal Patterns
+# Analysis 4.1: Overall Temporal Patterns
 
 The first analysis examines macro level trends in posting volume and engagement over the corpus period. This reveals overall growth or decline patterns and identifies major activity peaks.
+
+**Reading the charts:**
+
+- **Daily volume** shows raw activity with smoothing to reveal trends
+- **7 day rolling average** captures weekly patterns while reducing noise
+- **30 day rolling average** shows monthly trend direction
+- **YoY change** indicates whether activity is growing or declining relative to prior year
 
 ```{r daily-volume}
 #| label: daily-volume
@@ -437,6 +576,9 @@ yearly_stats %>%
 
 ## Peak Activity Days
 
+<details>
+<summary>**Click to expand** (Top 20 highest volume days)</summary>
+
 ```{r peak-days}
 #| label: peak-days
 
@@ -453,15 +595,19 @@ top_days %>%
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
 ```
 
-:
-## Key Finding on Overall Trends
+</details>
 
-The time series reveals macro patterns in Croatian Catholic digital communication. Trend lines indicate whether the digital sphere is growing, stable, or contracting. Major peaks often correspond to significant religious events or news cycles.
-:
-
-# Analysis 4.2 Liturgical Calendar Effects
+# Analysis 4.2: Liturgical Calendar Effects
 
 Croatian Catholic digital communication is expected to follow liturgical rhythms. This analysis maps posting patterns to the Catholic liturgical calendar to identify seasonal effects.
+
+**Key seasons:**
+
+- **Advent**: Four weeks before Christmas (preparation)
+- **Christmas**: December 25 through Epiphany (celebration)
+- **Lent**: Ash Wednesday to Holy Thursday (penitence)
+- **Easter**: Easter Sunday through Pentecost (celebration)
+- **Ordinary Time**: All other periods
 
 ```{r liturgical-calendar}
 #| label: liturgical-calendar
@@ -604,6 +750,8 @@ season_stats[order(Liturgical_Season)] %>%
 
 ## Major Feast Days Analysis
 
+Feast days are specific dates that may generate activity spikes. **Effect size** measures how much activity increases compared to baseline.
+
 ```{r feast-days}
 #| label: feast-days
 #| fig-height: 8
@@ -711,15 +859,16 @@ feast_summary %>%
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
 ```
 
-:
-## Key Finding on Liturgical Effects
-
-The liturgical calendar shapes Croatian Catholic digital communication. Christmas and Easter periods show elevated activity, while specific feast days generate volume spikes. The effect sizes reveal which religious occasions generate the most digital engagement.
-:
-
-# Analysis 4.3 Event Response
+# Analysis 4.3: Event Response
 
 This analysis examines how Croatian Catholic digital media responds to specific known events during the corpus period.
+
+**Event types:**
+
+- **Youth Event**: SHKM and similar gatherings
+- **Vatican**: Papal and Holy See announcements
+- **Political**: Elections and policy events
+- **Media**: Infrastructure changes in Catholic media
 
 ```{r events-setup}
 #| label: events-setup
@@ -881,13 +1030,7 @@ ggplot(actor_event_long, aes(x = reorder(ACTOR_TYPE, Posts), y = Posts, fill = A
   theme(legend.position = "none")
 ```
 
-:
-## Key Finding on Event Response
-
-Different events generate distinct response patterns. Youth events (SHKM) produce concentrated spikes, while Vatican pronouncements may generate sustained discussion. Actor type response patterns reveal which segments of Catholic digital media engage with different event types.
-:
-
-# Analysis 4.4 Platform Migration
+# Analysis 4.4: Platform Migration
 
 This analysis tracks how platform composition changes over time, revealing shifts in where Croatian Catholic digital communication occurs.
 
@@ -998,41 +1141,37 @@ platform_growth %>%
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
 ```
 
-:
-## Key Finding on Platform Migration
-
-Platform composition reveals structural shifts in Croatian Catholic digital communication. Growth or decline patterns indicate where future Catholic digital presence is likely to concentrate. Comparing growth rates helps identify emerging platforms and declining channels.
-:
-
-# Analysis 4.5 Posting Rhythms
+# Analysis 4.5: Posting Rhythms
 
 This analysis examines temporal patterns at the micro level, revealing when Croatian Catholic digital content is created.
+
+**Reading the charts:**
+
+- **Hourly patterns** show peak activity times
+- **Day of week** patterns reveal weekly rhythms
+- **Heatmap** combines hour and day for full picture
+- **Sunday Index** above 1.0 means higher activity than weekday average
 
 ```{r hourly-patterns}
 #| label: hourly-patterns
 #| fig-height: 7
-# Check if TIME column exists and create Hour column
+
 if ("TIME" %in% names(dta)) {
   dta[, Hour := as.integer(substr(TIME, 1, 2))]
 } else {
-  # If TIME column doesn't exist, check for other time-related columns
   time_cols <- names(dta)[grepl("time|hour|TIME|HOUR", names(dta), ignore.case = TRUE)]
   cat("Available time-related columns:", paste(time_cols, collapse = ", "), "\n")
-  
-  # Create a dummy Hour column if no time data available
   if (length(time_cols) == 0) {
     cat("No time data available. Creating random hours for demonstration.\n")
     dta[, Hour := sample(0:23, .N, replace = TRUE)]
   }
 }
 
-# Also ensure other temporal columns exist - use lubridate::wday correctly
 if (!"DOW" %in% names(dta) && "DATE" %in% names(dta)) {
   dta[, DOW := lubridate::wday(DATE, label = TRUE, abbr = FALSE)]
   dta[, DOW_num := lubridate::wday(DATE)]
 }
 
-# Now proceed with the hourly analysis
 hourly_stats <- dta[!is.na(Hour), .(Posts = .N), by = Hour][order(Hour)]
 
 ggplot(hourly_stats, aes(x = Hour, y = Posts)) +
@@ -1158,6 +1297,8 @@ ggplot(rhythm_hourly, aes(x = Hour, y = Share, color = Rhythm_Type)) +
 
 ## Sunday Morning Analysis
 
+The **Sunday Index** compares Sunday posting volume to weekday average at each hour. Values above 1.0 indicate higher Sunday activity.
+
 ```{r sunday-morning}
 #| label: sunday-morning
 #| fig-height: 7
@@ -1192,15 +1333,9 @@ ggplot(sunday_comparison, aes(x = Hour, y = Sunday_Index)) +
   theme(legend.position = "none")
 ```
 
-:
-## Key Finding on Posting Rhythms
+# Analysis 4.6: Information Cascades
 
-Posting rhythms reveal the temporal organization of Croatian Catholic digital communication. Institutional actors show office hour patterns while personal accounts post more in evenings and weekends. Sunday morning represents a distinctive Catholic rhythm potentially tied to Mass attendance and parish announcements.
-:
-
-# Analysis 4.6 Information Cascades
-
-This analysis examines how content spreads across platforms and sources by tracking shared URLs.
+This analysis examines how content spreads across platforms and sources by tracking platform activity correlations.
 
 ```{r url-extraction}
 #| label: url-extraction
@@ -1241,6 +1376,8 @@ ggplot(same_day_spread, aes(x = Platforms)) +
 ```
 
 ## Platform Interaction Patterns
+
+Platform correlations reveal which platforms have synchronized activity patterns. High correlation suggests content flows between platforms or shared external triggers.
 
 ```{r platform-interactions}
 #| label: platform-interactions
@@ -1303,11 +1440,10 @@ ggplot(origin_platform, aes(x = reorder(First_Post_Platform, New_Sources),
   theme(legend.position = "none")
 ```
 
-## Temporal Lag Analysis
+## Platform Peak Hours Table
 
-```{r temporal-lag}
-#| label: temporal-lag
-#| fig-height: 8
+```{r peak-hours-table}
+#| label: peak-hours-table
 
 hourly_platform <- dta[!is.na(Hour), .(Posts = .N), by = .(Hour, SOURCE_TYPE)]
 hourly_platform[, Total := sum(Posts), by = SOURCE_TYPE]
@@ -1318,27 +1454,6 @@ peak_hours <- hourly_platform[, .(
   Peak_Share = max(Share)
 ), by = SOURCE_TYPE][order(Peak_Hour)]
 
-ggplot(hourly_platform, aes(x = Hour, y = Share, color = SOURCE_TYPE)) +
-  geom_line(linewidth = 1) +
-  geom_point(data = hourly_platform[hourly_platform[, .I[which.max(Share)], by = SOURCE_TYPE]$V1],
-             size = 3) +
-  scale_color_manual(values = platform_colors) +
-  scale_x_continuous(breaks = seq(0, 23, 4)) +
-  labs(
-    title = "Platform Posting Peaks Throughout the Day",
-    subtitle = "Peak hours highlighted with points",
-    x = "Hour",
-    y = "Share of Platform's Daily Posts (%)",
-    color = "Platform"
-  ) +
-  theme(legend.position = "right")
-```
-
-## Platform Peak Hours Table
-
-```{r peak-hours-table}
-#| label: peak-hours-table
-
 peak_hours %>%
   mutate(
     Peak_Hour = sprintf("%02d:00", Peak_Hour),
@@ -1347,12 +1462,6 @@ peak_hours %>%
   kable(col.names = c("Platform", "Peak Hour", "Share at Peak")) %>%
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
 ```
-
-:
-## Key Finding on Information Cascades
-
-Platform activity correlations and temporal patterns reveal how content flows through the Croatian Catholic digital ecosystem. High correlations between platforms suggest synchronized communication patterns, potentially indicating that content originates on one platform and spreads to others.
-:
 
 # Summary and Key Findings
 
@@ -1370,11 +1479,9 @@ dominant_platform <- dta[, .N, by = SOURCE_TYPE][order(-N)][1]$SOURCE_TYPE
 
 ```{r temporal-summary}
 #| label: temporal-summary
-# Check what data exists before creating the summary
-cat("Sunday comparison data available:", nrow(sunday_comparison), "rows\n")
-cat("Hour 10 data:", nrow(sunday_comparison[Hour == 10]), "rows\n")
 
-# Create the summary with safe value extraction
+cat("Sunday comparison data available:", nrow(sunday_comparison), "rows\n")
+
 tibble(
   Finding = c(
     "Corpus period",
@@ -1394,7 +1501,6 @@ tibble(
     dominant_platform,
     as.character(season_stats[which.max(Posts_Per_Day)]$Liturgical_Season),
     sprintf("%02d:00", hourly_stats[which.max(Posts)]$Hour),
-    # Safe extraction for Sunday index
     ifelse(nrow(sunday_comparison[Hour == 10]) > 0, 
            sprintf("%.2f", sunday_comparison[Hour == 10]$Sunday_Index),
            "N/A")
@@ -1404,33 +1510,48 @@ tibble(
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
 ```
 
-## Key Findings
+## Hypotheses Testing Summary
 
-### Overall Temporal Patterns
+| Hypothesis | Metric to Examine | Finding |
+|------------|-------------------|---------|
+| H14: Catholic digital activity follows liturgical calendar | Season volume comparison | See liturgical analysis |
+| H15: Christmas and Easter show peak activity | Feast day effect sizes | Compare seasonal patterns |
+| H16: Institutional actors post during office hours | Hour by actor type | Compare institutional vs personal rhythms |
+| H17: Sunday shows distinctive patterns | Sunday Index by hour | See Sunday morning analysis |
+| H18: Major events generate activity spikes | Event response profiles | Compare event spike percentages |
 
-The corpus reveals macro trends in Croatian Catholic digital communication across multiple years. Monthly and yearly aggregations show whether the digital sphere is expanding or contracting, while peak identification highlights periods of exceptional activity.
+---
 
-### Liturgical Calendar Effects
+# Appendix: Classification Quality Diagnostics
 
-Croatian Catholic digital communication follows liturgical rhythms. The Christmas and Easter seasons show distinct patterns, and major feast days generate measurable volume increases. This confirms that religious calendar structures digital communication patterns.
+<details>
+<summary>**Click to expand diagnostics** (Quality assurance for actor classification)</summary>
 
-### Event Response
+```{r classification-diagnostics}
+#| label: classification-diagnostics
 
-Major events generate different response profiles depending on their nature. Youth events like SHKM produce concentrated spikes, Vatican pronouncements may generate sustained discussion, and political events reveal engagement from specific actor segments.
+actor_dist <- dta[, .(
+  Posts = .N,
+  Sources = uniqueN(FROM),
+  Mean_Interactions = mean(INTERACTIONS, na.rm = TRUE)
+), by = ACTOR_TYPE][order(-Posts)]
 
-### Platform Migration
+actor_dist %>%
+  mutate(
+    Posts = format(Posts, big.mark = ","),
+    Sources = format(Sources, big.mark = ","),
+    Mean_Interactions = round(Mean_Interactions, 1)
+  ) %>%
+  kable(col.names = c("Actor Type", "Posts", "Sources", "Mean Interactions"),
+        caption = "Actor Type Distribution in Temporal Analysis") %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
 
-Platform composition shifts over time reveal structural changes in where Croatian Catholic digital communication occurs. Growth and decline patterns help identify which platforms are gaining importance and which are fading.
+</details>
 
-### Posting Rhythms
+---
 
-Micro temporal patterns reveal distinct rhythms between institutional and personal accounts. Institutional actors follow office hour patterns while individuals post more in evenings and weekends. Sunday morning represents a distinctive Catholic digital rhythm.
-
-### Information Cascades
-
-Platform activity correlations and content origin patterns suggest how information flows through the ecosystem. Understanding these patterns helps identify which platforms serve as originators versus amplifiers of Catholic digital content.
-
-# Appendix A Technical Notes
+# Appendix: Technical Notes
 
 ## Liturgical Calendar Algorithm
 
