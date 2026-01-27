@@ -5,6 +5,7 @@ author: "DigiKat Project"
 date: today
 format:
   html:
+    embed-resources: true      # <--- This is the key fix
     toc: true
     toc-depth: 3
     toc-location: left
