@@ -95,13 +95,33 @@ This document presents **Map 2: Thematic Structure** of the DigiKat project. The
 
 We use topic modeling to discover the thematic landscape of the corpus and then examine how different actors and platforms specialize in particular topics.
 
+## Methodological Overview
+
+**Topic modeling** is an unsupervised machine learning technique that discovers latent thematic patterns in large text corpora. Unlike manual content analysis, topic models can process hundreds of thousands of documents and identify recurring themes without predefined categories.
+
+We employ **Structural Topic Modeling (STM)**, an extension of Latent Dirichlet Allocation (LDA) that incorporates document metadata (actor type, platform, date) as covariates. This allows us to examine not only what topics exist but also how topic prevalence varies across different communicators and platforms.
+
+**Key concepts:**
+
+- **Topic:** A probability distribution over words. Topics represent coherent themes (e.g., liturgical practice, social issues, Vatican news)
+- **Document-topic distribution (theta):** Each document is a mixture of topics. A post might be 60% liturgical and 40% devotional
+- **Topic prevalence:** The average proportion of the corpus devoted to each topic
+- **FREX words:** Words that are both frequent AND exclusive to a topic (helps distinguish topics)
+
+**Interpretation guidance:**
+
+- High prevalence topics represent dominant themes in the discourse
+- Topics with high FREX distinctiveness are easier to interpret
+- Actor-topic associations reveal thematic specialization
+- Platform-topic patterns show how different media afford different content types
+
 ```{r load-data}
 #| label: load-data
 
 dta <- readRDS("C:/Users/lsikic/Luka C/HKS/Projekti/Digitalni Kat/SHKM/DigiKat/data/merged_comprehensive.rds") %>%
   filter(SOURCE_TYPE != "tiktok", !is.na(SOURCE_TYPE)) %>%
-  filter(DATE >= as.Date("2021-01-01") & DATE <= as.Date("2024-12-31")) %>%
-  filter(year >= 2021 & year <= 2024)
+  filter(DATE >= as.Date("2021-01-01") & DATE <= as.Date("2025-12-31")) %>%
+  filter(year >= 2021 & year <= 2025)
 setDT(dta)
 
 # Check data loaded correctly
@@ -114,6 +134,53 @@ n_with_text <- sum(!is.na(dta$FULL_TEXT) & nchar(dta$FULL_TEXT) > 50, na.rm = TR
 
 ```{r actor-classification}
 #| label: actor-classification
+
+# =============================================================================
+# ACTOR CLASSIFICATION FOR MAP 2
+# =============================================================================
+# This uses the same v4 classification as Map 1 for consistency.
+# See Map 1 documentation for full explanation of classification logic.
+# =============================================================================
+
+# Manual overrides for high-engagement sources
+manual_overrides <- list(
+  "Institutional Official" = c(
+    "hrvatska katolička mreža", "hrvatska katolicka mreza",
+    "informativna katolička agencija", "ika", "hkr", "hkm", "hbk",
+    "tiskovni ured hbk", "radio marija"
+  ),
+  "Independent Media" = c(
+    "laudato tv", "laudatotv", "laudato.tv", "laudato.hr", "laudato",
+    "bitno.net", "glas koncila", "glaskoncila",
+    "nova eva", "nova-eva", "verbum", "totus tuus",
+    "novizivot.net", "novi zivot", "novi život"
+  ),
+  "Charismatic Communities" = c(
+    "božja pobjeda", "bozja pobjeda", "muževni budite", "muzevni budite",
+    "srce isusovo", "cenacolo", "duhovna obnova", "molitvena snaga",
+    "dom molitve slavonski brod", "dom molitve", "molitvena zajednica sv. josipa"
+  ),
+  "Lay Influencers" = c(
+    "katolička obitelj", "katolicka obitelj", "marija majka isusova",
+    "božanske molitve", "moćne molitve", "katoličke molitve",
+    "pulherissimus", "pod smokvom", "hrana za dušu", "hrana za dusu",
+    "добровољци", "miletić marin", "dijete vjere", "vjera",
+    "kapljice ljubavi božje", "kršćanstvo", "jutarnja molitva duhu svetom",
+    "blago molitve", "biblija krunice molitve"
+  ),
+  "Diocesan" = c(
+    "zagrebačka nadbiskupija", "sisačka biskupija",
+    "župa šurkovac", "sveta mati slobode",
+    "župa sv. ilije proroka metković", "župa uznesenja bdm",
+    "šibenska biskupija", "požeška biskupija"
+  ),
+  "Youth Organizations" = c(
+    "susret hrvatske katoličke mladeži", "shkm požega"
+  ),
+  "Academic" = c(
+    "hrvatsko katoličko sveučilište", "universitas studiorum catholica croatica"
+  )
+)
 
 secular_media_exclusions <- c(
   "slobodnadalmacija", "vecernji", "index.hr", "jutarnji", "novilist",
@@ -133,14 +200,29 @@ secular_media_exclusions <- c(
   "klikaj.hr", "lika-online", "priznajem.hr", "ploce.com",
   "dragovoljac.com", "sbonline", "narod.hr", "infokiosk", "hrsvijet",
   "tomislavcity", "vrisak.info", "croatia", "anonymous_user", "reddit",
-  "dalmacijadanas"
+  "dalmacijadanas", "zupanjac.net", "dalmatinskiportal.hr", "campaign-archive.com",
+  "županija", "zupanija", "kršćanska proročka crkva"
 )
 
 classify_actor_v2 <- function(from_value, url_value = NA) {
   from_lower <- tolower(from_value)
   url_lower <- tolower(ifelse(is.na(url_value), "", url_value))
+  combined <- paste(from_lower, url_lower)
   
-  if (any(sapply(secular_media_exclusions, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+  # Helper function
+  match_any <- function(patterns, text) {
+    any(sapply(patterns, function(p) grepl(p, text, fixed = TRUE)))
+  }
+  
+  # PRIORITY 1: Manual overrides
+  for (actor_type in names(manual_overrides)) {
+    if (match_any(manual_overrides[[actor_type]], from_lower)) {
+      return(actor_type)
+    }
+  }
+  
+  # PRIORITY 2: Secular exclusions
+  if (match_any(secular_media_exclusions, combined)) {
     return("Other")
   }
   
@@ -168,13 +250,15 @@ classify_actor_v2 <- function(from_value, url_value = NA) {
     return("Diocesan")
   }
   
+  # Check for parish patterns
+  is_parish <- grepl("^župa|^zupa|župi|zupi", from_lower, ignore.case = TRUE)
   diocesan_names <- c(
-    "nadbiskupija", "biskupija", "župa ", "zupa ", 
+    "nadbiskupija", "biskupija", 
     "zagrebačka nadbiskupija", "splitsko-makarska", "đakovačko-osječka",
     "riječka nadbiskupija", "zadarska nadbiskupija", "sisačka biskupija",
     "varaždinska biskupija", "križevačka eparhija"
   )
-  if (any(sapply(diocesan_names, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+  if (is_parish || any(sapply(diocesan_names, function(x) grepl(x, from_lower, fixed = TRUE)))) {
     return("Diocesan")
   }
   
@@ -191,7 +275,7 @@ classify_actor_v2 <- function(from_value, url_value = NA) {
   
   independent_media_domains <- c(
     "laudato.hr", "laudato.tv", "bitno.net", "glaskoncila.hr", 
-    "nova-eva.com", "verbum.hr", "ks.hr"
+    "nova-eva.com", "verbum.hr", "ks.hr", "novizivot.net"
   )
   if (any(sapply(independent_media_domains, function(x) grepl(x, url_lower, fixed = TRUE)))) {
     return("Independent Media")
@@ -226,12 +310,13 @@ classify_actor_v2 <- function(from_value, url_value = NA) {
     return("Charismatic Communities")
   }
   
-  priest_patterns <- c(
-    "fra ", "don ", "vlč.", "vlc.", "msgr.", "mons.",
-    "padre ", "o. ", "pater ", "biskup ", "nadbiskup ",
-    "kardinal ", "svećenik", "svecenik"
-  )
-  if (any(sapply(priest_patterns, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+  # Check priest titles at start of name
+  priest_prefixes <- c("fra ", "don ", "vlč.", "vlc.", "msgr.", "mons.",
+                       "o. ", "pater ", "biskup ", "nadbiskup ", "kardinal ")
+  for (prefix in priest_prefixes) {
+    if (startsWith(from_lower, prefix)) return("Individual Priests")
+  }
+  if (grepl("svećenik|svecenik|župnik|zupnik", from_lower)) {
     return("Individual Priests")
   }
   
@@ -253,19 +338,18 @@ classify_actor_v2 <- function(from_value, url_value = NA) {
     return("Academic")
   }
   
-  lay_influencer_patterns <- c(
-    "vjera", "molitva", "isus", "krist", "gospa", "marija",
-    "hrana za dušu", "hrana za dusu", "dijete vjere",
-    "pulherissimus", "riječ", "rijec", "katolik",
-    "kršćan", "krscan", "evanđelje", "evandelje",
-    "duhovn", "svetac", "sveci", "biblij", "psalm",
-    "blagoslov", "nebo", "spasenje", "uskrs", "božić", "bozic"
+  # Lay influencer detection
+  lay_devotional <- c(
+    "vjera", "molitva", "molitve", "isus", "krist", "gospa", "marija",
+    "hrana za dušu", "dijete vjere", "duhovnost", "duhovna", "biblija",
+    "psalm", "blagoslov", "krunica", "rozarij", "katolička obitelj"
   )
+  lay_exclude <- c(".hr", ".net", ".com", "portal", "vijesti", "news", "radio")
   
-  is_social_media <- grepl("facebook\\.com|youtube\\.com|instagram\\.com", url_lower) |
-                     !grepl("\\.", from_lower)
+  has_devotional <- any(sapply(lay_devotional, function(x) grepl(x, from_lower, fixed = TRUE)))
+  has_media <- any(sapply(lay_exclude, function(x) grepl(x, from_lower, fixed = TRUE)))
   
-  if (is_social_media && any(sapply(lay_influencer_patterns, function(x) grepl(x, from_lower, fixed = TRUE)))) {
+  if (has_devotional && !has_media) {
     return("Lay Influencers")
   }
   
@@ -297,7 +381,18 @@ tibble(
 
 # Analysis 2.1: Topic Discovery
 
-We use Structural Topic Modeling (STM) which allows incorporating document metadata as covariates. The analysis uses Croatian text preprocessing with custom stopwords.
+## Text Preprocessing
+
+Before topic modeling, text must be cleaned and tokenized. Preprocessing involves:
+
+1. **URL removal:** Eliminate web addresses that add noise
+2. **Lowercasing:** Standardize case for consistent matching
+3. **Punctuation/number removal:** Keep only alphabetic content
+4. **Stopword removal:** Filter common words that dont carry topical meaning
+5. **Minimum character filter:** Remove very short tokens (< 3 characters)
+6. **Frequency trimming:** Keep only terms appearing in multiple documents
+
+**Why stopwords matter:** Croatian has rich morphology, so stopwords must cover all declensions and conjugations. The list includes auxiliaries (sam, si, je), prepositions (u, na, za), pronouns (ja, ti, on), and generic terms that appear across all topics.
 
 ```{r text-preprocessing}
 #| label: text-preprocessing
@@ -306,88 +401,240 @@ croatian_stopwords <- unique(c(
   # --- CONJUNCTIONS (Veznici) ---
   "i", "pa", "te", "ni", "niti", "a", "ali", "nego", "no", "već", "vec",
   "ili", "da", "dok", "jer", "ako", "mada", "premda", "iako", "kako",
-  "neka", "kad", "kada", "cim", "čim", "zato",
+  "neka", "kad", "kada", "cim", "čim", "zato", "stoga", "dakle",
 
   # --- PREPOSITIONS (Prijedlozi) ---
   "u", "na", "s", "sa", "o", "po", "za", "uz", "iz", "do", "od", "pri",
-  "k", "ka", "bez", "blizu", "osim", "među", "medju", "poput", "putem",
+  "k", "ka", "bez", "blizu", "osim", "među", "medju", "medu", "poput", "putem",
   "prema", "pored", "pokraj", "kroz", "nad", "pod", "pred", "oko", "okolo",
   "niz", "uzduž", "duž", "vrh", "dno", "kraj", "krajem", "usprkos", "glede",
   "nasuprot", "ispod", "iznad", "između", "izmedju", "iza", "unutar", "van",
 
   # --- AUXILIARY VERBS & "BITI" (To Be) ---
-  # Present
   "sam", "si", "je", "smo", "ste", "su", "jesam", "jesi", "jest", "jesmo", "jeste", "jesu",
   "budem", "budeš", "budes", "bude", "budemo", "budete", "budu",
-  # Past
   "bio", "bila", "bilo", "bili", "bile",
-  # Negative
   "nisam", "nisi", "nije", "nismo", "niste", "nisu",
-  "ne", "nemoj",
-  # Infinitive
-  "biti", "bit",
+  "ne", "nemoj", "nemojte", "nemojmo",
+  "biti", "bit", "bismo", "biste",
 
   # --- VERBS "HTJETI" (Will/Want) ---
   "ću", "cu", "ćeš", "ces", "će", "ce", "ćemo", "cemo", "ćete", "cete",
-  "hoću", "hocu", "hoćeš", "hoces", "hoće", "hoce", "hoćemo", "hocemo", "hoćete", "hocete", "hoće", "hoce",
-  "bih", "bi", "bismo", "biste", "htio", "htjela", "htjelo", "htjeli", "htjele",
-  "neću", "necu", "nećeš", "neces", "neće", "nece", "nećemo", "necemo", "nećete", "necete", "neće", "nece",
+
+  "hoću", "hocu", "hoćeš", "hoces", "hoće", "hoce", "hoćemo", "hocemo", "hoćete", "hocete",
+  "bih", "bi", "htio", "htjela", "htjelo", "htjeli", "htjele",
+  "neću", "necu", "nećeš", "neces", "neće", "nece", "nećemo", "necemo", "nećete", "necete",
 
   # --- VERBS "MOĆI" & "IMATI" (Can/Have) ---
   "mogu", "možeš", "mozes", "može", "moze", "možemo", "mozemo", "možete", "mozete",
   "mogao", "mogla", "moglo", "mogli", "mogle", "moći", "moci",
   "imam", "imaš", "imas", "ima", "imamo", "imate", "imaju", "imao", "imala", "imalo", "imali", "imati",
 
-  # --- PRONOUNS: 1st Person (Ja, Mi) - All Cases ---
-  "ja", "mene", "meni", "me", "mnom", "mnome",
-  "mi", "nas", "nama", "nam", "nama",
+  # --- COMMON VERBS (Česti glagoli) ---
+  "reći", "reci", "rekao", "rekla", "rekli", "rekle", "kaže", "kaze", "kazao", "kazala",
+  "treba", "trebao", "trebala", "trebali", "trebale", "trebati",
+  "mora", "moram", "moraš", "moras", "moramo", "morate", "moraju", "morao", "morala", "morali",
+  "želi", "zeli", "želim", "zelim", "želite", "zelite", "želio", "zelio", "željela", "zeljela",
+  "zna", "znam", "znaš", "znas", "znamo", "znate", "znaju", "znao", "znala", "znali",
+  "vidi", "vidim", "vidiš", "vidis", "vidimo", "vidite", "vide", "vidio", "vidjela", "vidjeli",
+  "dati", "dao", "dala", "dali", "dale", "dajem", "daješ", "daje", "dajemo", "dajete", "daju",
+  "uzeti", "uzeo", "uzela", "uzeli", "uzimam", "uzimaš", "uzima",
+  "ići", "ici", "išao", "isao", "išla", "isla", "išli", "isli", "idem", "ideš", "ide",
+  "doći", "doci", "došao", "dosao", "došla", "dosla", "došli", "dosli", "dolazi", "dolazim",
+  "raditi", "radio", "radila", "radili", "radim", "radiš", "radi", "radimo", "radite", "rade",
+  "pisati", "pisao", "pisala", "pisali", "pišem", "pisem", "piše", "pise",
+  "čitati", "citati", "čitao", "citao", "čitala", "citala", "čitam", "citam",
+  "staviti", "stavio", "stavila", "stavili", "stavljam", "stavlja",
+  "nastaviti", "nastavio", "nastavila", "nastavili", "nastavlja", "nastavljam",
+  "postati", "postao", "postala", "postali", "postaje", "postajem",
 
-  # --- PRONOUNS: 2nd Person (Ti, Vi) - All Cases ---
+  # --- PRONOUNS: All persons and cases ---
+  "ja", "mene", "meni", "me", "mnom", "mnome",
+  "mi", "nas", "nama", "nam",
   "ti", "tebe", "tebi", "te", "tobom", "tobome",
   "vi", "vas", "vama", "vam",
-
-  # --- PRONOUNS: 3rd Person (On, Ona, Ono, Oni) - All Cases ---
   "on", "njega", "njemu", "ga", "nj", "njim", "njime",
-  "ona", "nje", "njoj", "ju", "je", "njom", "njome",
+  "ona", "nje", "njoj", "ju", "njom", "njome",
   "ono",
-  "oni", "one", "ona", "njih", "njima", "ih",
-
-  # --- PRONOUNS: Reflexive (Sebe) ---
+  "oni", "one", "njih", "njima", "ih",
   "sebe", "sebi", "se", "sobom",
 
-  # --- DETERMINERS & POSSESSIVES (This, That, My, Your...) ---
-  # Only high frequency variations included to prevent list bloat
+  # --- DETERMINERS & POSSESSIVES ---
   "taj", "ta", "to", "tog", "toga", "tom", "tome", "tomu", "tim", "tima", "toj", "te",
   "ovaj", "ova", "ovo", "ovog", "ovoga", "ovom", "ovome", "ovim", "ovima", "ovoj", "ove",
-  "onaj", "ona", "ono", "onog", "onoga", "onom", "onome", "onim", "onima", "onoj", "one",
+  "onaj", "onog", "onoga", "onom", "onome", "onim", "onima", "onoj",
   "moj", "moja", "moje", "mojeg", "mojega", "mom", "mome", "mojem", "mojemu", "mojim", "mojima", "mojih",
   "tvoj", "tvoja", "tvoje", "tvojeg", "tvojim",
-  "naš", "nas", "naša", "nasa", "naše", "nase", "našeg", "naseg", "našem", "nasem", "našim", "nasim",
-  "vaš", "vas", "vaša", "vasa", "vaše", "vase", "vašeg", "vaseg", "vašem", "vasem", "vašim", "vasim",
+  "naš", "naša", "nasa", "naše", "nase", "našeg", "naseg", "našem", "nasem", "našim", "nasim",
+  "vaš", "vaša", "vasa", "vaše", "vase", "vašeg", "vaseg", "vašem", "vasem", "vašim", "vasim",
   "njegov", "njegova", "njegovo", "njen", "njezin", "njihov", "njihova", "njihovo",
+  "svoj", "svoja", "svoje", "svojeg", "svojem", "svojim", "svojih", "svojima",
 
   # --- RELATIVE PRONOUNS / QUESTION WORDS ---
   "tko", "što", "sto", "kog", "koga", "kom", "kome", "čemu", "cemu", "čim", "cim", "čime", "cime",
   "koji", "koja", "koje", "kojeg", "kojega", "kojem", "kojemu", "kojim", "kojima", "kojih",
   "kakav", "kakva", "kakvo", "svaki", "svaka", "svako", "sva", "sve", "svi", "svih", "svima",
-  "neki", "neka", "neko", "nekog", "nekom", "nekim",
-  "sav", "sva", "sve",
-  "netko", "nešto", "nesto", "nitko", "ništa", "nista", "svatko",
+  "neki", "neka", "neko", "nekog", "nekom", "nekim", "nekih", "nekima",
+  "sav", "cijeli", "cijela", "cijelo",
+  "netko", "nešto", "nesto", "nitko", "ništa", "nista", "svatko", "svašta", "svasta",
+  "isti", "ista", "isto", "istog", "istom", "istim",
 
-  # --- ADVERBS & PARTICLES (Prilozi i čestice) ---
-  "gdje", "kamo", "kuda", "odakle", "kako", "zašto", "zasto",
-  "ovdje", "tamo", "tu", "negdje", "nigdje",
-  "jučer", "jucer", "danas", "sutra", "sada", "sad", "tada", "onda", "uvijek", "nikad", "nikada",
-  "mnogo", "puno", "malo", "više", "vise", "manje",
-  "jako", "vrlo", "baš", "bas", "čak", "cak",
+  # --- ADVERBS & PARTICLES ---
+  "gdje", "gde", "kamo", "kuda", "odakle", "kako", "zašto", "zasto",
+  "ovdje", "ovde", "tamo", "tu", "negdje", "negde", "nigdje", "nigde",
+  "jučer", "jucer", "danas", "sutra", "sada", "sad", "tada", "onda", "uvijek", "uvek", "nikad", "nikada",
+  "mnogo", "puno", "malo", "više", "vise", "manje", "dosta", "prilično", "prilicno",
+  "jako", "vrlo", "veoma", "baš", "bas", "čak", "cak", "tek", "još", "jos",
   "dakle", "međutim", "medjutim", "naprosto", "naime", "vjerojatno", "naravno", "sigurno", "zaista", "doista",
+  "možda", "mozda", "ipak", "uostalom", "uglavnom", "najčešće", "najcesce", "ponekad", "rijetko", "retko",
+  "također", "takodjer", "takodje", "isto", "također", "zatim", "potom", "konačno", "konacno",
+  "prije", "pre", "poslije", "posle", "tijekom", "tokom", "dok", "kada", "čim", "cim",
+  "gotovo", "skoro", "upravo", "jedino", "samo", "posebno", "osobito", "naročito", "narocito",
+  "dobro", "loše", "lose", "brzo", "polako", "sporo", "lako", "teško", "tesko",
+  "odmah", "uskoro", "kasno", "rano", "odavno", "nedavno", "opet", "ponovno", "ponovo",
 
-  # --- NUMBERS (Common in text) ---
-  "jedan", "jedna", "jedno", "dva", "tri", "četiri", "cetiri", "pet", "šest", "sest", "sedam", "osam", "devet", "deset",
-  "prvi", "prva", "prvo", "drugi", "druga", "drugo", "treći", "treci",
+  # --- NUMBERS ---
+  "jedan", "jedna", "jedno", "jednog", "jednoj", "jednom", "jednim",
+  "dva", "dvije", "dvoje", "dvaju", "dvjema",
+  "tri", "troje", "triju", "trima",
+  "četiri", "cetiri", "četvero", "cetvero",
+  "pet", "šest", "sest", "sedam", "osam", "devet", "deset",
+  "jedanaest", "dvanaest", "trinaest", "dvadeset", "trideset", "sto", "tisuću", "tisucu", "milijun",
+  "prvi", "prva", "prvo", "prvog", "prvoj", "prvom",
+  "drugi", "druga", "drugo", "drugog", "drugoj", "drugom", "drugim",
+  "treći", "treci", "treća", "treca", "treće", "trece",
+  "četvrti", "cetvrti", "peti", "šesti", "sesti",
+
+  # --- TIME EXPRESSIONS ---
+  "godina", "godine", "godinu", "godini", "godinama", "godišnje", "godisnje",
+  "mjesec", "mjeseca", "mjeseci", "mjesecu",
+  "tjedan", "tjedna", "tjedni", "tjednu",
+  "dan", "dana", "danu", "dani", "danima", "dnevno",
+  "sat", "sata", "sati", "satu", "satima",
+  "minuta", "minute", "minutu", "minuti",
+  "vrijeme", "vremena", "vremenu",
+  "početak", "pocetak", "početka", "pocetka", "kraj", "kraja", "kraju",
+  "ponedjeljak", "utorak", "srijeda", "četvrtak", "cetvtak", "petak", "subota", "nedjelja",
+  "siječanj", "sijecanj", "veljača", "veljaca", "ožujak", "ozujak", "travanj", "svibanj",
+  "lipanj", "srpanj", "kolovoz", "rujan", "listopad", "studeni", "prosinac",
 
   # --- TECH / WEB NOISE ---
-  "http", "https", "www", "com", "hr", "org", "net", "foto", "video", "slika", "clanak", "članak"
+  "http", "https", "www", "com", "hr", "org", "net", "foto", "video", "slika", "clanak", "članak",
+  "link", "klik", "stranica", "stranici", "stranice", "web", "online", "internet",
+  "email", "mail", "telefon", "mob", "fax",
+  "cookie", "cookies", "kolačić", "kolacic", "kolačića", "kolacica", "kolačiće", "kolacice",
+  "kolačićima", "kolacicima", "postavke", "podataka", "podatke", "pristupačnosti", "pristupacnosti",
+  "privatnosti", "google", "facebook", "youtube", "instagram", "twitter",
+  "user", "article", "category", "consent", "postovi", "postano", "pridružen", "pridruzen",
+  
+  # --- MEDIA/NEWS NOISE ---
+  "foto", "video", "izvor", "autor", "objavljeno", "objavio", "objavila",
+  "pročitajte", "procitajte", "pogledajte", "kliknite", "saznajte",
+  "cropix", "afp", "hina", "reuters", "pixsell",
+  "nastavak", "nastavi", "više", "vise", "detaljnije", "opširnije", "opsirnije",
+
+  # --- COMMON NOUNS TO EXCLUDE ---
+  "čovjek", "covjek", "čovjeka", "covjeka", "ljudi", "osoba", "osobe", "osobu", "osoba",
+  "stvar", "stvari", "stvarima", "način", "nacin", "načina", "nacina", "načinom", "nacinom",
+  "pitanje", "pitanja", "pitanju", "odgovor", "odgovora", "odgovoru",
+  "dio", "dijela", "dijelu", "dijelovi", "dijelom",
+  "put", "puta", "putu", "putevi", "putem",
+  "mjesto", "mjesta", "mjestu", "mjestima",
+  "strana", "strane", "stranu", "strani",
+  "slučaj", "slucaj", "slučaja", "slucaja", "slučaju", "slucaju",
+  "primjer", "primjera", "primjeru", "primjerice",
+  "razlog", "razloga", "razlogu", "razlozi",
+  "činjenica", "cinjenica", "činjenice", "cinjenice",
+  "podatak", "podatka", "podaci", "podataka",
+  "informacija", "informacije", "informaciju",
+  "tema", "teme", "temu", "temi",
+  "problem", "problema", "problemu", "problemi",
+  "rješenje", "rjesenje", "rješenja", "rjesenja",
+  "rezultat", "rezultata", "rezultatu", "rezultati",
+  "cilj", "cilja", "cilju", "ciljevi",
+  "uvjet", "uvjeta", "uvjetu", "uvjeti",
+  "mogućnost", "mogucnost", "mogućnosti", "mogucnosti",
+  "potreba", "potrebe", "potrebu", "potrebi",
+  "sustav", "sustava", "sustavu", "sustavi",
+  "proces", "procesa", "procesu", "procesi",
+  "program", "programa", "programu", "programi",
+  "projekt", "projekta", "projektu", "projekti",
+  "broj", "broja", "broju", "brojevi",
+  "red", "reda", "redu",
+  "vrsta", "vrste", "vrstu", "vrsti",
+  "oblik", "oblika", "obliku", "oblici",
+  "razina", "razine", "razinu", "razini",
+  "stupanj", "stupnja", "stupnju",
+  "temelj", "temelja", "temelju",
+  "osnova", "osnove", "osnovu", "osnovi",
+  
+  # --- ADJECTIVES (common/generic) ---
+  "velik", "velika", "veliko", "veliki", "veliku", "velikog", "velikom",
+  "mali", "mala", "malo", "malog", "malom", "malim",
+  "novi", "nova", "novo", "novog", "novoj", "novom", "novih", "novima",
+  "star", "stara", "staro", "stari", "starog", "starom",
+  "dobar", "dobra", "dobro", "dobrog", "dobroj", "dobrom", "dobrim",
+  "loš", "los", "loša", "losa", "loše", "lose",
+  "pravi", "prava", "pravo", "pravog", "pravoj", "pravom",
+  "određen", "odreden", "određena", "odredena", "određeno", "odredeno",
+  "poseban", "posebna", "posebno", "posebnog", "posebnoj",
+  "različit", "razlicit", "različita", "razlicita", "različito", "razlicito",
+  "sličan", "slican", "slična", "slicna", "slično", "slicno",
+  "moguć", "moguc", "moguća", "moguca", "moguće", "moguce",
+  "potreban", "potrebna", "potrebno", "potrebnog", "potrebnoj",
+  "važan", "vazan", "važna", "vazna", "važno", "vazno", "važnog", "vaznog",
+  "jednak", "jednaka", "jednako", "jednakog",
+  "drukčiji", "drukciji", "drukčija", "drukcija", "drukčije", "drukcije",
+  "posljednji", "posljednja", "posljednje", "zadnji", "zadnja", "zadnje",
+  "sljedeći", "slijedeci", "sljedeća", "sljedeca", "sljedeće", "sljedece",
+  "prethodni", "prethodna", "prethodno", "prijašnji", "prijasnji",
+  "sadašnji", "sadasnji", "sadašnja", "sadasnja", "sadašnje", "sadasnje",
+  "buduć", "buduc", "buduća", "buduca", "buduće", "buduce", "budući", "buduci",
+  
+  # --- LINKING/DISCOURSE WORDS ---
+  "kao", "poput", "primjerice", "recimo", "odnosno", "naime", "zapravo",
+  "prije", "nakon", "tijekom", "tokom", "dok", "čim", "cim",
+  "osim", "osim toga", "uz to", "pored toga", "unatoč", "unatoc", "usprkos",
+  "zbog", "radi", "poradi", "uslijed", "usled",
+  "tako", "takav", "takva", "takvo", "takvog", "takvoj", "takvom",
+  "ovako", "onako",
+  "često", "cesto", "rijetko", "retko", "ponekad", "katkad", "uvijek", "uvek",
+  "nikad", "nikada", "negdje", "negde", "nigdje", "nigde", "svugdje", "svugde",
+  "otprilike", "približno", "priblizno", "točno", "tocno", "upravo",
+  "barem", "baren", "najmanje", "najviše", "najvise", "potpuno", "sasvim", "posve",
+  
+  # --- SPAM/ADVERTISING NOISE ---
+  "mršavljenje", "mrsavljenje", "tablete", "dijeta", "kilograma", "kožu", "kozu", "maska",
+  "oil", "name", "can", "black", "make", "best", "free", "click", "buy", "sale",
+  "euro", "eura", "kuna", "kn", "eur", "usd",
+  
+  # --- FOREIGN WORDS (German/English artifacts) ---
+  "der", "die", "das", "und", "von", "den", "nach", "mit", "aus", "bei",
+  "the", "and", "for", "you", "are", "was", "that", "this", "with", "have",
+  
+  # --- NEWS AGENCY/SOURCE MARKERS ---
+  "cropix", "afp", "reuters", "hina", "pixsell", "epa", "ap", "dpa",
+  "tportal", "quote", "update", "breaking",
+  
+  # --- TRAVEL/TOURISM NOISE ---
+  "noćenje", "nocenje", "aranžman", "aranzman", "hotel", "smještaj", "smjestaj",
+  "putovanje", "putovanja", "razgled", "tura", "turista",
+  
+  # --- TECH/CODE NOISE ---
+  "swift", "banka", "code", "tube", "app", "software", "download", "upload",
+  "username", "password", "login", "account",
+  
+  # --- LOCATION GENERIC ---
+  "grad", "grada", "gradu", "gradovi", "selo", "sela", "selu",
+  "ulica", "ulice", "ulici", "ulicu",
+  "područje", "podrucje", "područja", "podrucja", "regija", "regije",
+  
+  # --- ADDITIONAL HIGH-FREQUENCY NOISE FROM YOUR OUTPUT ---
+  "kontakt", "kontakta", "kontaktu",
+  "prijava", "prijave", "prijavu", "prijavi", "rok", "roka", "roku",
+  "hvala", "molim", "molimo",
+  "škola", "skola", "škole", "skole", "školu", "skolu",
+  "udruga", "udruge", "udruzi", "udrugu"
 ))
 
 
@@ -484,7 +731,7 @@ stm_model <- stm(
   data = stm_dfm$meta,
   init.type = "Spectral",
   max.em.its = 50,
-  verbose = TRUE,
+  verbose = FALSE,
   seed = 42
 )
 
@@ -492,6 +739,18 @@ cat("STM model fitted with", K, "topics\n")
 ```
 
 ## Topic Labels and Top Words
+
+Each topic is characterized by words that appear frequently within it. We present two types of word rankings:
+
+**Top Words (Probability):** Words with highest probability of appearing in documents assigned to this topic. These are the most common terms but may appear across multiple topics.
+
+**FREX Words (Distinctive):** Words that are both frequent AND exclusive to this topic. FREX (Frequency and Exclusivity) scoring helps identify what makes each topic unique. These are typically more useful for interpreting topic content.
+
+**How to read the table:**
+
+- Look at FREX words first to understand what distinguishes each topic
+- Topics with clear thematic coherence (e.g., all words related to liturgy) are well defined
+- Topics with mixed words may capture multiple related themes or require further refinement
 
 ```{r topic-words}
 #| label: topic-words
@@ -511,6 +770,14 @@ topic_df %>%
 ```
 
 ## Topic Prevalence Overview
+
+**Topic prevalence** measures what proportion of the corpus is devoted to each topic. In STM, each document is modeled as a mixture of topics, so prevalence represents the average proportion across all documents.
+
+**Interpretation:**
+
+- Higher prevalence topics represent dominant themes in the corpus
+- The distribution typically follows a long tail pattern, with a few dominant topics and many niche ones
+- Prevalence alone does not indicate importance; niche topics may be highly significant for specific actor types or contexts
 
 ```{r topic-prevalence}
 #| label: topic-prevalence
@@ -562,6 +829,24 @@ par(mfrow = c(1, 1))
 
 Group discovered topics into higher order thematic categories based on manual inspection of top words.
 
+## Automated Category Assignment
+
+To organize the 35 discovered topics into meaningful higher level categories, we use keyword matching against predefined thematic dictionaries. Each topic is assigned to the category with the most keyword matches among its top and FREX words.
+
+**Category definitions:**
+
+| Category | Description | Example keywords |
+|----------|-------------|------------------|
+| Liturgical/Sacramental | Mass, sacraments, liturgical calendar | misa, sakrament, euharistij, uskrs |
+| Devotional | Prayer, saints, personal piety | molitva, gospa, svetac, duhov |
+| Institutional | Church hierarchy, appointments, governance | biskup, papa, vatikan, imenovan |
+| Social/Ethical | Family, charity, social issues | obitelj, caritas, siromašn, brak |
+| Political | Politics, history, national identity | vlada, hrvat, rat, domovina |
+| Youth/Community | Youth ministry, community activities | mladi, frama, kamp, zajednic |
+| Educational | Catechesis, theology, learning | kateh, teolog, biblij, učenj |
+
+Topics that do not match any category are labeled **Other**. This automatic classification provides a starting point; manual refinement may be needed for edge cases.
+
 ```{r topic-taxonomy}
 #| label: topic-taxonomy
 
@@ -577,51 +862,156 @@ topic_words_list <- lapply(1:K, function(i) {
   c(topic_words$prob[i, ], topic_words$frex[i, ])
 })
 
-liturgical_keywords <- c("misa", "mise", "nedjelja", "svetkovina", "liturgi", 
-                         "sakrament", "euharistij", "krizm", "krst", "pričest",
-                         "uskrs", "božić", "advent", "korizma", "vazmeni")
-devotional_keywords <- c("molitva", "molit", "gospa", "marij", "svetac", "sveti",
-                         "duhov", "vjera", "krist", "isus", "srce", "ljubav",
-                         "blagoslov", "zahval")
-institutional_keywords <- c("biskupij", "nadbiskup", "biskup", "papa", "vatikan",
-                            "hbk", "kardinal", "dekret", "imenovan", "župnik")
-social_keywords <- c("obitelj", "život", "djeca", "brak", "pobačaj", "caritas",
-                     "siromašn", "pomoć", "društv", "socijal", "rad", "posao")
-political_keywords <- c("vlada", "izborn", "politič", "zakon", "država", "nacija",
-                        "hrvat", "rat", "povijes", "domovina", "domoljub")
-youth_keywords <- c("mladi", "škola", "student", "frama", "shkm", "ministran",
-                    "kamp", "susret", "zajednic", "program", "aktivnost")
-educational_keywords <- c("kateh", "teolog", "biblij", "evanđelj", "pouka",
-                          "učenj", "knjiga", "čitanj", "znanje", "obrazov")
+# EXPANDED KEYWORD DICTIONARIES
+# Each list uses partial matching so "euharistij" matches "euharistija", "euharistije", etc.
 
+liturgical_keywords <- c(
+  # Mass and liturgy
+  "misa", "mise", "misi", "misom", "misno", "misu",
+  "liturgi", "euharistij", "pričest", "pricest", "hostij",
+  "oltarsk", "sakrament", "obreda", "slavlje", "slavlj",
+  # Sacraments
+  "krizm", "krst", "krštenje", "krstenje", "ispovijed", "ispovjed",
+  "pomirenje", "pomazanje", "ređenje", "redjenje", "zaruk",
+  # Liturgical calendar
+  "uskrs", "uskrsn", "božić", "bozic", "advent", "korizma", "vazmeni",
+  "došašć", "dosasć", "blagdan", "svetkovina", "nedjelj",
+  # Liturgical objects/actions
+  "procesij", "klanjanje", "klanja", "blagoslov", "posveta", "krizni",
+  "pjevanje", "ministrant", "čitanje", "citanje", "propovijed"
+)
+
+devotional_keywords <- c(
+  # Prayer
+  "molitv", "molit", "molim", "krunic", "rozarij", "krunicu",
+  "zavjetni", "pobožn", "pobozn", "duhovn", "meditacij",
+  # Mary/Saints
+  "gospa", "gospe", "gospi", "marij", "majka", "majci",
+  "svetac", "svetica", "sveti", "svetog", "svetoj", "blažen", "blazen",
+  "relikvij", "hodočašć", "hodocasc", "štovanje", "stovanje",
+  # Faith/spirituality
+  "vjera", "vjere", "vjeri", "vjeru", "vjernik",
+  "isus", "isusa", "isusu", "krist", "krista", "kristu",
+  "srce", "srca", "srcu", "ljubav", "ljubavi", "milost",
+  "duh", "duha", "duhu", "sveti duh", "spasenje", "obraćenj"
+)
+
+institutional_keywords <- c(
+  # Hierarchy
+  "papa", "papu", "pape", "papom", "papinsk", "franjo",
+  "kardinal", "nadbiskup", "biskup", "biskupij", "biskupov",
+  "vatikan", "vatikanu", "sveta stolica", "hbk", "koncil",
+  # Governance
+  "imenovan", "razriješen", "razrijesen", "dekret", "pastoralni",
+  "sinod", "koadjutor", "metropolit", "ordinarij", "vikari",
+  # Parish
+  "župnik", "zupnik", "župi", "zupi", "župe", "zupe", "župan",
+  "župno", "zupno", "dekanat", "provincij"
+)
+
+social_keywords <- c(
+  # Family
+  "obitelj", "obitelji", "brak", "braka", "braku", "bračn", "bracn",
+  "djeca", "djece", "djeteta", "dijete", "majka", "otac", "roditelj",
+  # Life issues
+  "pobačaj", "pobacaj", "abortus", "nerođen", "nerodjen", "eutanazij",
+  "život", "zivot", "života", "zivota", "rađanje", "radjanje",
+  # Charity/social
+  "caritas", "caritasa", "siromašn", "siromasn", "pomoć", "pomoc",
+  "socijal", "humanitarn", "volonter", "dobrotvor", "donacij",
+  # Social issues
+  "društv", "drustv", "zajednic", "solidarnost", "pravednost",
+  "siromaštv", "siromaštvo", "beskućn", "beskucn", "migranti", "izbjegl"
+)
+
+political_keywords <- c(
+  # Politics
+  "vlada", "vlade", "vladi", "sabor", "sabora", "parlament",
+  "politič", "politic", "stranka", "stranke", "izbor", "izbora",
+  "predsjednik", "ministar", "hdz", "sdp", "plenković", "milanov",
+  # History
+  "rat", "rata", "ratu", "ratni", "domovinski", "vukovar",
+  "jasenovac", "bleiburg", "pokolj", "genocid", "zločin", "zlocin",
+  "komunis", "totalitar", "ndh", "ustašk", "ustask", "partizan",
+  # National identity
+  "hrvat", "hrvatsk", "domovina", "domoljub", "narod", "nacija",
+  "državni", "drzavni", "republika", "suverenitet"
+)
+
+youth_keywords <- c(
+  # Youth organizations
+  "mladi", "mladih", "mladež", "mladez", "frama", "shkm",
+  "ministrant", "ministranti", "ministranata",
+  # Activities
+  "kamp", "kampa", "kampu", "susret", "susreta", "susreti",
+  "animatori", "animator", "voditelj", "program", "aktivnost",
+  # Education
+  "škola", "skola", "škole", "skole", "učenj", "ucenj",
+  "student", "studenta", "fakultet", "sveučilište", "sveuciliste",
+  "kapelanij", "pastoral", "vjeronauk"
+)
+
+educational_keywords <- c(
+  # Catechesis
+  "kateh", "katehet", "katekiz", "vjeronauk", "pouka", "poduk",
+  # Theology
+  "teolog", "teološk", "teoloski", "bogoslov", "egzeges",
+  # Bible
+  "biblij", "svetog pisma", "evanđelj", "evandelj", "poslanica",
+  "starozavjetn", "novozavjetn", "citati", "tumačenj", "tumacenj",
+  # Learning
+  "znanje", "obrazov", "predavanj", "seminar", "tečaj", "tecaj",
+  "knjiga", "knjige", "čitanj", "citanj", "učenj", "ucenj"
+)
+
+# CATEGORY ASSIGNMENT FUNCTION WITH WEIGHTED SCORING
 assign_category <- function(words, topic_num) {
   words_str <- tolower(paste(words, collapse = " "))
   
+  # Count matches for each category
   scores <- c(
-    Liturgical = sum(sapply(liturgical_keywords, function(k) grepl(k, words_str))),
-    Devotional = sum(sapply(devotional_keywords, function(k) grepl(k, words_str))),
-    Institutional = sum(sapply(institutional_keywords, function(k) grepl(k, words_str))),
+    "Liturgical/Sacramental" = sum(sapply(liturgical_keywords, function(k) grepl(k, words_str))),
+    "Devotional" = sum(sapply(devotional_keywords, function(k) grepl(k, words_str))),
+    "Institutional" = sum(sapply(institutional_keywords, function(k) grepl(k, words_str))),
     "Social/Ethical" = sum(sapply(social_keywords, function(k) grepl(k, words_str))),
-    Political = sum(sapply(political_keywords, function(k) grepl(k, words_str))),
+    "Political" = sum(sapply(political_keywords, function(k) grepl(k, words_str))),
     "Youth/Community" = sum(sapply(youth_keywords, function(k) grepl(k, words_str))),
-    Educational = sum(sapply(educational_keywords, function(k) grepl(k, words_str)))
+    "Educational" = sum(sapply(educational_keywords, function(k) grepl(k, words_str)))
   )
   
+  # If no matches, return Other
   if (max(scores) == 0) return("Other")
-  names(which.max(scores))
+  
+  # If tie, prefer more specific categories
+  max_score <- max(scores)
+  winners <- names(scores[scores == max_score])
+  
+  # Priority order for ties
+  priority <- c("Liturgical/Sacramental", "Institutional", "Political", 
+                "Social/Ethical", "Devotional", "Youth/Community", "Educational")
+  
+  for (p in priority) {
+    if (p %in% winners) return(p)
+  }
+  
+  return(winners[1])
 }
 
+# Apply classification
 for (i in 1:K) {
   topic_taxonomy$Category[i] <- assign_category(topic_words_list[[i]], i)
-  topic_taxonomy$Label[i] <- paste0("Topic ", i, ": ", 
-                                     paste(topic_words$frex[i, 1:3], collapse = ", "))
+  # Create more informative label using top 3 FREX words
+  top_frex <- topic_words$frex[i, 1:3]
+  topic_taxonomy$Label[i] <- paste(top_frex, collapse = ", ")
 }
 
+# Display results
 topic_taxonomy %>%
   arrange(Category, Topic) %>%
   left_join(topic_prev_df %>% select(Topic, Prevalence) %>% 
               mutate(Topic = as.numeric(as.character(Topic))), by = "Topic") %>%
-  kable(col.names = c("Topic", "Category", "Label", "Prevalence (%)")) %>%
+  mutate(Prevalence = sprintf("%.2f%%", Prevalence)) %>%
+  kable(col.names = c("Topic", "Category", "Top FREX Words", "Prevalence")) %>%
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE) %>%
   scroll_box(height = "500px")
 ```
@@ -665,6 +1055,21 @@ ggplot(category_prevalence, aes(x = reorder(Category, Total_Prevalence),
 
 Examine how different actor types specialize in particular topics.
 
+## Understanding Actor-Topic Relationships
+
+Different actors in the Catholic digital space have distinct communication priorities. Official institutions may focus on announcements and governance, while charismatic communities emphasize devotional content. This analysis reveals these specialization patterns.
+
+**Key concepts:**
+
+- **Topic proportion by actor:** The average topic distribution for documents from each actor type
+- **Specialization (Lift):** How much more (or less) likely an actor type is to discuss a topic compared to the corpus average
+
+**Lift interpretation:**
+
+- **Lift = 1.0:** Actor discusses this topic at the same rate as the overall corpus
+- **Lift > 1.0:** Actor specializes in this topic (e.g., Lift = 2.0 means twice as likely)
+- **Lift < 1.0:** Actor underrepresents this topic compared to average
+
 ```{r topic-actor-prep}
 #| label: topic-actor-prep
 
@@ -686,6 +1091,15 @@ actor_topic_long <- actor_topic_means %>%
 ```
 
 ## Topic Proportions by Actor Type Heatmap
+
+This heatmap visualizes the relationship between actor types (columns) and topics (rows). Darker colors indicate higher proportions of that topic in an actor types content.
+
+**How to read the heatmap:**
+
+- Each cell shows what percentage of an actor types content belongs to a topic
+- Rows are clustered by similarity, so related topics appear near each other
+- Columns are also clustered, revealing which actor types have similar thematic profiles
+- Look for dark cells to identify specializations; look for light/missing cells to identify topics an actor avoids
 
 ```{r actor-topic-heatmap}
 #| label: actor-topic-heatmap
@@ -721,6 +1135,12 @@ pheatmap(
 ## Actor Specialization Index
 
 Calculate how specialized each actor type is compared to corpus average.
+
+**The Lift metric** provides a precise measure of specialization. For each actor topic pair, we calculate:
+
+$$\text{Lift} = \frac{\text{Actor's topic proportion}}{\text{Corpus average topic proportion}}$$
+
+This table shows the top 3 topics where each actor type most strongly overindexes. A high lift value (e.g., 3.0x) indicates the actor discusses this topic three times more than average, suggesting it is central to their communication strategy.
 
 ```{r actor-specialization}
 #| label: actor-specialization
@@ -785,6 +1205,15 @@ ggplot(category_by_actor, aes(x = Category, y = Category_Proportion, fill = Cate
 
 How do topics vary across digital platforms?
 
+Different platforms have distinct affordances that shape communication: web allows long form content, Facebook enables community discussion, Instagram favors visual storytelling, and YouTube supports video content. These technical characteristics influence what topics appear where.
+
+**Expected patterns:**
+
+- **Web:** More institutional, news oriented, and educational content (supports detailed text)
+- **Social media (Facebook, Instagram):** More devotional and community content (personal, shareable)
+- **YouTube:** Mix of educational and devotional (video catechesis, prayer channels)
+- **Comments/Forums:** More reactive content, discussion of controversial topics
+
 ```{r platform-topic-prep}
 #| label: platform-topic-prep
 
@@ -802,6 +1231,8 @@ platform_topic_long <- platform_topic_means %>%
 ```
 
 ## Platform Topic Heatmap
+
+This heatmap uses a warm color palette (white to orange to red) to distinguish it from the actor heatmap. The same interpretation applies: darker colors indicate higher topic prevalence on that platform.
 
 ```{r platform-topic-heatmap}
 #| label: platform-topic-heatmap
@@ -881,6 +1312,19 @@ platform_spec %>%
 
 Which topics generate more engagement?
 
+This analysis addresses a key hypothesis: that certain types of content (particularly political and controversial topics) generate disproportionately high engagement compared to their prevalence. This pattern, common in digital media, reflects the attention economy dynamics where provocative content outperforms routine communication.
+
+**Key metrics:**
+
+- **Weighted Mean Engagement:** Average interactions per document, weighted by topic proportion. A document that is 80% about Topic X contributes more to Topic Xs engagement score than one that is 10% Topic X.
+- **Total Engagement:** Sum of all interactions attributed to a topic (useful for absolute comparison)
+- **Engagement Efficiency:** Topics above the trend line in the scatterplot punch above their weight, generating more engagement than their prevalence would predict
+
+**Interpretation:**
+
+- Topics with high engagement but low prevalence represent niche but highly resonant content
+- Topics below the trend line may indicate routine, lower engagement content (e.g., announcements, schedules)
+
 ```{r engagement-prep}
 #| label: engagement-prep
 doc_engagement <- dta_sample[, .(doc_id, INTERACTIONS, REACH)]
@@ -940,6 +1384,17 @@ ggplot(topic_engagement, aes(x = reorder(factor(Topic), Weighted_Mean_Engagement
 ```
 
 ## Volume vs Engagement Comparison
+
+This scatterplot is one of the most important visualizations in the analysis. Each point represents a topic, positioned by its prevalence (x axis) and average engagement (y axis).
+
+**How to interpret:**
+
+- **Trend line (dashed):** Shows the expected relationship between prevalence and engagement
+- **Points above the line:** Topics that generate more engagement than expected given their prevalence (engagement overperformers)
+- **Points below the line:** Topics that underperform in engagement relative to their volume
+- **Point size:** Indicates total engagement volume
+
+This visualization directly tests the hypothesis that certain content types (often political or controversial) punch above their weight in the attention economy.
 
 ```{r volume-vs-engagement}
 #| label: volume-vs-engagement
@@ -1006,6 +1461,20 @@ Topics in the Political and Social/Ethical categories often generate disproporti
 
 How do topics evolve over time?
 
+Understanding temporal dynamics reveals how the thematic composition of Catholic digital media shifts in response to events, seasons, and longer term trends. This analysis aggregates topic prevalence by year to identify patterns of growth and decline.
+
+**What to look for:**
+
+- **Seasonal patterns:** Liturgical topics may spike around major feasts (Christmas, Easter)
+- **Event driven changes:** Political topics may surge during elections or controversies
+- **Structural shifts:** Long term trends in what the Catholic digital space discusses
+
+**Interpretation caveats:**
+
+- Changes between years may reflect genuine shifts OR changes in sampling/sources
+- Short time series (4 years) limits our ability to distinguish trends from fluctuations
+- Stacked area charts show relative proportions; a decline in share does not necessarily mean absolute decline
+
 ```{r temporal-topics}
 #| label: temporal-topics
 #| fig-height: 10
@@ -1038,6 +1507,14 @@ ggplot(category_yearly, aes(x = year, y = Proportion, fill = Category)) +
 ```
 
 ## Top Growing and Declining Topics
+
+This analysis identifies which specific topics have increased or decreased in prevalence over the study period. We compare the first and last year in the dataset to calculate absolute and percentage change.
+
+**Interpretation:**
+
+- **Growing topics:** Themes receiving increasing attention in the Catholic digital space
+- **Declining topics:** Themes that have become less prominent over time
+- **Percentage change** is most meaningful for topics with substantial initial prevalence; small topics may show large percentage swings with minimal absolute change
 
 ```{r topic-trends}
 #| label: topic-trends
@@ -1146,6 +1623,103 @@ topic_engagement %>%
 | H7: Devotional/liturgical content dominates volume | Examine category prevalence results above |
 | H8: Political/social content generates disproportionate engagement | Compare engagement efficiency by category |
 | H9: Individual priests concentrate on social/political topics | See actor specialization patterns |
+
+---
+
+# Alternative Approaches and Future Directions
+
+## Limitations of STM/LDA
+
+The Structural Topic Model used in this analysis is a bag-of-words approach that:
+
+- **Ignores word order:** The phrase "Pope Francis visits Croatia" is treated the same as "Croatia visits Pope Francis"
+- **Assumes topics are independent:** Real themes often overlap and interact
+- **Requires manual interpretation:** Topic labels are assigned by humans examining word lists
+- **Sensitive to preprocessing:** Different stopword lists and tokenization produce different results
+- **Fixed number of topics:** K must be chosen in advance; different K values yield different topic structures
+
+## Modern Alternatives
+
+Several newer approaches could improve thematic analysis:
+
+### 1. BERTopic (Transformer-based Topic Modeling)
+
+BERTopic uses pretrained language models to create semantically meaningful embeddings before clustering.
+
+**Advantages:**
+- Captures semantic similarity beyond word co-occurrence
+- Handles synonyms and related concepts automatically
+- Produces more coherent, interpretable topics
+- Does not require extensive stopword lists
+
+**Implementation in R/Python:**
+```python
+# Python example (requires bertopic package)
+from bertopic import BERTopic
+from sentence_transformers import SentenceTransformer
+
+# Use multilingual model for Croatian
+embedding_model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
+topic_model = BERTopic(embedding_model=embedding_model, language="multilingual")
+topics, probs = topic_model.fit_transform(documents)
+```
+
+### 2. Multilingual Language Models
+
+For Croatian text, several pretrained models are available:
+
+| Model | Description | Use case |
+|-------|-------------|----------|
+| **mBERT** (multilingual BERT) | Trained on 104 languages including Croatian | General embeddings |
+| **XLM-RoBERTa** | Strong multilingual performance | Semantic similarity |
+| **CroSloEngual BERT** | Specialized for Croatian, Slovenian, English | Best for Croatian |
+| **paraphrase-multilingual-MiniLM** | Efficient, good for clustering | BERTopic embeddings |
+
+### 3. Zero-shot Classification
+
+Instead of discovering topics, assign documents to predefined categories using language models:
+
+```python
+from transformers import pipeline
+
+classifier = pipeline("zero-shot-classification", 
+                      model="joeddav/xlm-roberta-large-xnli")
+
+candidate_labels = ["liturgija", "politika", "obitelj", "molitva", "Vatikan"]
+result = classifier(text, candidate_labels, multi_label=True)
+```
+
+### 4. Named Entity Recognition for Croatian
+
+Extract structured information (people, organizations, places) using:
+- **classla** (for Slovenian and Croatian NLP)
+- **stanza** with Croatian models
+- **spaCy** with custom Croatian models
+
+### 5. Semantic Search and Clustering
+
+Modern approach workflow:
+1. Embed all documents using multilingual transformers
+2. Reduce dimensions with UMAP
+3. Cluster with HDBSCAN
+4. Extract topic labels using c-TF-IDF or LLM summarization
+
+## Recommended Next Steps
+
+1. **Short term:** Refine STM stopwords and experiment with different K values
+2. **Medium term:** Implement BERTopic with multilingual embeddings for comparison
+3. **Long term:** Build custom Croatian language model fine-tuned on religious text
+
+## Tools and Resources
+
+| Tool | Language | Purpose |
+|------|----------|---------|
+| BERTopic | Python | Modern topic modeling |
+| sentence-transformers | Python | Text embeddings |
+| classla | Python | Croatian NLP pipeline |
+| text2vec | R | Traditional embeddings |
+| quanteda.textmodels | R | Enhanced topic models |
+| keyATM | R | Keyword-guided topic models |
 
 ---
 

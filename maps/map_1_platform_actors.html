@@ -329,340 +329,353 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-54"><a href="#cb3-54" aria-hidden="true" tabindex="-1"></a>    <span class="st">"kršćanstvo"</span>, <span class="st">"krscanstvo"</span>,</span>
 <span id="cb3-55"><a href="#cb3-55" aria-hidden="true" tabindex="-1"></a>    <span class="st">"jutarnja molitva duhu svetom"</span>,</span>
 <span id="cb3-56"><a href="#cb3-56" aria-hidden="true" tabindex="-1"></a>    <span class="st">"blago molitve"</span>,</span>
-<span id="cb3-57"><a href="#cb3-57" aria-hidden="true" tabindex="-1"></a>    <span class="st">"biblija krunice molitve"</span></span>
-<span id="cb3-58"><a href="#cb3-58" aria-hidden="true" tabindex="-1"></a>  ),</span>
-<span id="cb3-59"><a href="#cb3-59" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Diocesan"</span> <span class="ot">=</span> <span class="fu">c</span>(</span>
-<span id="cb3-60"><a href="#cb3-60" aria-hidden="true" tabindex="-1"></a>    <span class="st">"zagrebačka nadbiskupija"</span>, <span class="st">"zagrebacka nadbiskupija"</span>,</span>
-<span id="cb3-61"><a href="#cb3-61" aria-hidden="true" tabindex="-1"></a>    <span class="st">"sisačka biskupija"</span>, <span class="st">"sisacka biskupija"</span>,</span>
-<span id="cb3-62"><a href="#cb3-62" aria-hidden="true" tabindex="-1"></a>    <span class="st">"župa šurkovac"</span>, <span class="st">"zupa surkovac"</span>,</span>
-<span id="cb3-63"><a href="#cb3-63" aria-hidden="true" tabindex="-1"></a>    <span class="st">"sveta mati slobode"</span>,</span>
-<span id="cb3-64"><a href="#cb3-64" aria-hidden="true" tabindex="-1"></a>    <span class="st">"župa sv. ilije proroka metković"</span>, <span class="st">"zupa sv. ilije proroka metkovic"</span>,</span>
-<span id="cb3-65"><a href="#cb3-65" aria-hidden="true" tabindex="-1"></a>    <span class="st">"župa uznesenja bdm"</span>, <span class="st">"zupa uznesenja bdm"</span>, <span class="st">"župa uznesenja bdm - stenjevec"</span>,</span>
-<span id="cb3-66"><a href="#cb3-66" aria-hidden="true" tabindex="-1"></a>    <span class="st">"šibenska biskupija"</span>, <span class="st">"sibenska biskupija"</span>,</span>
-<span id="cb3-67"><a href="#cb3-67" aria-hidden="true" tabindex="-1"></a>    <span class="st">"požeška biskupija"</span>, <span class="st">"pozeskа biskupija"</span></span>
-<span id="cb3-68"><a href="#cb3-68" aria-hidden="true" tabindex="-1"></a>  ),</span>
-<span id="cb3-69"><a href="#cb3-69" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Youth Organizations"</span> <span class="ot">=</span> <span class="fu">c</span>(</span>
-<span id="cb3-70"><a href="#cb3-70" aria-hidden="true" tabindex="-1"></a>    <span class="st">"susret hrvatske katoličke mladeži"</span>, <span class="st">"susret hrvatske katolicke mladezi"</span>,</span>
-<span id="cb3-71"><a href="#cb3-71" aria-hidden="true" tabindex="-1"></a>    <span class="st">"shkm požega"</span>, <span class="st">"shkm pozega"</span></span>
-<span id="cb3-72"><a href="#cb3-72" aria-hidden="true" tabindex="-1"></a>  ),</span>
-<span id="cb3-73"><a href="#cb3-73" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Academic"</span> <span class="ot">=</span> <span class="fu">c</span>(</span>
-<span id="cb3-74"><a href="#cb3-74" aria-hidden="true" tabindex="-1"></a>    <span class="st">"hrvatsko katoličko sveučilište"</span>, <span class="st">"hrvatsko katolicko sveuciliste"</span>,</span>
-<span id="cb3-75"><a href="#cb3-75" aria-hidden="true" tabindex="-1"></a>    <span class="st">"universitas studiorum catholica croatica"</span></span>
-<span id="cb3-76"><a href="#cb3-76" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb3-77"><a href="#cb3-77" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb3-78"><a href="#cb3-78" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-79"><a href="#cb3-79" aria-hidden="true" tabindex="-1"></a><span class="co"># -----------------------------------------------------------------------------</span></span>
-<span id="cb3-80"><a href="#cb3-80" aria-hidden="true" tabindex="-1"></a><span class="co"># SECULAR MEDIA EXCLUSIONS: Always classify as Other</span></span>
-<span id="cb3-81"><a href="#cb3-81" aria-hidden="true" tabindex="-1"></a><span class="co"># -----------------------------------------------------------------------------</span></span>
-<span id="cb3-82"><a href="#cb3-82" aria-hidden="true" tabindex="-1"></a>secular_exclusions <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
-<span id="cb3-83"><a href="#cb3-83" aria-hidden="true" tabindex="-1"></a>  <span class="co"># National portals (with and without .hr)</span></span>
-<span id="cb3-84"><a href="#cb3-84" aria-hidden="true" tabindex="-1"></a>  <span class="st">"slobodnadalmacija"</span>, <span class="st">"slobodnadalmacija.hr"</span>, </span>
-<span id="cb3-85"><a href="#cb3-85" aria-hidden="true" tabindex="-1"></a>  <span class="st">"vecernji"</span>, <span class="st">"vecernji.hr"</span>, </span>
-<span id="cb3-86"><a href="#cb3-86" aria-hidden="true" tabindex="-1"></a>  <span class="st">"index.hr"</span>, <span class="st">"index"</span>,</span>
-<span id="cb3-87"><a href="#cb3-87" aria-hidden="true" tabindex="-1"></a>  <span class="st">"jutarnji"</span>, <span class="st">"jutarnji.hr"</span>, </span>
-<span id="cb3-88"><a href="#cb3-88" aria-hidden="true" tabindex="-1"></a>  <span class="st">"novilist"</span>, <span class="st">"novilist.hr"</span>,</span>
-<span id="cb3-89"><a href="#cb3-89" aria-hidden="true" tabindex="-1"></a>  <span class="st">"24sata"</span>, <span class="st">"24sata.hr"</span>,</span>
-<span id="cb3-90"><a href="#cb3-90" aria-hidden="true" tabindex="-1"></a>  <span class="st">"direktno"</span>, <span class="st">"direktno.hr"</span>,</span>
-<span id="cb3-91"><a href="#cb3-91" aria-hidden="true" tabindex="-1"></a>  <span class="st">"nacional"</span>, <span class="st">"nacional.hr"</span>, </span>
-<span id="cb3-92"><a href="#cb3-92" aria-hidden="true" tabindex="-1"></a>  <span class="st">"tportal"</span>, <span class="st">"tportal.hr"</span>,</span>
-<span id="cb3-93"><a href="#cb3-93" aria-hidden="true" tabindex="-1"></a>  <span class="st">"dnevnik.hr"</span>, <span class="st">"dnevnik"</span>, </span>
-<span id="cb3-94"><a href="#cb3-94" aria-hidden="true" tabindex="-1"></a>  <span class="st">"hrt.hr"</span>, <span class="st">"hrt"</span>, </span>
-<span id="cb3-95"><a href="#cb3-95" aria-hidden="true" tabindex="-1"></a>  <span class="st">"n1info"</span>, <span class="st">"n1info.hr"</span>, <span class="st">"n1"</span>,</span>
-<span id="cb3-96"><a href="#cb3-96" aria-hidden="true" tabindex="-1"></a>  <span class="st">"rtl.hr"</span>, <span class="st">"rtl"</span>, </span>
-<span id="cb3-97"><a href="#cb3-97" aria-hidden="true" tabindex="-1"></a>  <span class="st">"net.hr"</span>, </span>
-<span id="cb3-98"><a href="#cb3-98" aria-hidden="true" tabindex="-1"></a>  <span class="st">"telegram.hr"</span>, <span class="st">"telegram"</span>, </span>
-<span id="cb3-99"><a href="#cb3-99" aria-hidden="true" tabindex="-1"></a>  <span class="st">"story.hr"</span>, <span class="st">"express.hr"</span>, <span class="st">"express"</span>, <span class="st">"advance.hr"</span>,</span>
-<span id="cb3-100"><a href="#cb3-100" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Regional portals</span></span>
-<span id="cb3-101"><a href="#cb3-101" aria-hidden="true" tabindex="-1"></a>  <span class="st">"glasistre"</span>, <span class="st">"glasistre.hr"</span>,</span>
-<span id="cb3-102"><a href="#cb3-102" aria-hidden="true" tabindex="-1"></a>  <span class="st">"dnevno.hr"</span>, <span class="st">"dnevno"</span>, </span>
-<span id="cb3-103"><a href="#cb3-103" aria-hidden="true" tabindex="-1"></a>  <span class="st">"prigorski"</span>, <span class="st">"glas-slavonije"</span>, <span class="st">"glas slavonije"</span>,</span>
-<span id="cb3-104"><a href="#cb3-104" aria-hidden="true" tabindex="-1"></a>  <span class="st">"croativ"</span>, <span class="st">"oluja.info"</span>, </span>
-<span id="cb3-105"><a href="#cb3-105" aria-hidden="true" tabindex="-1"></a>  <span class="st">"maxportal"</span>, <span class="st">"maxportal.hr"</span>,</span>
-<span id="cb3-106"><a href="#cb3-106" aria-hidden="true" tabindex="-1"></a>  <span class="st">"hkv.hr"</span>, <span class="st">"icv.hr"</span>, <span class="st">"novosti.hr"</span>, <span class="st">"7dnevno"</span>, <span class="st">"mnovine"</span>, </span>
-<span id="cb3-107"><a href="#cb3-107" aria-hidden="true" tabindex="-1"></a>  <span class="st">"sjever.hr"</span>, <span class="st">"dulist.hr"</span>, <span class="st">"pozega.eu"</span>, <span class="st">"sibenik.in"</span>,</span>
-<span id="cb3-108"><a href="#cb3-108" aria-hidden="true" tabindex="-1"></a>  <span class="st">"ferata.hr"</span>, <span class="st">"epodravina"</span>, <span class="st">"glasgacke"</span>, <span class="st">"radio-zlatar"</span>, </span>
-<span id="cb3-109"><a href="#cb3-109" aria-hidden="true" tabindex="-1"></a>  <span class="st">"medjimurski.hr"</span>, <span class="st">"sbperiskop"</span>, <span class="st">"zagorje-international"</span>,</span>
-<span id="cb3-110"><a href="#cb3-110" aria-hidden="true" tabindex="-1"></a>  <span class="st">"pozeski"</span>, <span class="st">"novine.hr"</span>, <span class="st">"dubrovnikinsider"</span>, <span class="st">"regionalni"</span>, </span>
-<span id="cb3-111"><a href="#cb3-111" aria-hidden="true" tabindex="-1"></a>  <span class="st">"leportale"</span>, <span class="st">"varazdinske-vijesti"</span>, <span class="st">"radionasice"</span>, </span>
-<span id="cb3-112"><a href="#cb3-112" aria-hidden="true" tabindex="-1"></a>  <span class="st">"brodportal"</span>, <span class="st">"ljportal"</span>, <span class="st">"dubrovnikportal"</span>, <span class="st">"01portal"</span>,</span>
-<span id="cb3-113"><a href="#cb3-113" aria-hidden="true" tabindex="-1"></a>  <span class="st">"tomislavnews"</span>, <span class="st">"hia.com.hr"</span>, <span class="st">"portalnovosti"</span>, <span class="st">"antenazadar"</span>,</span>
-<span id="cb3-114"><a href="#cb3-114" aria-hidden="true" tabindex="-1"></a>  <span class="st">"dalmacijanews"</span>, <span class="st">"zadarskilist"</span>, <span class="st">"medjimurjepress"</span>, </span>
-<span id="cb3-115"><a href="#cb3-115" aria-hidden="true" tabindex="-1"></a>  <span class="st">"zagreb.info"</span>, <span class="st">"034portal"</span>, <span class="st">"057info"</span>, <span class="st">"cityportal"</span>,</span>
-<span id="cb3-116"><a href="#cb3-116" aria-hidden="true" tabindex="-1"></a>  <span class="st">"klikaj.hr"</span>, <span class="st">"lika-online"</span>, <span class="st">"ploce.com"</span>, <span class="st">"sbonline"</span>, </span>
-<span id="cb3-117"><a href="#cb3-117" aria-hidden="true" tabindex="-1"></a>  <span class="st">"narod.hr"</span>, <span class="st">"infokiosk"</span>, <span class="st">"hrsvijet"</span>, <span class="st">"tomislavcity"</span>, </span>
-<span id="cb3-118"><a href="#cb3-118" aria-hidden="true" tabindex="-1"></a>  <span class="st">"vrisak.info"</span>, <span class="st">"dalmacijadanas"</span>, <span class="st">"dalmacijadanas.hr"</span>,</span>
-<span id="cb3-119"><a href="#cb3-119" aria-hidden="true" tabindex="-1"></a>  <span class="st">"morski.hr"</span>, <span class="st">"zagreb.hr"</span>, <span class="st">"osijek031"</span>, <span class="st">"rijeka.hr"</span>, <span class="st">"zadar.hr"</span>,</span>
-<span id="cb3-120"><a href="#cb3-120" aria-hidden="true" tabindex="-1"></a>  <span class="st">"zupanjac.net"</span>, <span class="st">"zupanjac"</span>, </span>
-<span id="cb3-121"><a href="#cb3-121" aria-hidden="true" tabindex="-1"></a>  <span class="st">"dalmatinskiportal.hr"</span>, <span class="st">"dalmatinskiportal"</span>,</span>
-<span id="cb3-122"><a href="#cb3-122" aria-hidden="true" tabindex="-1"></a>  <span class="st">"campaign-archive.com"</span>,</span>
-<span id="cb3-123"><a href="#cb3-123" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Forums and aggregators</span></span>
-<span id="cb3-124"><a href="#cb3-124" aria-hidden="true" tabindex="-1"></a>  <span class="st">"forum.hr"</span>, <span class="st">"reddit"</span>, <span class="st">"anonymous_user"</span>, <span class="st">"komentari"</span>, <span class="st">"bug.hr"</span>,</span>
-<span id="cb3-125"><a href="#cb3-125" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Entertainment and other</span></span>
-<span id="cb3-126"><a href="#cb3-126" aria-hidden="true" tabindex="-1"></a>  <span class="st">"inmemoriam"</span>, <span class="st">"magicus.info"</span>, <span class="st">"book.hr"</span>, <span class="st">"mojzagreb.info"</span>, </span>
-<span id="cb3-127"><a href="#cb3-127" aria-hidden="true" tabindex="-1"></a>  <span class="st">"skole.hr"</span>, <span class="st">"tvprofil"</span>, <span class="st">"priznajem.hr"</span>, <span class="st">"dragovoljac.com"</span>, </span>
-<span id="cb3-128"><a href="#cb3-128" aria-hidden="true" tabindex="-1"></a>  <span class="st">"croatia"</span>, <span class="st">"wikipedia"</span>,</span>
-<span id="cb3-129"><a href="#cb3-129" aria-hidden="true" tabindex="-1"></a>  <span class="st">"facebook.com"</span>, <span class="st">"youtube.com"</span>, <span class="st">"instagram.com"</span>, <span class="st">"twitter.com"</span>,</span>
-<span id="cb3-130"><a href="#cb3-130" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Government and administrative</span></span>
-<span id="cb3-131"><a href="#cb3-131" aria-hidden="true" tabindex="-1"></a>  <span class="st">"županija"</span>, <span class="st">"zupanija"</span>, <span class="st">"grad "</span>, <span class="st">"opcina"</span>, <span class="st">"općina"</span>,</span>
-<span id="cb3-132"><a href="#cb3-132" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Non-Catholic religious</span></span>
-<span id="cb3-133"><a href="#cb3-133" aria-hidden="true" tabindex="-1"></a>  <span class="st">"kršćanska proročka crkva"</span>, <span class="st">"krscanska prorocka crkva"</span></span>
-<span id="cb3-134"><a href="#cb3-134" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb3-135"><a href="#cb3-135" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-136"><a href="#cb3-136" aria-hidden="true" tabindex="-1"></a><span class="co"># -----------------------------------------------------------------------------</span></span>
-<span id="cb3-137"><a href="#cb3-137" aria-hidden="true" tabindex="-1"></a><span class="co"># DOMAIN PATTERNS: URL-based classification</span></span>
-<span id="cb3-138"><a href="#cb3-138" aria-hidden="true" tabindex="-1"></a><span class="co"># -----------------------------------------------------------------------------</span></span>
-<span id="cb3-139"><a href="#cb3-139" aria-hidden="true" tabindex="-1"></a>domain_patterns <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
-<span id="cb3-140"><a href="#cb3-140" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Institutional Official"</span> <span class="ot">=</span> <span class="fu">c</span>(</span>
-<span id="cb3-141"><a href="#cb3-141" aria-hidden="true" tabindex="-1"></a>    <span class="st">"hkm.hr"</span>, <span class="st">"ika.hkm.hr"</span>, <span class="st">"hkr.hkm.hr"</span>, <span class="st">"hbk.hr"</span>, <span class="st">"radiomarija.hr"</span></span>
-<span id="cb3-142"><a href="#cb3-142" aria-hidden="true" tabindex="-1"></a>  ),</span>
-<span id="cb3-143"><a href="#cb3-143" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Diocesan"</span> <span class="ot">=</span> <span class="fu">c</span>(</span>
-<span id="cb3-144"><a href="#cb3-144" aria-hidden="true" tabindex="-1"></a>    <span class="st">"zg-nadbiskupija.hr"</span>, <span class="st">"biskupija-varazdinska.hr"</span>, <span class="st">"djos.hr"</span>,</span>
-<span id="cb3-145"><a href="#cb3-145" aria-hidden="true" tabindex="-1"></a>    <span class="st">"biskupija-sj.hr"</span>, <span class="st">"rzs.hr"</span>, <span class="st">"rkc-sisak.hr"</span>, <span class="st">"zadarskanadbiskupija.hr"</span>,</span>
-<span id="cb3-146"><a href="#cb3-146" aria-hidden="true" tabindex="-1"></a>    <span class="st">"gospicko-senjska-biskupija.hr"</span>, <span class="st">"nadbiskupija-split.com"</span>,</span>
-<span id="cb3-147"><a href="#cb3-147" aria-hidden="true" tabindex="-1"></a>    <span class="st">"nadbiskupija-split.hr"</span>, <span class="st">"dubrovacka-biskupija.hr"</span>, <span class="st">"porec-biskupija.hr"</span>,</span>
-<span id="cb3-148"><a href="#cb3-148" aria-hidden="true" tabindex="-1"></a>    <span class="st">"biskupija-kk.hr"</span>, <span class="st">"rkc-pula.hr"</span>, <span class="st">"krizcevacka-eparhija.hr"</span>,</span>
-<span id="cb3-149"><a href="#cb3-149" aria-hidden="true" tabindex="-1"></a>    <span class="st">"sibenska-biskupija.hr"</span>, <span class="st">"krizevci.hbk.hr"</span></span>
-<span id="cb3-150"><a href="#cb3-150" aria-hidden="true" tabindex="-1"></a>  ),</span>
-<span id="cb3-151"><a href="#cb3-151" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Independent Media"</span> <span class="ot">=</span> <span class="fu">c</span>(</span>
-<span id="cb3-152"><a href="#cb3-152" aria-hidden="true" tabindex="-1"></a>    <span class="st">"laudato.hr"</span>, <span class="st">"laudato.tv"</span>, <span class="st">"bitno.net"</span>, <span class="st">"glaskoncila.hr"</span>,</span>
-<span id="cb3-153"><a href="#cb3-153" aria-hidden="true" tabindex="-1"></a>    <span class="st">"nova-eva.com"</span>, <span class="st">"verbum.hr"</span>, <span class="st">"ks.hr"</span>, <span class="st">"totus-tuus.hr"</span>,</span>
-<span id="cb3-154"><a href="#cb3-154" aria-hidden="true" tabindex="-1"></a>    <span class="st">"svjetlorijeci.hr"</span>, <span class="st">"zivot.com.hr"</span>, <span class="st">"novizivot.net"</span></span>
+<span id="cb3-57"><a href="#cb3-57" aria-hidden="true" tabindex="-1"></a>    <span class="st">"biblija krunice molitve"</span>,</span>
+<span id="cb3-58"><a href="#cb3-58" aria-hidden="true" tabindex="-1"></a>    <span class="st">"molitve bogu"</span>,</span>
+<span id="cb3-59"><a href="#cb3-59" aria-hidden="true" tabindex="-1"></a>    <span class="st">"vojnik sreće"</span>, <span class="st">"vojnik srece"</span>, <span class="st">"duhovne poruke i inspiracija"</span>,</span>
+<span id="cb3-60"><a href="#cb3-60" aria-hidden="true" tabindex="-1"></a>    <span class="st">"kes duhovni kutak"</span>, <span class="st">"duhovni kutak"</span>,</span>
+<span id="cb3-61"><a href="#cb3-61" aria-hidden="true" tabindex="-1"></a>    <span class="st">"molitve.hr"</span>,</span>
+<span id="cb3-62"><a href="#cb3-62" aria-hidden="true" tabindex="-1"></a>    <span class="st">"duhovniportal.com"</span>, <span class="st">"duhovniportal"</span></span>
+<span id="cb3-63"><a href="#cb3-63" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb3-64"><a href="#cb3-64" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Diocesan"</span> <span class="ot">=</span> <span class="fu">c</span>(</span>
+<span id="cb3-65"><a href="#cb3-65" aria-hidden="true" tabindex="-1"></a>    <span class="st">"zagrebačka nadbiskupija"</span>, <span class="st">"zagrebacka nadbiskupija"</span>,</span>
+<span id="cb3-66"><a href="#cb3-66" aria-hidden="true" tabindex="-1"></a>    <span class="st">"sisačka biskupija"</span>, <span class="st">"sisacka biskupija"</span>,</span>
+<span id="cb3-67"><a href="#cb3-67" aria-hidden="true" tabindex="-1"></a>    <span class="st">"župa šurkovac"</span>, <span class="st">"zupa surkovac"</span>,</span>
+<span id="cb3-68"><a href="#cb3-68" aria-hidden="true" tabindex="-1"></a>    <span class="st">"sveta mati slobode"</span>,</span>
+<span id="cb3-69"><a href="#cb3-69" aria-hidden="true" tabindex="-1"></a>    <span class="st">"župa sv. ilije proroka metković"</span>, <span class="st">"zupa sv. ilije proroka metkovic"</span>,</span>
+<span id="cb3-70"><a href="#cb3-70" aria-hidden="true" tabindex="-1"></a>    <span class="st">"župa uznesenja bdm"</span>, <span class="st">"zupa uznesenja bdm"</span>, <span class="st">"župa uznesenja bdm - stenjevec"</span>,</span>
+<span id="cb3-71"><a href="#cb3-71" aria-hidden="true" tabindex="-1"></a>    <span class="st">"šibenska biskupija"</span>, <span class="st">"sibenska biskupija"</span>,</span>
+<span id="cb3-72"><a href="#cb3-72" aria-hidden="true" tabindex="-1"></a>    <span class="st">"požeška biskupija"</span>, <span class="st">"pozeskа biskupija"</span>,</span>
+<span id="cb3-73"><a href="#cb3-73" aria-hidden="true" tabindex="-1"></a>    <span class="st">"dubrovacka biskupija"</span>, <span class="st">"dubrovačka biskupija"</span>,</span>
+<span id="cb3-74"><a href="#cb3-74" aria-hidden="true" tabindex="-1"></a>    <span class="st">"dubrovacka-biskupija.hr"</span>,</span>
+<span id="cb3-75"><a href="#cb3-75" aria-hidden="true" tabindex="-1"></a>    <span class="st">"zupa tramosnica"</span>, <span class="st">"župa tramošnica"</span>,</span>
+<span id="cb3-76"><a href="#cb3-76" aria-hidden="true" tabindex="-1"></a>    <span class="st">"župa sv. vida"</span>, <span class="st">"zupa sv. vida"</span>, <span class="st">"župa sv. vida - petruševec"</span></span>
+<span id="cb3-77"><a href="#cb3-77" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb3-78"><a href="#cb3-78" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Youth Organizations"</span> <span class="ot">=</span> <span class="fu">c</span>(</span>
+<span id="cb3-79"><a href="#cb3-79" aria-hidden="true" tabindex="-1"></a>    <span class="st">"susret hrvatske katoličke mladeži"</span>, <span class="st">"susret hrvatske katolicke mladezi"</span>,</span>
+<span id="cb3-80"><a href="#cb3-80" aria-hidden="true" tabindex="-1"></a>    <span class="st">"shkm požega"</span>, <span class="st">"shkm pozega"</span></span>
+<span id="cb3-81"><a href="#cb3-81" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb3-82"><a href="#cb3-82" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Academic"</span> <span class="ot">=</span> <span class="fu">c</span>(</span>
+<span id="cb3-83"><a href="#cb3-83" aria-hidden="true" tabindex="-1"></a>    <span class="st">"hrvatsko katoličko sveučilište"</span>, <span class="st">"hrvatsko katolicko sveuciliste"</span>,</span>
+<span id="cb3-84"><a href="#cb3-84" aria-hidden="true" tabindex="-1"></a>    <span class="st">"universitas studiorum catholica croatica"</span></span>
+<span id="cb3-85"><a href="#cb3-85" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb3-86"><a href="#cb3-86" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-87"><a href="#cb3-87" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-88"><a href="#cb3-88" aria-hidden="true" tabindex="-1"></a><span class="co"># -----------------------------------------------------------------------------</span></span>
+<span id="cb3-89"><a href="#cb3-89" aria-hidden="true" tabindex="-1"></a><span class="co"># SECULAR MEDIA EXCLUSIONS: Always classify as Other</span></span>
+<span id="cb3-90"><a href="#cb3-90" aria-hidden="true" tabindex="-1"></a><span class="co"># -----------------------------------------------------------------------------</span></span>
+<span id="cb3-91"><a href="#cb3-91" aria-hidden="true" tabindex="-1"></a>secular_exclusions <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb3-92"><a href="#cb3-92" aria-hidden="true" tabindex="-1"></a>  <span class="co"># National portals (with and without .hr)</span></span>
+<span id="cb3-93"><a href="#cb3-93" aria-hidden="true" tabindex="-1"></a>  <span class="st">"slobodnadalmacija"</span>, <span class="st">"slobodnadalmacija.hr"</span>, </span>
+<span id="cb3-94"><a href="#cb3-94" aria-hidden="true" tabindex="-1"></a>  <span class="st">"vecernji"</span>, <span class="st">"vecernji.hr"</span>, </span>
+<span id="cb3-95"><a href="#cb3-95" aria-hidden="true" tabindex="-1"></a>  <span class="st">"index.hr"</span>, <span class="st">"index"</span>,</span>
+<span id="cb3-96"><a href="#cb3-96" aria-hidden="true" tabindex="-1"></a>  <span class="st">"jutarnji"</span>, <span class="st">"jutarnji.hr"</span>, </span>
+<span id="cb3-97"><a href="#cb3-97" aria-hidden="true" tabindex="-1"></a>  <span class="st">"novilist"</span>, <span class="st">"novilist.hr"</span>,</span>
+<span id="cb3-98"><a href="#cb3-98" aria-hidden="true" tabindex="-1"></a>  <span class="st">"24sata"</span>, <span class="st">"24sata.hr"</span>,</span>
+<span id="cb3-99"><a href="#cb3-99" aria-hidden="true" tabindex="-1"></a>  <span class="st">"direktno"</span>, <span class="st">"direktno.hr"</span>,</span>
+<span id="cb3-100"><a href="#cb3-100" aria-hidden="true" tabindex="-1"></a>  <span class="st">"nacional"</span>, <span class="st">"nacional.hr"</span>, </span>
+<span id="cb3-101"><a href="#cb3-101" aria-hidden="true" tabindex="-1"></a>  <span class="st">"tportal"</span>, <span class="st">"tportal.hr"</span>,</span>
+<span id="cb3-102"><a href="#cb3-102" aria-hidden="true" tabindex="-1"></a>  <span class="st">"dnevnik.hr"</span>, <span class="st">"dnevnik"</span>, </span>
+<span id="cb3-103"><a href="#cb3-103" aria-hidden="true" tabindex="-1"></a>  <span class="st">"hrt.hr"</span>, <span class="st">"hrt"</span>, </span>
+<span id="cb3-104"><a href="#cb3-104" aria-hidden="true" tabindex="-1"></a>  <span class="st">"n1info"</span>, <span class="st">"n1info.hr"</span>, <span class="st">"n1"</span>,</span>
+<span id="cb3-105"><a href="#cb3-105" aria-hidden="true" tabindex="-1"></a>  <span class="st">"rtl.hr"</span>, <span class="st">"rtl"</span>, </span>
+<span id="cb3-106"><a href="#cb3-106" aria-hidden="true" tabindex="-1"></a>  <span class="st">"net.hr"</span>, </span>
+<span id="cb3-107"><a href="#cb3-107" aria-hidden="true" tabindex="-1"></a>  <span class="st">"telegram.hr"</span>, <span class="st">"telegram"</span>, </span>
+<span id="cb3-108"><a href="#cb3-108" aria-hidden="true" tabindex="-1"></a>  <span class="st">"story.hr"</span>, <span class="st">"express.hr"</span>, <span class="st">"express"</span>, <span class="st">"advance.hr"</span>,</span>
+<span id="cb3-109"><a href="#cb3-109" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Regional portals</span></span>
+<span id="cb3-110"><a href="#cb3-110" aria-hidden="true" tabindex="-1"></a>  <span class="st">"glasistre"</span>, <span class="st">"glasistre.hr"</span>,</span>
+<span id="cb3-111"><a href="#cb3-111" aria-hidden="true" tabindex="-1"></a>  <span class="st">"dnevno.hr"</span>, <span class="st">"dnevno"</span>, </span>
+<span id="cb3-112"><a href="#cb3-112" aria-hidden="true" tabindex="-1"></a>  <span class="st">"prigorski"</span>, <span class="st">"glas-slavonije"</span>, <span class="st">"glas slavonije"</span>,</span>
+<span id="cb3-113"><a href="#cb3-113" aria-hidden="true" tabindex="-1"></a>  <span class="st">"croativ"</span>, <span class="st">"oluja.info"</span>, </span>
+<span id="cb3-114"><a href="#cb3-114" aria-hidden="true" tabindex="-1"></a>  <span class="st">"maxportal"</span>, <span class="st">"maxportal.hr"</span>,</span>
+<span id="cb3-115"><a href="#cb3-115" aria-hidden="true" tabindex="-1"></a>  <span class="st">"hkv.hr"</span>, <span class="st">"icv.hr"</span>, <span class="st">"novosti.hr"</span>, <span class="st">"7dnevno"</span>, <span class="st">"mnovine"</span>, </span>
+<span id="cb3-116"><a href="#cb3-116" aria-hidden="true" tabindex="-1"></a>  <span class="st">"sjever.hr"</span>, <span class="st">"dulist.hr"</span>, <span class="st">"pozega.eu"</span>, <span class="st">"sibenik.in"</span>,</span>
+<span id="cb3-117"><a href="#cb3-117" aria-hidden="true" tabindex="-1"></a>  <span class="st">"ferata.hr"</span>, <span class="st">"epodravina"</span>, <span class="st">"glasgacke"</span>, <span class="st">"radio-zlatar"</span>, </span>
+<span id="cb3-118"><a href="#cb3-118" aria-hidden="true" tabindex="-1"></a>  <span class="st">"medjimurski.hr"</span>, <span class="st">"sbperiskop"</span>, <span class="st">"zagorje-international"</span>,</span>
+<span id="cb3-119"><a href="#cb3-119" aria-hidden="true" tabindex="-1"></a>  <span class="st">"pozeski"</span>, <span class="st">"novine.hr"</span>, <span class="st">"dubrovnikinsider"</span>, <span class="st">"regionalni"</span>, </span>
+<span id="cb3-120"><a href="#cb3-120" aria-hidden="true" tabindex="-1"></a>  <span class="st">"leportale"</span>, <span class="st">"varazdinske-vijesti"</span>, <span class="st">"radionasice"</span>, </span>
+<span id="cb3-121"><a href="#cb3-121" aria-hidden="true" tabindex="-1"></a>  <span class="st">"brodportal"</span>, <span class="st">"ljportal"</span>, <span class="st">"dubrovnikportal"</span>, <span class="st">"01portal"</span>,</span>
+<span id="cb3-122"><a href="#cb3-122" aria-hidden="true" tabindex="-1"></a>  <span class="st">"tomislavnews"</span>, <span class="st">"hia.com.hr"</span>, <span class="st">"portalnovosti"</span>, <span class="st">"antenazadar"</span>,</span>
+<span id="cb3-123"><a href="#cb3-123" aria-hidden="true" tabindex="-1"></a>  <span class="st">"dalmacijanews"</span>, <span class="st">"zadarskilist"</span>, <span class="st">"medjimurjepress"</span>, </span>
+<span id="cb3-124"><a href="#cb3-124" aria-hidden="true" tabindex="-1"></a>  <span class="st">"zagreb.info"</span>, <span class="st">"034portal"</span>, <span class="st">"057info"</span>, <span class="st">"cityportal"</span>,</span>
+<span id="cb3-125"><a href="#cb3-125" aria-hidden="true" tabindex="-1"></a>  <span class="st">"klikaj.hr"</span>, <span class="st">"lika-online"</span>, <span class="st">"ploce.com"</span>, <span class="st">"sbonline"</span>, </span>
+<span id="cb3-126"><a href="#cb3-126" aria-hidden="true" tabindex="-1"></a>  <span class="st">"narod.hr"</span>, <span class="st">"infokiosk"</span>, <span class="st">"hrsvijet"</span>, <span class="st">"tomislavcity"</span>, </span>
+<span id="cb3-127"><a href="#cb3-127" aria-hidden="true" tabindex="-1"></a>  <span class="st">"vrisak.info"</span>, <span class="st">"dalmacijadanas"</span>, <span class="st">"dalmacijadanas.hr"</span>,</span>
+<span id="cb3-128"><a href="#cb3-128" aria-hidden="true" tabindex="-1"></a>  <span class="st">"morski.hr"</span>, <span class="st">"zagreb.hr"</span>, <span class="st">"osijek031"</span>, <span class="st">"rijeka.hr"</span>, <span class="st">"zadar.hr"</span>,</span>
+<span id="cb3-129"><a href="#cb3-129" aria-hidden="true" tabindex="-1"></a>  <span class="st">"zupanjac.net"</span>, <span class="st">"zupanjac"</span>, </span>
+<span id="cb3-130"><a href="#cb3-130" aria-hidden="true" tabindex="-1"></a>  <span class="st">"dalmatinskiportal.hr"</span>, <span class="st">"dalmatinskiportal"</span>,</span>
+<span id="cb3-131"><a href="#cb3-131" aria-hidden="true" tabindex="-1"></a>  <span class="st">"campaign-archive.com"</span>,</span>
+<span id="cb3-132"><a href="#cb3-132" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Forums and aggregators</span></span>
+<span id="cb3-133"><a href="#cb3-133" aria-hidden="true" tabindex="-1"></a>  <span class="st">"forum.hr"</span>, <span class="st">"reddit"</span>, <span class="st">"anonymous_user"</span>, <span class="st">"komentari"</span>, <span class="st">"bug.hr"</span>,</span>
+<span id="cb3-134"><a href="#cb3-134" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Entertainment and other</span></span>
+<span id="cb3-135"><a href="#cb3-135" aria-hidden="true" tabindex="-1"></a>  <span class="st">"inmemoriam"</span>, <span class="st">"magicus.info"</span>, <span class="st">"book.hr"</span>, <span class="st">"mojzagreb.info"</span>, </span>
+<span id="cb3-136"><a href="#cb3-136" aria-hidden="true" tabindex="-1"></a>  <span class="st">"skole.hr"</span>, <span class="st">"tvprofil"</span>, <span class="st">"priznajem.hr"</span>, <span class="st">"dragovoljac.com"</span>, </span>
+<span id="cb3-137"><a href="#cb3-137" aria-hidden="true" tabindex="-1"></a>  <span class="st">"croatia"</span>, <span class="st">"wikipedia"</span>,</span>
+<span id="cb3-138"><a href="#cb3-138" aria-hidden="true" tabindex="-1"></a>  <span class="st">"facebook.com"</span>, <span class="st">"youtube.com"</span>, <span class="st">"instagram.com"</span>, <span class="st">"twitter.com"</span>,</span>
+<span id="cb3-139"><a href="#cb3-139" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Government and administrative</span></span>
+<span id="cb3-140"><a href="#cb3-140" aria-hidden="true" tabindex="-1"></a>  <span class="st">"županija"</span>, <span class="st">"zupanija"</span>, <span class="st">"grad "</span>, <span class="st">"opcina"</span>, <span class="st">"općina"</span>,</span>
+<span id="cb3-141"><a href="#cb3-141" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Non-Catholic religious groups</span></span>
+<span id="cb3-142"><a href="#cb3-142" aria-hidden="true" tabindex="-1"></a>  <span class="st">"kršćanska proročka crkva"</span>, <span class="st">"krscanska prorocka crkva"</span>,</span>
+<span id="cb3-143"><a href="#cb3-143" aria-hidden="true" tabindex="-1"></a>  <span class="st">"crkva svemogućeg boga"</span>, <span class="st">"crkva svemoguceg boga"</span>,</span>
+<span id="cb3-144"><a href="#cb3-144" aria-hidden="true" tabindex="-1"></a>  <span class="st">"jehovini svjedoci"</span>, <span class="st">"adventisti"</span>, <span class="st">"baptisti"</span>, <span class="st">"pentekostalna"</span>,</span>
+<span id="cb3-145"><a href="#cb3-145" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Political parties</span></span>
+<span id="cb3-146"><a href="#cb3-146" aria-hidden="true" tabindex="-1"></a>  <span class="st">"domovinski pokret"</span>, <span class="st">"hdz"</span>, <span class="st">"sdp"</span>, <span class="st">"most"</span>, <span class="st">"možemo"</span>, <span class="st">"mozemo"</span></span>
+<span id="cb3-147"><a href="#cb3-147" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-148"><a href="#cb3-148" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-149"><a href="#cb3-149" aria-hidden="true" tabindex="-1"></a><span class="co"># -----------------------------------------------------------------------------</span></span>
+<span id="cb3-150"><a href="#cb3-150" aria-hidden="true" tabindex="-1"></a><span class="co"># DOMAIN PATTERNS: URL-based classification</span></span>
+<span id="cb3-151"><a href="#cb3-151" aria-hidden="true" tabindex="-1"></a><span class="co"># -----------------------------------------------------------------------------</span></span>
+<span id="cb3-152"><a href="#cb3-152" aria-hidden="true" tabindex="-1"></a>domain_patterns <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb3-153"><a href="#cb3-153" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Institutional Official"</span> <span class="ot">=</span> <span class="fu">c</span>(</span>
+<span id="cb3-154"><a href="#cb3-154" aria-hidden="true" tabindex="-1"></a>    <span class="st">"hkm.hr"</span>, <span class="st">"ika.hkm.hr"</span>, <span class="st">"hkr.hkm.hr"</span>, <span class="st">"hbk.hr"</span>, <span class="st">"radiomarija.hr"</span></span>
 <span id="cb3-155"><a href="#cb3-155" aria-hidden="true" tabindex="-1"></a>  ),</span>
-<span id="cb3-156"><a href="#cb3-156" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Academic"</span> <span class="ot">=</span> <span class="fu">c</span>(</span>
-<span id="cb3-157"><a href="#cb3-157" aria-hidden="true" tabindex="-1"></a>    <span class="st">"unicath.hr"</span>, <span class="st">"hks.hr"</span>, <span class="st">"kbf.unizg.hr"</span>, <span class="st">"ffrz.hr"</span>, <span class="st">"hku.hr"</span></span>
-<span id="cb3-158"><a href="#cb3-158" aria-hidden="true" tabindex="-1"></a>  ),</span>
-<span id="cb3-159"><a href="#cb3-159" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Religious Orders"</span> <span class="ot">=</span> <span class="fu">c</span>(</span>
-<span id="cb3-160"><a href="#cb3-160" aria-hidden="true" tabindex="-1"></a>    <span class="st">"franjevci.hr"</span>, <span class="st">"franjevci-split.hr"</span>, <span class="st">"isusovci.hr"</span>, <span class="st">"dominikanci.hr"</span>,</span>
-<span id="cb3-161"><a href="#cb3-161" aria-hidden="true" tabindex="-1"></a>    <span class="st">"kapucini.hr"</span>, <span class="st">"salezijanci.hr"</span>, <span class="st">"karmelicani.hr"</span></span>
-<span id="cb3-162"><a href="#cb3-162" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb3-163"><a href="#cb3-163" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb3-164"><a href="#cb3-164" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-165"><a href="#cb3-165" aria-hidden="true" tabindex="-1"></a><span class="co"># -----------------------------------------------------------------------------</span></span>
-<span id="cb3-166"><a href="#cb3-166" aria-hidden="true" tabindex="-1"></a><span class="co"># NAME PATTERNS: Text-based classification</span></span>
-<span id="cb3-167"><a href="#cb3-167" aria-hidden="true" tabindex="-1"></a><span class="co"># -----------------------------------------------------------------------------</span></span>
-<span id="cb3-168"><a href="#cb3-168" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-169"><a href="#cb3-169" aria-hidden="true" tabindex="-1"></a><span class="co"># Diocesan</span></span>
-<span id="cb3-170"><a href="#cb3-170" aria-hidden="true" tabindex="-1"></a>diocesan_exact <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
-<span id="cb3-171"><a href="#cb3-171" aria-hidden="true" tabindex="-1"></a>  <span class="st">"zagrebačka nadbiskupija"</span>, <span class="st">"zagrebacka nadbiskupija"</span>,</span>
-<span id="cb3-172"><a href="#cb3-172" aria-hidden="true" tabindex="-1"></a>  <span class="st">"splitsko-makarska nadbiskupija"</span>, <span class="st">"splitsko makarska"</span>,</span>
-<span id="cb3-173"><a href="#cb3-173" aria-hidden="true" tabindex="-1"></a>  <span class="st">"đakovačko-osječka nadbiskupija"</span>, <span class="st">"djakovacko-osjecka"</span>,</span>
-<span id="cb3-174"><a href="#cb3-174" aria-hidden="true" tabindex="-1"></a>  <span class="st">"riječka nadbiskupija"</span>, <span class="st">"rijecka nadbiskupija"</span>,</span>
-<span id="cb3-175"><a href="#cb3-175" aria-hidden="true" tabindex="-1"></a>  <span class="st">"zadarska nadbiskupija"</span>, <span class="st">"sisačka biskupija"</span>, <span class="st">"sisacka biskupija"</span>,</span>
-<span id="cb3-176"><a href="#cb3-176" aria-hidden="true" tabindex="-1"></a>  <span class="st">"varaždinska biskupija"</span>, <span class="st">"varazdinska biskupija"</span>,</span>
-<span id="cb3-177"><a href="#cb3-177" aria-hidden="true" tabindex="-1"></a>  <span class="st">"križevačka eparhija"</span>, <span class="st">"krizevacka eparhija"</span>,</span>
-<span id="cb3-178"><a href="#cb3-178" aria-hidden="true" tabindex="-1"></a>  <span class="st">"šibenska biskupija"</span>, <span class="st">"sibenska biskupija"</span>,</span>
-<span id="cb3-179"><a href="#cb3-179" aria-hidden="true" tabindex="-1"></a>  <span class="st">"dubrovačka biskupija"</span>, <span class="st">"dubrovacka biskupija"</span>,</span>
-<span id="cb3-180"><a href="#cb3-180" aria-hidden="true" tabindex="-1"></a>  <span class="st">"porečka i pulska biskupija"</span>, <span class="st">"porecka biskupija"</span>,</span>
-<span id="cb3-181"><a href="#cb3-181" aria-hidden="true" tabindex="-1"></a>  <span class="st">"gospićko-senjska biskupija"</span>, <span class="st">"gospicko-senjska"</span>,</span>
-<span id="cb3-182"><a href="#cb3-182" aria-hidden="true" tabindex="-1"></a>  <span class="st">"bjelovarsko-križevačka biskupija"</span>, <span class="st">"kotorska biskupija"</span></span>
-<span id="cb3-183"><a href="#cb3-183" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb3-184"><a href="#cb3-184" aria-hidden="true" tabindex="-1"></a>diocesan_contains <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"nadbiskupija"</span>, <span class="st">"biskupija"</span>, <span class="st">"eparhija"</span>, <span class="st">"ordinarijat"</span>)</span>
-<span id="cb3-185"><a href="#cb3-185" aria-hidden="true" tabindex="-1"></a><span class="co"># Parish patterns - match at start OR anywhere with space before</span></span>
-<span id="cb3-186"><a href="#cb3-186" aria-hidden="true" tabindex="-1"></a>diocesan_parish <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"župa "</span>, <span class="st">"zupa "</span>, <span class="st">"župna "</span>, <span class="st">"zupna "</span>, <span class="st">"župni "</span>, <span class="st">"zupni "</span>,</span>
-<span id="cb3-187"><a href="#cb3-187" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"župa"</span>, <span class="st">"zupa"</span>)  <span class="co"># Also match at start without space</span></span>
-<span id="cb3-188"><a href="#cb3-188" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-189"><a href="#cb3-189" aria-hidden="true" tabindex="-1"></a><span class="co"># Religious Orders</span></span>
-<span id="cb3-190"><a href="#cb3-190" aria-hidden="true" tabindex="-1"></a>orders_exact <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
-<span id="cb3-191"><a href="#cb3-191" aria-hidden="true" tabindex="-1"></a>  <span class="st">"franjevci"</span>, <span class="st">"franjevci konventualci"</span>, <span class="st">"franjevci kapucini"</span>,</span>
-<span id="cb3-192"><a href="#cb3-192" aria-hidden="true" tabindex="-1"></a>  <span class="st">"mala braća"</span>, <span class="st">"isusovci"</span>, <span class="st">"družba isusova"</span>, <span class="st">"druzba isusova"</span>,</span>
-<span id="cb3-193"><a href="#cb3-193" aria-hidden="true" tabindex="-1"></a>  <span class="st">"dominikanci"</span>, <span class="st">"red propovjednika"</span>, <span class="st">"salezijanci"</span>, <span class="st">"don bosco"</span>,</span>
-<span id="cb3-194"><a href="#cb3-194" aria-hidden="true" tabindex="-1"></a>  <span class="st">"karmelićani"</span>, <span class="st">"karmelicani"</span>, <span class="st">"karmel"</span>, <span class="st">"benediktinci"</span>, <span class="st">"benediktin"</span>,</span>
-<span id="cb3-195"><a href="#cb3-195" aria-hidden="true" tabindex="-1"></a>  <span class="st">"kapucini"</span>, <span class="st">"pavlini"</span>, <span class="st">"trapisti"</span>, <span class="st">"cisterciti"</span>, <span class="st">"augustinci"</span>,</span>
-<span id="cb3-196"><a href="#cb3-196" aria-hidden="true" tabindex="-1"></a>  <span class="st">"sestre milosrdnice"</span>, <span class="st">"uršulinke"</span>, <span class="st">"ursulinke"</span>, <span class="st">"klarise"</span>,</span>
-<span id="cb3-197"><a href="#cb3-197" aria-hidden="true" tabindex="-1"></a>  <span class="st">"službenice milosrđa"</span>, <span class="st">"kćeri božje ljubavi"</span>, <span class="st">"školske sestre"</span>,</span>
-<span id="cb3-198"><a href="#cb3-198" aria-hidden="true" tabindex="-1"></a>  <span class="st">"karmelićanke"</span>, <span class="st">"benediktinke"</span>, <span class="st">"dominikanke"</span></span>
-<span id="cb3-199"><a href="#cb3-199" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb3-200"><a href="#cb3-200" aria-hidden="true" tabindex="-1"></a>orders_contains <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
-<span id="cb3-201"><a href="#cb3-201" aria-hidden="true" tabindex="-1"></a>  <span class="st">"franjevački"</span>, <span class="st">"franjevacki"</span>, <span class="st">"isusovački"</span>, <span class="st">"isusovacki"</span>,</span>
-<span id="cb3-202"><a href="#cb3-202" aria-hidden="true" tabindex="-1"></a>  <span class="st">"dominikanski"</span>, <span class="st">"salezijanski"</span>, <span class="st">"karmelski"</span>, <span class="st">"benediktinski"</span>,</span>
-<span id="cb3-203"><a href="#cb3-203" aria-hidden="true" tabindex="-1"></a>  <span class="st">"kapucinski"</span>, <span class="st">"pavlinski"</span>, <span class="st">"redovnici"</span>, <span class="st">"redovnice"</span>,</span>
-<span id="cb3-204"><a href="#cb3-204" aria-hidden="true" tabindex="-1"></a>  <span class="st">"samostan"</span>, <span class="st">"provincija"</span></span>
-<span id="cb3-205"><a href="#cb3-205" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb3-206"><a href="#cb3-206" aria-hidden="true" tabindex="-1"></a>orders_abbrev <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"ofm"</span>, <span class="st">"ofmcap"</span>, <span class="st">"ofmconv"</span>, <span class="st">"sj"</span>, <span class="st">"op"</span>, <span class="st">"sdb"</span>,</span>
-<span id="cb3-207"><a href="#cb3-207" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"ocd"</span>, <span class="st">"osb"</span>, <span class="st">"osbm"</span>, <span class="st">"cssr"</span>, <span class="st">"svd"</span>, <span class="st">"omc"</span>)</span>
-<span id="cb3-208"><a href="#cb3-208" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-209"><a href="#cb3-209" aria-hidden="true" tabindex="-1"></a><span class="co"># Charismatic Communities</span></span>
-<span id="cb3-210"><a href="#cb3-210" aria-hidden="true" tabindex="-1"></a>charismatic_exact <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
-<span id="cb3-211"><a href="#cb3-211" aria-hidden="true" tabindex="-1"></a>  <span class="st">"emmanuel"</span>, <span class="st">"taize"</span>, <span class="st">"taizé"</span>, <span class="st">"fokolari"</span>, <span class="st">"fokolarini"</span>,</span>
-<span id="cb3-212"><a href="#cb3-212" aria-hidden="true" tabindex="-1"></a>  <span class="st">"kursiljo"</span>, <span class="st">"cursillo"</span>, <span class="st">"neokatekumenski put"</span>, <span class="st">"shalom"</span>,</span>
-<span id="cb3-213"><a href="#cb3-213" aria-hidden="true" tabindex="-1"></a>  <span class="st">"zajednica beatitudes"</span>, <span class="st">"zajednica blaženstava"</span>,</span>
-<span id="cb3-214"><a href="#cb3-214" aria-hidden="true" tabindex="-1"></a>  <span class="st">"dom molitve"</span>, <span class="st">"kuća molitve"</span>, <span class="st">"kuca molitve"</span>,</span>
-<span id="cb3-215"><a href="#cb3-215" aria-hidden="true" tabindex="-1"></a>  <span class="st">"duhovna obnova"</span>, <span class="st">"molitvena snaga"</span></span>
-<span id="cb3-216"><a href="#cb3-216" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb3-217"><a href="#cb3-217" aria-hidden="true" tabindex="-1"></a>charismatic_contains <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
-<span id="cb3-218"><a href="#cb3-218" aria-hidden="true" tabindex="-1"></a>  <span class="st">"molitvena zajednica"</span>, <span class="st">"karizmatska"</span>, <span class="st">"karizmatski"</span>,</span>
-<span id="cb3-219"><a href="#cb3-219" aria-hidden="true" tabindex="-1"></a>  <span class="st">"neokatekumenski"</span>, <span class="st">"neokatekumenska"</span>, <span class="st">"obnova u duhu"</span>,</span>
-<span id="cb3-220"><a href="#cb3-220" aria-hidden="true" tabindex="-1"></a>  <span class="st">"komunija i oslobođenje"</span>, <span class="st">"comunione e liberazione"</span>,</span>
-<span id="cb3-221"><a href="#cb3-221" aria-hidden="true" tabindex="-1"></a>  <span class="st">"dom molitve"</span>, <span class="st">"house of prayer"</span></span>
-<span id="cb3-222"><a href="#cb3-222" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb3-223"><a href="#cb3-223" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-224"><a href="#cb3-224" aria-hidden="true" tabindex="-1"></a><span class="co"># Youth Organizations</span></span>
-<span id="cb3-225"><a href="#cb3-225" aria-hidden="true" tabindex="-1"></a>youth_exact <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
-<span id="cb3-226"><a href="#cb3-226" aria-hidden="true" tabindex="-1"></a>  <span class="st">"frama"</span>, <span class="st">"shkm"</span>, <span class="st">"katolička mladež"</span>, <span class="st">"katolicka mladez"</span>,</span>
-<span id="cb3-227"><a href="#cb3-227" aria-hidden="true" tabindex="-1"></a>  <span class="st">"mladi franjevci"</span>, <span class="st">"salezijanska mladež"</span></span>
-<span id="cb3-228"><a href="#cb3-228" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb3-229"><a href="#cb3-229" aria-hidden="true" tabindex="-1"></a>youth_contains <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
-<span id="cb3-230"><a href="#cb3-230" aria-hidden="true" tabindex="-1"></a>  <span class="st">"ministranti"</span>, <span class="st">"mladifra"</span>, <span class="st">"kaem"</span>, <span class="st">"studentska kapelanija"</span>,</span>
-<span id="cb3-231"><a href="#cb3-231" aria-hidden="true" tabindex="-1"></a>  <span class="st">"sveučilišna kapelanija"</span>, <span class="st">"sveuclisna kapelanija"</span>,</span>
-<span id="cb3-232"><a href="#cb3-232" aria-hidden="true" tabindex="-1"></a>  <span class="st">"pastoral mladih"</span>, <span class="st">"mladi katolici"</span></span>
-<span id="cb3-233"><a href="#cb3-233" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb3-234"><a href="#cb3-234" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-235"><a href="#cb3-235" aria-hidden="true" tabindex="-1"></a><span class="co"># Academic</span></span>
-<span id="cb3-236"><a href="#cb3-236" aria-hidden="true" tabindex="-1"></a>academic_exact <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
-<span id="cb3-237"><a href="#cb3-237" aria-hidden="true" tabindex="-1"></a>  <span class="st">"hrvatsko katoličko sveučilište"</span>, <span class="st">"hrvatsko katolicko sveuciliste"</span>,</span>
-<span id="cb3-238"><a href="#cb3-238" aria-hidden="true" tabindex="-1"></a>  <span class="st">"katolički bogoslovni fakultet"</span>, <span class="st">"katolicki bogoslovni fakultet"</span>,</span>
-<span id="cb3-239"><a href="#cb3-239" aria-hidden="true" tabindex="-1"></a>  <span class="st">"filozofski fakultet družbe isusove"</span>, <span class="st">"teologija u rijeci"</span></span>
-<span id="cb3-240"><a href="#cb3-240" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb3-241"><a href="#cb3-241" aria-hidden="true" tabindex="-1"></a>academic_contains <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"teologija"</span>, <span class="st">"bogoslovija"</span>, <span class="st">"katehetski"</span>)</span>
-<span id="cb3-242"><a href="#cb3-242" aria-hidden="true" tabindex="-1"></a>academic_abbrev <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"kbf"</span>, <span class="st">"hku"</span>, <span class="st">"ffrz"</span>)</span>
-<span id="cb3-243"><a href="#cb3-243" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-244"><a href="#cb3-244" aria-hidden="true" tabindex="-1"></a><span class="co"># Individual Priests (title prefixes at START)</span></span>
-<span id="cb3-245"><a href="#cb3-245" aria-hidden="true" tabindex="-1"></a>priest_prefixes <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
-<span id="cb3-246"><a href="#cb3-246" aria-hidden="true" tabindex="-1"></a>  <span class="st">"fra "</span>, <span class="st">"don "</span>, <span class="st">"vlč. "</span>, <span class="st">"vlč."</span>, <span class="st">"vlc. "</span>, <span class="st">"vlc."</span>,</span>
-<span id="cb3-247"><a href="#cb3-247" aria-hidden="true" tabindex="-1"></a>  <span class="st">"msgr. "</span>, <span class="st">"msgr."</span>, <span class="st">"mons. "</span>, <span class="st">"mons."</span>,</span>
-<span id="cb3-248"><a href="#cb3-248" aria-hidden="true" tabindex="-1"></a>  <span class="st">"o. "</span>, <span class="st">"pater "</span>, <span class="st">"p. "</span>, <span class="st">"pr. "</span>,</span>
-<span id="cb3-249"><a href="#cb3-249" aria-hidden="true" tabindex="-1"></a>  <span class="st">"s. "</span>, <span class="st">"sestra "</span>, <span class="st">"m. "</span>, <span class="st">"majka "</span></span>
-<span id="cb3-250"><a href="#cb3-250" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb3-251"><a href="#cb3-251" aria-hidden="true" tabindex="-1"></a>priest_hierarchy <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
-<span id="cb3-252"><a href="#cb3-252" aria-hidden="true" tabindex="-1"></a>  <span class="st">"biskup "</span>, <span class="st">"nadbiskup "</span>, <span class="st">"kardinal "</span>,</span>
-<span id="cb3-253"><a href="#cb3-253" aria-hidden="true" tabindex="-1"></a>  <span class="st">"mons. "</span>, <span class="st">"preč. "</span>, <span class="st">"prečasni "</span></span>
-<span id="cb3-254"><a href="#cb3-254" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb3-255"><a href="#cb3-255" aria-hidden="true" tabindex="-1"></a>priest_contains <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"svećenik"</span>, <span class="st">"svecenik"</span>, <span class="st">"župnik"</span>, <span class="st">"zupnik"</span>)</span>
+<span id="cb3-156"><a href="#cb3-156" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Diocesan"</span> <span class="ot">=</span> <span class="fu">c</span>(</span>
+<span id="cb3-157"><a href="#cb3-157" aria-hidden="true" tabindex="-1"></a>    <span class="st">"zg-nadbiskupija.hr"</span>, <span class="st">"biskupija-varazdinska.hr"</span>, <span class="st">"djos.hr"</span>,</span>
+<span id="cb3-158"><a href="#cb3-158" aria-hidden="true" tabindex="-1"></a>    <span class="st">"biskupija-sj.hr"</span>, <span class="st">"rzs.hr"</span>, <span class="st">"rkc-sisak.hr"</span>, <span class="st">"zadarskanadbiskupija.hr"</span>,</span>
+<span id="cb3-159"><a href="#cb3-159" aria-hidden="true" tabindex="-1"></a>    <span class="st">"gospicko-senjska-biskupija.hr"</span>, <span class="st">"nadbiskupija-split.com"</span>,</span>
+<span id="cb3-160"><a href="#cb3-160" aria-hidden="true" tabindex="-1"></a>    <span class="st">"nadbiskupija-split.hr"</span>, <span class="st">"dubrovacka-biskupija.hr"</span>, <span class="st">"porec-biskupija.hr"</span>,</span>
+<span id="cb3-161"><a href="#cb3-161" aria-hidden="true" tabindex="-1"></a>    <span class="st">"biskupija-kk.hr"</span>, <span class="st">"rkc-pula.hr"</span>, <span class="st">"krizcevacka-eparhija.hr"</span>,</span>
+<span id="cb3-162"><a href="#cb3-162" aria-hidden="true" tabindex="-1"></a>    <span class="st">"sibenska-biskupija.hr"</span>, <span class="st">"krizevci.hbk.hr"</span></span>
+<span id="cb3-163"><a href="#cb3-163" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb3-164"><a href="#cb3-164" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Independent Media"</span> <span class="ot">=</span> <span class="fu">c</span>(</span>
+<span id="cb3-165"><a href="#cb3-165" aria-hidden="true" tabindex="-1"></a>    <span class="st">"laudato.hr"</span>, <span class="st">"laudato.tv"</span>, <span class="st">"bitno.net"</span>, <span class="st">"glaskoncila.hr"</span>,</span>
+<span id="cb3-166"><a href="#cb3-166" aria-hidden="true" tabindex="-1"></a>    <span class="st">"nova-eva.com"</span>, <span class="st">"verbum.hr"</span>, <span class="st">"ks.hr"</span>, <span class="st">"totus-tuus.hr"</span>,</span>
+<span id="cb3-167"><a href="#cb3-167" aria-hidden="true" tabindex="-1"></a>    <span class="st">"svjetlorijeci.hr"</span>, <span class="st">"zivot.com.hr"</span>, <span class="st">"novizivot.net"</span></span>
+<span id="cb3-168"><a href="#cb3-168" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb3-169"><a href="#cb3-169" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Academic"</span> <span class="ot">=</span> <span class="fu">c</span>(</span>
+<span id="cb3-170"><a href="#cb3-170" aria-hidden="true" tabindex="-1"></a>    <span class="st">"unicath.hr"</span>, <span class="st">"hks.hr"</span>, <span class="st">"kbf.unizg.hr"</span>, <span class="st">"ffrz.hr"</span>, <span class="st">"hku.hr"</span></span>
+<span id="cb3-171"><a href="#cb3-171" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb3-172"><a href="#cb3-172" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Religious Orders"</span> <span class="ot">=</span> <span class="fu">c</span>(</span>
+<span id="cb3-173"><a href="#cb3-173" aria-hidden="true" tabindex="-1"></a>    <span class="st">"franjevci.hr"</span>, <span class="st">"franjevci-split.hr"</span>, <span class="st">"isusovci.hr"</span>, <span class="st">"dominikanci.hr"</span>,</span>
+<span id="cb3-174"><a href="#cb3-174" aria-hidden="true" tabindex="-1"></a>    <span class="st">"kapucini.hr"</span>, <span class="st">"salezijanci.hr"</span>, <span class="st">"karmelicani.hr"</span></span>
+<span id="cb3-175"><a href="#cb3-175" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb3-176"><a href="#cb3-176" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-177"><a href="#cb3-177" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-178"><a href="#cb3-178" aria-hidden="true" tabindex="-1"></a><span class="co"># -----------------------------------------------------------------------------</span></span>
+<span id="cb3-179"><a href="#cb3-179" aria-hidden="true" tabindex="-1"></a><span class="co"># NAME PATTERNS: Text-based classification</span></span>
+<span id="cb3-180"><a href="#cb3-180" aria-hidden="true" tabindex="-1"></a><span class="co"># -----------------------------------------------------------------------------</span></span>
+<span id="cb3-181"><a href="#cb3-181" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-182"><a href="#cb3-182" aria-hidden="true" tabindex="-1"></a><span class="co"># Diocesan</span></span>
+<span id="cb3-183"><a href="#cb3-183" aria-hidden="true" tabindex="-1"></a>diocesan_exact <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb3-184"><a href="#cb3-184" aria-hidden="true" tabindex="-1"></a>  <span class="st">"zagrebačka nadbiskupija"</span>, <span class="st">"zagrebacka nadbiskupija"</span>,</span>
+<span id="cb3-185"><a href="#cb3-185" aria-hidden="true" tabindex="-1"></a>  <span class="st">"splitsko-makarska nadbiskupija"</span>, <span class="st">"splitsko makarska"</span>,</span>
+<span id="cb3-186"><a href="#cb3-186" aria-hidden="true" tabindex="-1"></a>  <span class="st">"đakovačko-osječka nadbiskupija"</span>, <span class="st">"djakovacko-osjecka"</span>,</span>
+<span id="cb3-187"><a href="#cb3-187" aria-hidden="true" tabindex="-1"></a>  <span class="st">"riječka nadbiskupija"</span>, <span class="st">"rijecka nadbiskupija"</span>,</span>
+<span id="cb3-188"><a href="#cb3-188" aria-hidden="true" tabindex="-1"></a>  <span class="st">"zadarska nadbiskupija"</span>, <span class="st">"sisačka biskupija"</span>, <span class="st">"sisacka biskupija"</span>,</span>
+<span id="cb3-189"><a href="#cb3-189" aria-hidden="true" tabindex="-1"></a>  <span class="st">"varaždinska biskupija"</span>, <span class="st">"varazdinska biskupija"</span>,</span>
+<span id="cb3-190"><a href="#cb3-190" aria-hidden="true" tabindex="-1"></a>  <span class="st">"križevačka eparhija"</span>, <span class="st">"krizevacka eparhija"</span>,</span>
+<span id="cb3-191"><a href="#cb3-191" aria-hidden="true" tabindex="-1"></a>  <span class="st">"šibenska biskupija"</span>, <span class="st">"sibenska biskupija"</span>,</span>
+<span id="cb3-192"><a href="#cb3-192" aria-hidden="true" tabindex="-1"></a>  <span class="st">"dubrovačka biskupija"</span>, <span class="st">"dubrovacka biskupija"</span>,</span>
+<span id="cb3-193"><a href="#cb3-193" aria-hidden="true" tabindex="-1"></a>  <span class="st">"porečka i pulska biskupija"</span>, <span class="st">"porecka biskupija"</span>,</span>
+<span id="cb3-194"><a href="#cb3-194" aria-hidden="true" tabindex="-1"></a>  <span class="st">"gospićko-senjska biskupija"</span>, <span class="st">"gospicko-senjska"</span>,</span>
+<span id="cb3-195"><a href="#cb3-195" aria-hidden="true" tabindex="-1"></a>  <span class="st">"bjelovarsko-križevačka biskupija"</span>, <span class="st">"kotorska biskupija"</span></span>
+<span id="cb3-196"><a href="#cb3-196" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-197"><a href="#cb3-197" aria-hidden="true" tabindex="-1"></a>diocesan_contains <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"nadbiskupija"</span>, <span class="st">"biskupija"</span>, <span class="st">"eparhija"</span>, <span class="st">"ordinarijat"</span>)</span>
+<span id="cb3-198"><a href="#cb3-198" aria-hidden="true" tabindex="-1"></a><span class="co"># Parish patterns - match at start OR anywhere with space before</span></span>
+<span id="cb3-199"><a href="#cb3-199" aria-hidden="true" tabindex="-1"></a>diocesan_parish <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"župa "</span>, <span class="st">"zupa "</span>, <span class="st">"župna "</span>, <span class="st">"zupna "</span>, <span class="st">"župni "</span>, <span class="st">"zupni "</span>,</span>
+<span id="cb3-200"><a href="#cb3-200" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"župa"</span>, <span class="st">"zupa"</span>)  <span class="co"># Also match at start without space</span></span>
+<span id="cb3-201"><a href="#cb3-201" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-202"><a href="#cb3-202" aria-hidden="true" tabindex="-1"></a><span class="co"># Religious Orders</span></span>
+<span id="cb3-203"><a href="#cb3-203" aria-hidden="true" tabindex="-1"></a>orders_exact <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb3-204"><a href="#cb3-204" aria-hidden="true" tabindex="-1"></a>  <span class="st">"franjevci"</span>, <span class="st">"franjevci konventualci"</span>, <span class="st">"franjevci kapucini"</span>,</span>
+<span id="cb3-205"><a href="#cb3-205" aria-hidden="true" tabindex="-1"></a>  <span class="st">"mala braća"</span>, <span class="st">"isusovci"</span>, <span class="st">"družba isusova"</span>, <span class="st">"druzba isusova"</span>,</span>
+<span id="cb3-206"><a href="#cb3-206" aria-hidden="true" tabindex="-1"></a>  <span class="st">"dominikanci"</span>, <span class="st">"red propovjednika"</span>, <span class="st">"salezijanci"</span>, <span class="st">"don bosco"</span>,</span>
+<span id="cb3-207"><a href="#cb3-207" aria-hidden="true" tabindex="-1"></a>  <span class="st">"karmelićani"</span>, <span class="st">"karmelicani"</span>, <span class="st">"karmel"</span>, <span class="st">"benediktinci"</span>, <span class="st">"benediktin"</span>,</span>
+<span id="cb3-208"><a href="#cb3-208" aria-hidden="true" tabindex="-1"></a>  <span class="st">"kapucini"</span>, <span class="st">"pavlini"</span>, <span class="st">"trapisti"</span>, <span class="st">"cisterciti"</span>, <span class="st">"augustinci"</span>,</span>
+<span id="cb3-209"><a href="#cb3-209" aria-hidden="true" tabindex="-1"></a>  <span class="st">"sestre milosrdnice"</span>, <span class="st">"uršulinke"</span>, <span class="st">"ursulinke"</span>, <span class="st">"klarise"</span>,</span>
+<span id="cb3-210"><a href="#cb3-210" aria-hidden="true" tabindex="-1"></a>  <span class="st">"službenice milosrđa"</span>, <span class="st">"kćeri božje ljubavi"</span>, <span class="st">"školske sestre"</span>,</span>
+<span id="cb3-211"><a href="#cb3-211" aria-hidden="true" tabindex="-1"></a>  <span class="st">"karmelićanke"</span>, <span class="st">"benediktinke"</span>, <span class="st">"dominikanke"</span></span>
+<span id="cb3-212"><a href="#cb3-212" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-213"><a href="#cb3-213" aria-hidden="true" tabindex="-1"></a>orders_contains <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb3-214"><a href="#cb3-214" aria-hidden="true" tabindex="-1"></a>  <span class="st">"franjevački"</span>, <span class="st">"franjevacki"</span>, <span class="st">"isusovački"</span>, <span class="st">"isusovacki"</span>,</span>
+<span id="cb3-215"><a href="#cb3-215" aria-hidden="true" tabindex="-1"></a>  <span class="st">"dominikanski"</span>, <span class="st">"salezijanski"</span>, <span class="st">"karmelski"</span>, <span class="st">"benediktinski"</span>,</span>
+<span id="cb3-216"><a href="#cb3-216" aria-hidden="true" tabindex="-1"></a>  <span class="st">"kapucinski"</span>, <span class="st">"pavlinski"</span>, <span class="st">"redovnici"</span>, <span class="st">"redovnice"</span>,</span>
+<span id="cb3-217"><a href="#cb3-217" aria-hidden="true" tabindex="-1"></a>  <span class="st">"samostan"</span>, <span class="st">"provincija"</span></span>
+<span id="cb3-218"><a href="#cb3-218" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-219"><a href="#cb3-219" aria-hidden="true" tabindex="-1"></a>orders_abbrev <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"ofm"</span>, <span class="st">"ofmcap"</span>, <span class="st">"ofmconv"</span>, <span class="st">"sj"</span>, <span class="st">"op"</span>, <span class="st">"sdb"</span>,</span>
+<span id="cb3-220"><a href="#cb3-220" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"ocd"</span>, <span class="st">"osb"</span>, <span class="st">"osbm"</span>, <span class="st">"cssr"</span>, <span class="st">"svd"</span>, <span class="st">"omc"</span>)</span>
+<span id="cb3-221"><a href="#cb3-221" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-222"><a href="#cb3-222" aria-hidden="true" tabindex="-1"></a><span class="co"># Charismatic Communities</span></span>
+<span id="cb3-223"><a href="#cb3-223" aria-hidden="true" tabindex="-1"></a>charismatic_exact <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb3-224"><a href="#cb3-224" aria-hidden="true" tabindex="-1"></a>  <span class="st">"emmanuel"</span>, <span class="st">"taize"</span>, <span class="st">"taizé"</span>, <span class="st">"fokolari"</span>, <span class="st">"fokolarini"</span>,</span>
+<span id="cb3-225"><a href="#cb3-225" aria-hidden="true" tabindex="-1"></a>  <span class="st">"kursiljo"</span>, <span class="st">"cursillo"</span>, <span class="st">"neokatekumenski put"</span>, <span class="st">"shalom"</span>,</span>
+<span id="cb3-226"><a href="#cb3-226" aria-hidden="true" tabindex="-1"></a>  <span class="st">"zajednica beatitudes"</span>, <span class="st">"zajednica blaženstava"</span>,</span>
+<span id="cb3-227"><a href="#cb3-227" aria-hidden="true" tabindex="-1"></a>  <span class="st">"dom molitve"</span>, <span class="st">"kuća molitve"</span>, <span class="st">"kuca molitve"</span>,</span>
+<span id="cb3-228"><a href="#cb3-228" aria-hidden="true" tabindex="-1"></a>  <span class="st">"duhovna obnova"</span>, <span class="st">"molitvena snaga"</span></span>
+<span id="cb3-229"><a href="#cb3-229" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-230"><a href="#cb3-230" aria-hidden="true" tabindex="-1"></a>charismatic_contains <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb3-231"><a href="#cb3-231" aria-hidden="true" tabindex="-1"></a>  <span class="st">"molitvena zajednica"</span>, <span class="st">"karizmatska"</span>, <span class="st">"karizmatski"</span>,</span>
+<span id="cb3-232"><a href="#cb3-232" aria-hidden="true" tabindex="-1"></a>  <span class="st">"neokatekumenski"</span>, <span class="st">"neokatekumenska"</span>, <span class="st">"obnova u duhu"</span>,</span>
+<span id="cb3-233"><a href="#cb3-233" aria-hidden="true" tabindex="-1"></a>  <span class="st">"komunija i oslobođenje"</span>, <span class="st">"comunione e liberazione"</span>,</span>
+<span id="cb3-234"><a href="#cb3-234" aria-hidden="true" tabindex="-1"></a>  <span class="st">"dom molitve"</span>, <span class="st">"house of prayer"</span></span>
+<span id="cb3-235"><a href="#cb3-235" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-236"><a href="#cb3-236" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-237"><a href="#cb3-237" aria-hidden="true" tabindex="-1"></a><span class="co"># Youth Organizations</span></span>
+<span id="cb3-238"><a href="#cb3-238" aria-hidden="true" tabindex="-1"></a>youth_exact <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb3-239"><a href="#cb3-239" aria-hidden="true" tabindex="-1"></a>  <span class="st">"frama"</span>, <span class="st">"shkm"</span>, <span class="st">"katolička mladež"</span>, <span class="st">"katolicka mladez"</span>,</span>
+<span id="cb3-240"><a href="#cb3-240" aria-hidden="true" tabindex="-1"></a>  <span class="st">"mladi franjevci"</span>, <span class="st">"salezijanska mladež"</span></span>
+<span id="cb3-241"><a href="#cb3-241" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-242"><a href="#cb3-242" aria-hidden="true" tabindex="-1"></a>youth_contains <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb3-243"><a href="#cb3-243" aria-hidden="true" tabindex="-1"></a>  <span class="st">"ministranti"</span>, <span class="st">"mladifra"</span>, <span class="st">"kaem"</span>, <span class="st">"studentska kapelanija"</span>,</span>
+<span id="cb3-244"><a href="#cb3-244" aria-hidden="true" tabindex="-1"></a>  <span class="st">"sveučilišna kapelanija"</span>, <span class="st">"sveuclisna kapelanija"</span>,</span>
+<span id="cb3-245"><a href="#cb3-245" aria-hidden="true" tabindex="-1"></a>  <span class="st">"pastoral mladih"</span>, <span class="st">"mladi katolici"</span></span>
+<span id="cb3-246"><a href="#cb3-246" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-247"><a href="#cb3-247" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-248"><a href="#cb3-248" aria-hidden="true" tabindex="-1"></a><span class="co"># Academic</span></span>
+<span id="cb3-249"><a href="#cb3-249" aria-hidden="true" tabindex="-1"></a>academic_exact <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb3-250"><a href="#cb3-250" aria-hidden="true" tabindex="-1"></a>  <span class="st">"hrvatsko katoličko sveučilište"</span>, <span class="st">"hrvatsko katolicko sveuciliste"</span>,</span>
+<span id="cb3-251"><a href="#cb3-251" aria-hidden="true" tabindex="-1"></a>  <span class="st">"katolički bogoslovni fakultet"</span>, <span class="st">"katolicki bogoslovni fakultet"</span>,</span>
+<span id="cb3-252"><a href="#cb3-252" aria-hidden="true" tabindex="-1"></a>  <span class="st">"filozofski fakultet družbe isusove"</span>, <span class="st">"teologija u rijeci"</span></span>
+<span id="cb3-253"><a href="#cb3-253" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-254"><a href="#cb3-254" aria-hidden="true" tabindex="-1"></a>academic_contains <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"teologija"</span>, <span class="st">"bogoslovija"</span>, <span class="st">"katehetski"</span>)</span>
+<span id="cb3-255"><a href="#cb3-255" aria-hidden="true" tabindex="-1"></a>academic_abbrev <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"kbf"</span>, <span class="st">"hku"</span>, <span class="st">"ffrz"</span>)</span>
 <span id="cb3-256"><a href="#cb3-256" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-257"><a href="#cb3-257" aria-hidden="true" tabindex="-1"></a><span class="co"># Lay Influencers</span></span>
-<span id="cb3-258"><a href="#cb3-258" aria-hidden="true" tabindex="-1"></a>lay_devotional <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
-<span id="cb3-259"><a href="#cb3-259" aria-hidden="true" tabindex="-1"></a>  <span class="st">"vjera"</span>, <span class="st">"molitva"</span>, <span class="st">"molitve"</span>, <span class="st">"isus"</span>, <span class="st">"krist"</span>, <span class="st">"gospa"</span>, <span class="st">"marija"</span>,</span>
-<span id="cb3-260"><a href="#cb3-260" aria-hidden="true" tabindex="-1"></a>  <span class="st">"hrana za dušu"</span>, <span class="st">"hrana za dusu"</span>, <span class="st">"dijete vjere"</span>,</span>
-<span id="cb3-261"><a href="#cb3-261" aria-hidden="true" tabindex="-1"></a>  <span class="st">"riječ dana"</span>, <span class="st">"rijec dana"</span>, <span class="st">"riječ božja"</span>, <span class="st">"rijec bozja"</span>,</span>
-<span id="cb3-262"><a href="#cb3-262" aria-hidden="true" tabindex="-1"></a>  <span class="st">"sveti"</span>, <span class="st">"svetac"</span>, <span class="st">"svetica"</span>, <span class="st">"evanđelje"</span>, <span class="st">"evandelje"</span>,</span>
-<span id="cb3-263"><a href="#cb3-263" aria-hidden="true" tabindex="-1"></a>  <span class="st">"duhovnost"</span>, <span class="st">"duhovna"</span>, <span class="st">"duhovni"</span>, <span class="st">"biblija"</span>, <span class="st">"biblijski"</span>,</span>
-<span id="cb3-264"><a href="#cb3-264" aria-hidden="true" tabindex="-1"></a>  <span class="st">"psalm"</span>, <span class="st">"blagoslov"</span>, <span class="st">"krunica"</span>, <span class="st">"rozarij"</span>, <span class="st">"lectio divina"</span>,</span>
-<span id="cb3-265"><a href="#cb3-265" aria-hidden="true" tabindex="-1"></a>  <span class="st">"katolička obitelj"</span>, <span class="st">"katolicka obitelj"</span>, <span class="st">"katolicki"</span>,</span>
-<span id="cb3-266"><a href="#cb3-266" aria-hidden="true" tabindex="-1"></a>  <span class="st">"božanske"</span>, <span class="st">"bozanske"</span>, <span class="st">"moćne"</span>, <span class="st">"mocne"</span></span>
+<span id="cb3-257"><a href="#cb3-257" aria-hidden="true" tabindex="-1"></a><span class="co"># Individual Priests (title prefixes at START)</span></span>
+<span id="cb3-258"><a href="#cb3-258" aria-hidden="true" tabindex="-1"></a>priest_prefixes <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb3-259"><a href="#cb3-259" aria-hidden="true" tabindex="-1"></a>  <span class="st">"fra "</span>, <span class="st">"don "</span>, <span class="st">"vlč. "</span>, <span class="st">"vlč."</span>, <span class="st">"vlc. "</span>, <span class="st">"vlc."</span>,</span>
+<span id="cb3-260"><a href="#cb3-260" aria-hidden="true" tabindex="-1"></a>  <span class="st">"msgr. "</span>, <span class="st">"msgr."</span>, <span class="st">"mons. "</span>, <span class="st">"mons."</span>,</span>
+<span id="cb3-261"><a href="#cb3-261" aria-hidden="true" tabindex="-1"></a>  <span class="st">"o. "</span>, <span class="st">"pater "</span>, <span class="st">"p. "</span>, <span class="st">"pr. "</span>,</span>
+<span id="cb3-262"><a href="#cb3-262" aria-hidden="true" tabindex="-1"></a>  <span class="st">"s. "</span>, <span class="st">"sestra "</span>, <span class="st">"m. "</span>, <span class="st">"majka "</span></span>
+<span id="cb3-263"><a href="#cb3-263" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-264"><a href="#cb3-264" aria-hidden="true" tabindex="-1"></a>priest_hierarchy <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb3-265"><a href="#cb3-265" aria-hidden="true" tabindex="-1"></a>  <span class="st">"biskup "</span>, <span class="st">"nadbiskup "</span>, <span class="st">"kardinal "</span>,</span>
+<span id="cb3-266"><a href="#cb3-266" aria-hidden="true" tabindex="-1"></a>  <span class="st">"mons. "</span>, <span class="st">"preč. "</span>, <span class="st">"prečasni "</span></span>
 <span id="cb3-267"><a href="#cb3-267" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb3-268"><a href="#cb3-268" aria-hidden="true" tabindex="-1"></a><span class="co"># Only exclude actual media domains, not devotional pages with "tv" in name</span></span>
-<span id="cb3-269"><a href="#cb3-269" aria-hidden="true" tabindex="-1"></a>lay_exclude <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">".hr"</span>, <span class="st">".net"</span>, <span class="st">".com"</span>, <span class="st">"portal"</span>, <span class="st">"vijesti"</span>,</span>
-<span id="cb3-270"><a href="#cb3-270" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"news"</span>, <span class="st">"radio"</span>, <span class="st">"agencija"</span>, <span class="st">"tjednik"</span>)</span>
-<span id="cb3-271"><a href="#cb3-271" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-272"><a href="#cb3-272" aria-hidden="true" tabindex="-1"></a><span class="co"># -----------------------------------------------------------------------------</span></span>
-<span id="cb3-273"><a href="#cb3-273" aria-hidden="true" tabindex="-1"></a><span class="co"># CLASSIFICATION FUNCTION</span></span>
-<span id="cb3-274"><a href="#cb3-274" aria-hidden="true" tabindex="-1"></a><span class="co"># -----------------------------------------------------------------------------</span></span>
-<span id="cb3-275"><a href="#cb3-275" aria-hidden="true" tabindex="-1"></a>classify_actor_v4 <span class="ot">&lt;-</span> <span class="cf">function</span>(from_val, <span class="at">url_val =</span> <span class="cn">NA</span>, <span class="at">platform_val =</span> <span class="cn">NA</span>) {</span>
-<span id="cb3-276"><a href="#cb3-276" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb3-277"><a href="#cb3-277" aria-hidden="true" tabindex="-1"></a>  from_lower <span class="ot">&lt;-</span> <span class="fu">tolower</span>(<span class="fu">trimws</span>(<span class="fu">as.character</span>(from_val)))</span>
-<span id="cb3-278"><a href="#cb3-278" aria-hidden="true" tabindex="-1"></a>  url_lower <span class="ot">&lt;-</span> <span class="fu">tolower</span>(<span class="fu">ifelse</span>(<span class="fu">is.na</span>(url_val), <span class="st">""</span>, <span class="fu">as.character</span>(url_val)))</span>
-<span id="cb3-279"><a href="#cb3-279" aria-hidden="true" tabindex="-1"></a>  platform_lower <span class="ot">&lt;-</span> <span class="fu">tolower</span>(<span class="fu">ifelse</span>(<span class="fu">is.na</span>(platform_val), <span class="st">""</span>, <span class="fu">as.character</span>(platform_val)))</span>
-<span id="cb3-280"><a href="#cb3-280" aria-hidden="true" tabindex="-1"></a>  combined <span class="ot">&lt;-</span> <span class="fu">paste</span>(from_lower, url_lower)</span>
-<span id="cb3-281"><a href="#cb3-281" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb3-282"><a href="#cb3-282" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Helper function for pattern matching</span></span>
-<span id="cb3-283"><a href="#cb3-283" aria-hidden="true" tabindex="-1"></a>  match_any <span class="ot">&lt;-</span> <span class="cf">function</span>(patterns, text, <span class="at">fixed =</span> <span class="cn">TRUE</span>) {</span>
-<span id="cb3-284"><a href="#cb3-284" aria-hidden="true" tabindex="-1"></a>    <span class="fu">any</span>(<span class="fu">sapply</span>(patterns, <span class="cf">function</span>(p) <span class="fu">grepl</span>(p, text, <span class="at">fixed =</span> fixed)))</span>
-<span id="cb3-285"><a href="#cb3-285" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb3-286"><a href="#cb3-286" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb3-287"><a href="#cb3-287" aria-hidden="true" tabindex="-1"></a>  <span class="co"># PRIORITY 1: Manual Overrides</span></span>
-<span id="cb3-288"><a href="#cb3-288" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (actor_type <span class="cf">in</span> <span class="fu">names</span>(manual_overrides)) {</span>
-<span id="cb3-289"><a href="#cb3-289" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">match_any</span>(manual_overrides[[actor_type]], from_lower)) {</span>
-<span id="cb3-290"><a href="#cb3-290" aria-hidden="true" tabindex="-1"></a>      <span class="fu">return</span>(actor_type)</span>
-<span id="cb3-291"><a href="#cb3-291" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb3-292"><a href="#cb3-292" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb3-293"><a href="#cb3-293" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb3-294"><a href="#cb3-294" aria-hidden="true" tabindex="-1"></a>  <span class="co"># PRIORITY 2: Secular Media Exclusions</span></span>
-<span id="cb3-295"><a href="#cb3-295" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">match_any</span>(secular_exclusions, combined)) {</span>
-<span id="cb3-296"><a href="#cb3-296" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="st">"Other"</span>)</span>
-<span id="cb3-297"><a href="#cb3-297" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb3-298"><a href="#cb3-298" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb3-299"><a href="#cb3-299" aria-hidden="true" tabindex="-1"></a>  <span class="co"># PRIORITY 3: Domain-based Classification</span></span>
-<span id="cb3-300"><a href="#cb3-300" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">nchar</span>(url_lower) <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
-<span id="cb3-301"><a href="#cb3-301" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (actor_type <span class="cf">in</span> <span class="fu">names</span>(domain_patterns)) {</span>
-<span id="cb3-302"><a href="#cb3-302" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (<span class="fu">match_any</span>(domain_patterns[[actor_type]], url_lower)) {</span>
-<span id="cb3-303"><a href="#cb3-303" aria-hidden="true" tabindex="-1"></a>        <span class="fu">return</span>(actor_type)</span>
-<span id="cb3-304"><a href="#cb3-304" aria-hidden="true" tabindex="-1"></a>      }</span>
-<span id="cb3-305"><a href="#cb3-305" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb3-306"><a href="#cb3-306" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb3-307"><a href="#cb3-307" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb3-308"><a href="#cb3-308" aria-hidden="true" tabindex="-1"></a>  <span class="co"># PRIORITY 4a: Diocesan</span></span>
-<span id="cb3-309"><a href="#cb3-309" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Check for parish patterns - handle both with and without special characters</span></span>
-<span id="cb3-310"><a href="#cb3-310" aria-hidden="true" tabindex="-1"></a>  is_parish <span class="ot">&lt;-</span> <span class="fu">grepl</span>(<span class="st">"^župa|^zupa|župi|zupi|- župa|- zupa"</span>, from_lower, <span class="at">ignore.case =</span> <span class="cn">TRUE</span>) <span class="sc">||</span></span>
-<span id="cb3-311"><a href="#cb3-311" aria-hidden="true" tabindex="-1"></a>               <span class="fu">grepl</span>(<span class="st">"parish"</span>, from_lower, <span class="at">ignore.case =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb3-312"><a href="#cb3-312" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb3-313"><a href="#cb3-313" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">match_any</span>(diocesan_exact, from_lower) <span class="sc">||</span></span>
-<span id="cb3-314"><a href="#cb3-314" aria-hidden="true" tabindex="-1"></a>      <span class="fu">match_any</span>(diocesan_contains, from_lower) <span class="sc">||</span></span>
-<span id="cb3-315"><a href="#cb3-315" aria-hidden="true" tabindex="-1"></a>      is_parish) {</span>
-<span id="cb3-316"><a href="#cb3-316" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="st">"Diocesan"</span>)</span>
-<span id="cb3-317"><a href="#cb3-317" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb3-318"><a href="#cb3-318" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb3-319"><a href="#cb3-319" aria-hidden="true" tabindex="-1"></a>  <span class="co"># PRIORITY 4b: Religious Orders</span></span>
-<span id="cb3-320"><a href="#cb3-320" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">match_any</span>(orders_exact, from_lower) <span class="sc">||</span></span>
-<span id="cb3-321"><a href="#cb3-321" aria-hidden="true" tabindex="-1"></a>      <span class="fu">match_any</span>(orders_contains, from_lower)) {</span>
-<span id="cb3-322"><a href="#cb3-322" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="st">"Religious Orders"</span>)</span>
-<span id="cb3-323"><a href="#cb3-323" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb3-324"><a href="#cb3-324" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (abbr <span class="cf">in</span> orders_abbrev) {</span>
-<span id="cb3-325"><a href="#cb3-325" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">grepl</span>(<span class="fu">paste0</span>(<span class="st">"</span><span class="sc">\\</span><span class="st">b"</span>, abbr, <span class="st">"</span><span class="sc">\\</span><span class="st">b"</span>), from_lower, <span class="at">ignore.case =</span> <span class="cn">TRUE</span>)) {</span>
-<span id="cb3-326"><a href="#cb3-326" aria-hidden="true" tabindex="-1"></a>      <span class="fu">return</span>(<span class="st">"Religious Orders"</span>)</span>
-<span id="cb3-327"><a href="#cb3-327" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb3-328"><a href="#cb3-328" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb3-329"><a href="#cb3-329" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb3-330"><a href="#cb3-330" aria-hidden="true" tabindex="-1"></a>  <span class="co"># PRIORITY 4c: Charismatic Communities</span></span>
-<span id="cb3-331"><a href="#cb3-331" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">match_any</span>(charismatic_exact, from_lower) <span class="sc">||</span></span>
-<span id="cb3-332"><a href="#cb3-332" aria-hidden="true" tabindex="-1"></a>      <span class="fu">match_any</span>(charismatic_contains, from_lower)) {</span>
-<span id="cb3-333"><a href="#cb3-333" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="st">"Charismatic Communities"</span>)</span>
-<span id="cb3-334"><a href="#cb3-334" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb3-335"><a href="#cb3-335" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb3-336"><a href="#cb3-336" aria-hidden="true" tabindex="-1"></a>  <span class="co"># PRIORITY 4d: Youth Organizations</span></span>
-<span id="cb3-337"><a href="#cb3-337" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">match_any</span>(youth_exact, from_lower) <span class="sc">||</span></span>
-<span id="cb3-338"><a href="#cb3-338" aria-hidden="true" tabindex="-1"></a>      <span class="fu">match_any</span>(youth_contains, from_lower)) {</span>
-<span id="cb3-339"><a href="#cb3-339" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="st">"Youth Organizations"</span>)</span>
-<span id="cb3-340"><a href="#cb3-340" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb3-341"><a href="#cb3-341" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb3-342"><a href="#cb3-342" aria-hidden="true" tabindex="-1"></a>  <span class="co"># PRIORITY 4e: Academic</span></span>
-<span id="cb3-343"><a href="#cb3-343" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">match_any</span>(academic_exact, from_lower) <span class="sc">||</span></span>
-<span id="cb3-344"><a href="#cb3-344" aria-hidden="true" tabindex="-1"></a>      <span class="fu">match_any</span>(academic_contains, from_lower)) {</span>
-<span id="cb3-345"><a href="#cb3-345" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="st">"Academic"</span>)</span>
-<span id="cb3-346"><a href="#cb3-346" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb3-347"><a href="#cb3-347" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (abbr <span class="cf">in</span> academic_abbrev) {</span>
-<span id="cb3-348"><a href="#cb3-348" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">grepl</span>(<span class="fu">paste0</span>(<span class="st">"</span><span class="sc">\\</span><span class="st">b"</span>, abbr, <span class="st">"</span><span class="sc">\\</span><span class="st">b"</span>), from_lower, <span class="at">ignore.case =</span> <span class="cn">TRUE</span>)) {</span>
-<span id="cb3-349"><a href="#cb3-349" aria-hidden="true" tabindex="-1"></a>      <span class="fu">return</span>(<span class="st">"Academic"</span>)</span>
-<span id="cb3-350"><a href="#cb3-350" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb3-351"><a href="#cb3-351" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb3-352"><a href="#cb3-352" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb3-353"><a href="#cb3-353" aria-hidden="true" tabindex="-1"></a>  <span class="co"># PRIORITY 4f: Individual Priests (prefix at START)</span></span>
-<span id="cb3-354"><a href="#cb3-354" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (prefix <span class="cf">in</span> priest_prefixes) {</span>
-<span id="cb3-355"><a href="#cb3-355" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">startsWith</span>(from_lower, prefix)) <span class="fu">return</span>(<span class="st">"Individual Priests"</span>)</span>
-<span id="cb3-356"><a href="#cb3-356" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb3-357"><a href="#cb3-357" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (title <span class="cf">in</span> priest_hierarchy) {</span>
-<span id="cb3-358"><a href="#cb3-358" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">startsWith</span>(from_lower, title)) <span class="fu">return</span>(<span class="st">"Individual Priests"</span>)</span>
+<span id="cb3-268"><a href="#cb3-268" aria-hidden="true" tabindex="-1"></a>priest_contains <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"svećenik"</span>, <span class="st">"svecenik"</span>, <span class="st">"župnik"</span>, <span class="st">"zupnik"</span>)</span>
+<span id="cb3-269"><a href="#cb3-269" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-270"><a href="#cb3-270" aria-hidden="true" tabindex="-1"></a><span class="co"># Lay Influencers</span></span>
+<span id="cb3-271"><a href="#cb3-271" aria-hidden="true" tabindex="-1"></a>lay_devotional <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb3-272"><a href="#cb3-272" aria-hidden="true" tabindex="-1"></a>  <span class="st">"vjera"</span>, <span class="st">"molitva"</span>, <span class="st">"molitve"</span>, <span class="st">"isus"</span>, <span class="st">"krist"</span>, <span class="st">"gospa"</span>, <span class="st">"marija"</span>,</span>
+<span id="cb3-273"><a href="#cb3-273" aria-hidden="true" tabindex="-1"></a>  <span class="st">"hrana za dušu"</span>, <span class="st">"hrana za dusu"</span>, <span class="st">"dijete vjere"</span>,</span>
+<span id="cb3-274"><a href="#cb3-274" aria-hidden="true" tabindex="-1"></a>  <span class="st">"riječ dana"</span>, <span class="st">"rijec dana"</span>, <span class="st">"riječ božja"</span>, <span class="st">"rijec bozja"</span>,</span>
+<span id="cb3-275"><a href="#cb3-275" aria-hidden="true" tabindex="-1"></a>  <span class="st">"sveti"</span>, <span class="st">"svetac"</span>, <span class="st">"svetica"</span>, <span class="st">"evanđelje"</span>, <span class="st">"evandelje"</span>,</span>
+<span id="cb3-276"><a href="#cb3-276" aria-hidden="true" tabindex="-1"></a>  <span class="st">"duhovnost"</span>, <span class="st">"duhovna"</span>, <span class="st">"duhovni"</span>, <span class="st">"biblija"</span>, <span class="st">"biblijski"</span>,</span>
+<span id="cb3-277"><a href="#cb3-277" aria-hidden="true" tabindex="-1"></a>  <span class="st">"psalm"</span>, <span class="st">"blagoslov"</span>, <span class="st">"krunica"</span>, <span class="st">"rozarij"</span>, <span class="st">"lectio divina"</span>,</span>
+<span id="cb3-278"><a href="#cb3-278" aria-hidden="true" tabindex="-1"></a>  <span class="st">"katolička obitelj"</span>, <span class="st">"katolicka obitelj"</span>, <span class="st">"katolicki"</span>,</span>
+<span id="cb3-279"><a href="#cb3-279" aria-hidden="true" tabindex="-1"></a>  <span class="st">"božanske"</span>, <span class="st">"bozanske"</span>, <span class="st">"moćne"</span>, <span class="st">"mocne"</span></span>
+<span id="cb3-280"><a href="#cb3-280" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-281"><a href="#cb3-281" aria-hidden="true" tabindex="-1"></a><span class="co"># Only exclude actual media domains, not devotional pages with "tv" in name</span></span>
+<span id="cb3-282"><a href="#cb3-282" aria-hidden="true" tabindex="-1"></a>lay_exclude <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">".hr"</span>, <span class="st">".net"</span>, <span class="st">".com"</span>, <span class="st">"portal"</span>, <span class="st">"vijesti"</span>,</span>
+<span id="cb3-283"><a href="#cb3-283" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"news"</span>, <span class="st">"radio"</span>, <span class="st">"agencija"</span>, <span class="st">"tjednik"</span>)</span>
+<span id="cb3-284"><a href="#cb3-284" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-285"><a href="#cb3-285" aria-hidden="true" tabindex="-1"></a><span class="co"># -----------------------------------------------------------------------------</span></span>
+<span id="cb3-286"><a href="#cb3-286" aria-hidden="true" tabindex="-1"></a><span class="co"># CLASSIFICATION FUNCTION</span></span>
+<span id="cb3-287"><a href="#cb3-287" aria-hidden="true" tabindex="-1"></a><span class="co"># -----------------------------------------------------------------------------</span></span>
+<span id="cb3-288"><a href="#cb3-288" aria-hidden="true" tabindex="-1"></a>classify_actor_v4 <span class="ot">&lt;-</span> <span class="cf">function</span>(from_val, <span class="at">url_val =</span> <span class="cn">NA</span>, <span class="at">platform_val =</span> <span class="cn">NA</span>) {</span>
+<span id="cb3-289"><a href="#cb3-289" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-290"><a href="#cb3-290" aria-hidden="true" tabindex="-1"></a>  from_lower <span class="ot">&lt;-</span> <span class="fu">tolower</span>(<span class="fu">trimws</span>(<span class="fu">as.character</span>(from_val)))</span>
+<span id="cb3-291"><a href="#cb3-291" aria-hidden="true" tabindex="-1"></a>  url_lower <span class="ot">&lt;-</span> <span class="fu">tolower</span>(<span class="fu">ifelse</span>(<span class="fu">is.na</span>(url_val), <span class="st">""</span>, <span class="fu">as.character</span>(url_val)))</span>
+<span id="cb3-292"><a href="#cb3-292" aria-hidden="true" tabindex="-1"></a>  platform_lower <span class="ot">&lt;-</span> <span class="fu">tolower</span>(<span class="fu">ifelse</span>(<span class="fu">is.na</span>(platform_val), <span class="st">""</span>, <span class="fu">as.character</span>(platform_val)))</span>
+<span id="cb3-293"><a href="#cb3-293" aria-hidden="true" tabindex="-1"></a>  combined <span class="ot">&lt;-</span> <span class="fu">paste</span>(from_lower, url_lower)</span>
+<span id="cb3-294"><a href="#cb3-294" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-295"><a href="#cb3-295" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Helper function for pattern matching</span></span>
+<span id="cb3-296"><a href="#cb3-296" aria-hidden="true" tabindex="-1"></a>  match_any <span class="ot">&lt;-</span> <span class="cf">function</span>(patterns, text, <span class="at">fixed =</span> <span class="cn">TRUE</span>) {</span>
+<span id="cb3-297"><a href="#cb3-297" aria-hidden="true" tabindex="-1"></a>    <span class="fu">any</span>(<span class="fu">sapply</span>(patterns, <span class="cf">function</span>(p) <span class="fu">grepl</span>(p, text, <span class="at">fixed =</span> fixed)))</span>
+<span id="cb3-298"><a href="#cb3-298" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-299"><a href="#cb3-299" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-300"><a href="#cb3-300" aria-hidden="true" tabindex="-1"></a>  <span class="co"># PRIORITY 1: Manual Overrides</span></span>
+<span id="cb3-301"><a href="#cb3-301" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (actor_type <span class="cf">in</span> <span class="fu">names</span>(manual_overrides)) {</span>
+<span id="cb3-302"><a href="#cb3-302" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">match_any</span>(manual_overrides[[actor_type]], from_lower)) {</span>
+<span id="cb3-303"><a href="#cb3-303" aria-hidden="true" tabindex="-1"></a>      <span class="fu">return</span>(actor_type)</span>
+<span id="cb3-304"><a href="#cb3-304" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb3-305"><a href="#cb3-305" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-306"><a href="#cb3-306" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-307"><a href="#cb3-307" aria-hidden="true" tabindex="-1"></a>  <span class="co"># PRIORITY 2: Secular Media Exclusions</span></span>
+<span id="cb3-308"><a href="#cb3-308" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">match_any</span>(secular_exclusions, combined)) {</span>
+<span id="cb3-309"><a href="#cb3-309" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="st">"Other"</span>)</span>
+<span id="cb3-310"><a href="#cb3-310" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-311"><a href="#cb3-311" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-312"><a href="#cb3-312" aria-hidden="true" tabindex="-1"></a>  <span class="co"># PRIORITY 3: Domain-based Classification</span></span>
+<span id="cb3-313"><a href="#cb3-313" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">nchar</span>(url_lower) <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
+<span id="cb3-314"><a href="#cb3-314" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (actor_type <span class="cf">in</span> <span class="fu">names</span>(domain_patterns)) {</span>
+<span id="cb3-315"><a href="#cb3-315" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (<span class="fu">match_any</span>(domain_patterns[[actor_type]], url_lower)) {</span>
+<span id="cb3-316"><a href="#cb3-316" aria-hidden="true" tabindex="-1"></a>        <span class="fu">return</span>(actor_type)</span>
+<span id="cb3-317"><a href="#cb3-317" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb3-318"><a href="#cb3-318" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb3-319"><a href="#cb3-319" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-320"><a href="#cb3-320" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-321"><a href="#cb3-321" aria-hidden="true" tabindex="-1"></a>  <span class="co"># PRIORITY 4a: Diocesan</span></span>
+<span id="cb3-322"><a href="#cb3-322" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Check for parish patterns - handle both with and without special characters</span></span>
+<span id="cb3-323"><a href="#cb3-323" aria-hidden="true" tabindex="-1"></a>  is_parish <span class="ot">&lt;-</span> <span class="fu">grepl</span>(<span class="st">"^župa|^zupa|župi|zupi|- župa|- zupa"</span>, from_lower, <span class="at">ignore.case =</span> <span class="cn">TRUE</span>) <span class="sc">||</span></span>
+<span id="cb3-324"><a href="#cb3-324" aria-hidden="true" tabindex="-1"></a>               <span class="fu">grepl</span>(<span class="st">"parish"</span>, from_lower, <span class="at">ignore.case =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb3-325"><a href="#cb3-325" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-326"><a href="#cb3-326" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">match_any</span>(diocesan_exact, from_lower) <span class="sc">||</span></span>
+<span id="cb3-327"><a href="#cb3-327" aria-hidden="true" tabindex="-1"></a>      <span class="fu">match_any</span>(diocesan_contains, from_lower) <span class="sc">||</span></span>
+<span id="cb3-328"><a href="#cb3-328" aria-hidden="true" tabindex="-1"></a>      is_parish) {</span>
+<span id="cb3-329"><a href="#cb3-329" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="st">"Diocesan"</span>)</span>
+<span id="cb3-330"><a href="#cb3-330" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-331"><a href="#cb3-331" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-332"><a href="#cb3-332" aria-hidden="true" tabindex="-1"></a>  <span class="co"># PRIORITY 4b: Religious Orders</span></span>
+<span id="cb3-333"><a href="#cb3-333" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">match_any</span>(orders_exact, from_lower) <span class="sc">||</span></span>
+<span id="cb3-334"><a href="#cb3-334" aria-hidden="true" tabindex="-1"></a>      <span class="fu">match_any</span>(orders_contains, from_lower)) {</span>
+<span id="cb3-335"><a href="#cb3-335" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="st">"Religious Orders"</span>)</span>
+<span id="cb3-336"><a href="#cb3-336" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-337"><a href="#cb3-337" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (abbr <span class="cf">in</span> orders_abbrev) {</span>
+<span id="cb3-338"><a href="#cb3-338" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">grepl</span>(<span class="fu">paste0</span>(<span class="st">"</span><span class="sc">\\</span><span class="st">b"</span>, abbr, <span class="st">"</span><span class="sc">\\</span><span class="st">b"</span>), from_lower, <span class="at">ignore.case =</span> <span class="cn">TRUE</span>)) {</span>
+<span id="cb3-339"><a href="#cb3-339" aria-hidden="true" tabindex="-1"></a>      <span class="fu">return</span>(<span class="st">"Religious Orders"</span>)</span>
+<span id="cb3-340"><a href="#cb3-340" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb3-341"><a href="#cb3-341" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-342"><a href="#cb3-342" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-343"><a href="#cb3-343" aria-hidden="true" tabindex="-1"></a>  <span class="co"># PRIORITY 4c: Charismatic Communities</span></span>
+<span id="cb3-344"><a href="#cb3-344" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">match_any</span>(charismatic_exact, from_lower) <span class="sc">||</span></span>
+<span id="cb3-345"><a href="#cb3-345" aria-hidden="true" tabindex="-1"></a>      <span class="fu">match_any</span>(charismatic_contains, from_lower)) {</span>
+<span id="cb3-346"><a href="#cb3-346" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="st">"Charismatic Communities"</span>)</span>
+<span id="cb3-347"><a href="#cb3-347" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-348"><a href="#cb3-348" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-349"><a href="#cb3-349" aria-hidden="true" tabindex="-1"></a>  <span class="co"># PRIORITY 4d: Youth Organizations</span></span>
+<span id="cb3-350"><a href="#cb3-350" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">match_any</span>(youth_exact, from_lower) <span class="sc">||</span></span>
+<span id="cb3-351"><a href="#cb3-351" aria-hidden="true" tabindex="-1"></a>      <span class="fu">match_any</span>(youth_contains, from_lower)) {</span>
+<span id="cb3-352"><a href="#cb3-352" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="st">"Youth Organizations"</span>)</span>
+<span id="cb3-353"><a href="#cb3-353" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-354"><a href="#cb3-354" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-355"><a href="#cb3-355" aria-hidden="true" tabindex="-1"></a>  <span class="co"># PRIORITY 4e: Academic</span></span>
+<span id="cb3-356"><a href="#cb3-356" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">match_any</span>(academic_exact, from_lower) <span class="sc">||</span></span>
+<span id="cb3-357"><a href="#cb3-357" aria-hidden="true" tabindex="-1"></a>      <span class="fu">match_any</span>(academic_contains, from_lower)) {</span>
+<span id="cb3-358"><a href="#cb3-358" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="st">"Academic"</span>)</span>
 <span id="cb3-359"><a href="#cb3-359" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb3-360"><a href="#cb3-360" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">match_any</span>(priest_contains, from_lower)) {</span>
-<span id="cb3-361"><a href="#cb3-361" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="st">"Individual Priests"</span>)</span>
-<span id="cb3-362"><a href="#cb3-362" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb3-363"><a href="#cb3-363" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb3-364"><a href="#cb3-364" aria-hidden="true" tabindex="-1"></a>  <span class="co"># PRIORITY 5: Lay Influencers</span></span>
-<span id="cb3-365"><a href="#cb3-365" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Detect devotional pages - relaxed platform check since many FB pages don't have URL</span></span>
-<span id="cb3-366"><a href="#cb3-366" aria-hidden="true" tabindex="-1"></a>  has_devotional <span class="ot">&lt;-</span> <span class="fu">match_any</span>(lay_devotional, from_lower)</span>
-<span id="cb3-367"><a href="#cb3-367" aria-hidden="true" tabindex="-1"></a>  has_media_indicator <span class="ot">&lt;-</span> <span class="fu">match_any</span>(lay_exclude, from_lower)</span>
-<span id="cb3-368"><a href="#cb3-368" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb3-369"><a href="#cb3-369" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Classify as Lay Influencer if has devotional keywords and no media indicators</span></span>
-<span id="cb3-370"><a href="#cb3-370" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Platform check relaxed: social media OR no dots in name (likely social handle)</span></span>
-<span id="cb3-371"><a href="#cb3-371" aria-hidden="true" tabindex="-1"></a>  is_likely_social <span class="ot">&lt;-</span> platform_lower <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"facebook"</span>, <span class="st">"instagram"</span>, <span class="st">"youtube"</span>, <span class="st">"twitter"</span>) <span class="sc">||</span></span>
-<span id="cb3-372"><a href="#cb3-372" aria-hidden="true" tabindex="-1"></a>                      <span class="sc">!</span><span class="fu">grepl</span>(<span class="st">"</span><span class="sc">\\</span><span class="st">.[a-z]{2,4}$"</span>, from_lower)  <span class="co"># No domain extension</span></span>
-<span id="cb3-373"><a href="#cb3-373" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb3-374"><a href="#cb3-374" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (has_devotional <span class="sc">&amp;&amp;</span> <span class="sc">!</span>has_media_indicator <span class="sc">&amp;&amp;</span> is_likely_social) {</span>
-<span id="cb3-375"><a href="#cb3-375" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="st">"Lay Influencers"</span>)</span>
-<span id="cb3-376"><a href="#cb3-376" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb3-377"><a href="#cb3-377" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb3-378"><a href="#cb3-378" aria-hidden="true" tabindex="-1"></a>  <span class="co"># PRIORITY 6: Default</span></span>
-<span id="cb3-379"><a href="#cb3-379" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="st">"Other"</span>)</span>
-<span id="cb3-380"><a href="#cb3-380" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb3-381"><a href="#cb3-381" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-382"><a href="#cb3-382" aria-hidden="true" tabindex="-1"></a><span class="co"># -----------------------------------------------------------------------------</span></span>
-<span id="cb3-383"><a href="#cb3-383" aria-hidden="true" tabindex="-1"></a><span class="co"># APPLY CLASSIFICATION</span></span>
-<span id="cb3-384"><a href="#cb3-384" aria-hidden="true" tabindex="-1"></a><span class="co"># -----------------------------------------------------------------------------</span></span>
-<span id="cb3-385"><a href="#cb3-385" aria-hidden="true" tabindex="-1"></a>dta[, ACTOR_TYPE <span class="sc">:</span><span class="er">=</span> <span class="fu">mapply</span>(</span>
-<span id="cb3-386"><a href="#cb3-386" aria-hidden="true" tabindex="-1"></a>  classify_actor_v4, </span>
-<span id="cb3-387"><a href="#cb3-387" aria-hidden="true" tabindex="-1"></a>  FROM, </span>
-<span id="cb3-388"><a href="#cb3-388" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="st">"URL"</span> <span class="sc">%in%</span> <span class="fu">names</span>(dta)) URL <span class="cf">else</span> <span class="cn">NA</span>,</span>
-<span id="cb3-389"><a href="#cb3-389" aria-hidden="true" tabindex="-1"></a>  SOURCE_TYPE</span>
-<span id="cb3-390"><a href="#cb3-390" aria-hidden="true" tabindex="-1"></a>)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-360"><a href="#cb3-360" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (abbr <span class="cf">in</span> academic_abbrev) {</span>
+<span id="cb3-361"><a href="#cb3-361" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">grepl</span>(<span class="fu">paste0</span>(<span class="st">"</span><span class="sc">\\</span><span class="st">b"</span>, abbr, <span class="st">"</span><span class="sc">\\</span><span class="st">b"</span>), from_lower, <span class="at">ignore.case =</span> <span class="cn">TRUE</span>)) {</span>
+<span id="cb3-362"><a href="#cb3-362" aria-hidden="true" tabindex="-1"></a>      <span class="fu">return</span>(<span class="st">"Academic"</span>)</span>
+<span id="cb3-363"><a href="#cb3-363" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb3-364"><a href="#cb3-364" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-365"><a href="#cb3-365" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-366"><a href="#cb3-366" aria-hidden="true" tabindex="-1"></a>  <span class="co"># PRIORITY 4f: Individual Priests (prefix at START)</span></span>
+<span id="cb3-367"><a href="#cb3-367" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (prefix <span class="cf">in</span> priest_prefixes) {</span>
+<span id="cb3-368"><a href="#cb3-368" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">startsWith</span>(from_lower, prefix)) <span class="fu">return</span>(<span class="st">"Individual Priests"</span>)</span>
+<span id="cb3-369"><a href="#cb3-369" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-370"><a href="#cb3-370" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (title <span class="cf">in</span> priest_hierarchy) {</span>
+<span id="cb3-371"><a href="#cb3-371" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">startsWith</span>(from_lower, title)) <span class="fu">return</span>(<span class="st">"Individual Priests"</span>)</span>
+<span id="cb3-372"><a href="#cb3-372" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-373"><a href="#cb3-373" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">match_any</span>(priest_contains, from_lower)) {</span>
+<span id="cb3-374"><a href="#cb3-374" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="st">"Individual Priests"</span>)</span>
+<span id="cb3-375"><a href="#cb3-375" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-376"><a href="#cb3-376" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-377"><a href="#cb3-377" aria-hidden="true" tabindex="-1"></a>  <span class="co"># PRIORITY 5: Lay Influencers</span></span>
+<span id="cb3-378"><a href="#cb3-378" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Detect devotional pages - relaxed platform check since many FB pages don't have URL</span></span>
+<span id="cb3-379"><a href="#cb3-379" aria-hidden="true" tabindex="-1"></a>  has_devotional <span class="ot">&lt;-</span> <span class="fu">match_any</span>(lay_devotional, from_lower)</span>
+<span id="cb3-380"><a href="#cb3-380" aria-hidden="true" tabindex="-1"></a>  has_media_indicator <span class="ot">&lt;-</span> <span class="fu">match_any</span>(lay_exclude, from_lower)</span>
+<span id="cb3-381"><a href="#cb3-381" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-382"><a href="#cb3-382" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Classify as Lay Influencer if has devotional keywords and no media indicators</span></span>
+<span id="cb3-383"><a href="#cb3-383" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Platform check relaxed: social media OR no dots in name (likely social handle)</span></span>
+<span id="cb3-384"><a href="#cb3-384" aria-hidden="true" tabindex="-1"></a>  is_likely_social <span class="ot">&lt;-</span> platform_lower <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"facebook"</span>, <span class="st">"instagram"</span>, <span class="st">"youtube"</span>, <span class="st">"twitter"</span>) <span class="sc">||</span></span>
+<span id="cb3-385"><a href="#cb3-385" aria-hidden="true" tabindex="-1"></a>                      <span class="sc">!</span><span class="fu">grepl</span>(<span class="st">"</span><span class="sc">\\</span><span class="st">.[a-z]{2,4}$"</span>, from_lower)  <span class="co"># No domain extension</span></span>
+<span id="cb3-386"><a href="#cb3-386" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-387"><a href="#cb3-387" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (has_devotional <span class="sc">&amp;&amp;</span> <span class="sc">!</span>has_media_indicator <span class="sc">&amp;&amp;</span> is_likely_social) {</span>
+<span id="cb3-388"><a href="#cb3-388" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="st">"Lay Influencers"</span>)</span>
+<span id="cb3-389"><a href="#cb3-389" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-390"><a href="#cb3-390" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-391"><a href="#cb3-391" aria-hidden="true" tabindex="-1"></a>  <span class="co"># PRIORITY 6: Default</span></span>
+<span id="cb3-392"><a href="#cb3-392" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="st">"Other"</span>)</span>
+<span id="cb3-393"><a href="#cb3-393" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-394"><a href="#cb3-394" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-395"><a href="#cb3-395" aria-hidden="true" tabindex="-1"></a><span class="co"># -----------------------------------------------------------------------------</span></span>
+<span id="cb3-396"><a href="#cb3-396" aria-hidden="true" tabindex="-1"></a><span class="co"># APPLY CLASSIFICATION</span></span>
+<span id="cb3-397"><a href="#cb3-397" aria-hidden="true" tabindex="-1"></a><span class="co"># -----------------------------------------------------------------------------</span></span>
+<span id="cb3-398"><a href="#cb3-398" aria-hidden="true" tabindex="-1"></a>dta[, ACTOR_TYPE <span class="sc">:</span><span class="er">=</span> <span class="fu">mapply</span>(</span>
+<span id="cb3-399"><a href="#cb3-399" aria-hidden="true" tabindex="-1"></a>  classify_actor_v4, </span>
+<span id="cb3-400"><a href="#cb3-400" aria-hidden="true" tabindex="-1"></a>  FROM, </span>
+<span id="cb3-401"><a href="#cb3-401" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="st">"URL"</span> <span class="sc">%in%</span> <span class="fu">names</span>(dta)) URL <span class="cf">else</span> <span class="cn">NA</span>,</span>
+<span id="cb3-402"><a href="#cb3-402" aria-hidden="true" tabindex="-1"></a>  SOURCE_TYPE</span>
+<span id="cb3-403"><a href="#cb3-403" aria-hidden="true" tabindex="-1"></a>)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </section>
@@ -738,12 +751,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td style="text-align: left; font-style: italic; background-color: rgba(245, 245, 245, 255) !important;">Other</td>
-<td style="text-align: left; font-style: italic; background-color: rgba(245, 245, 245, 255) !important;">469,429</td>
-<td style="text-align: left; font-style: italic; background-color: rgba(245, 245, 245, 255) !important;">77.1%</td>
-<td style="text-align: left; font-style: italic; background-color: rgba(245, 245, 245, 255) !important;">16,083</td>
+<td style="text-align: left; font-style: italic; background-color: rgba(245, 245, 245, 255) !important;">468,712</td>
+<td style="text-align: left; font-style: italic; background-color: rgba(245, 245, 245, 255) !important;">77.0%</td>
+<td style="text-align: left; font-style: italic; background-color: rgba(245, 245, 245, 255) !important;">16,072</td>
 <td style="text-align: left; font-style: italic; background-color: rgba(245, 245, 245, 255) !important;">97.8%</td>
-<td style="text-align: left; font-style: italic; background-color: rgba(245, 245, 245, 255) !important;">44,678,158</td>
-<td style="text-align: left; font-style: italic; background-color: rgba(245, 245, 245, 255) !important;">72.1%</td>
+<td style="text-align: left; font-style: italic; background-color: rgba(245, 245, 245, 255) !important;">44,600,737</td>
+<td style="text-align: left; font-style: italic; background-color: rgba(245, 245, 245, 255) !important;">72.0%</td>
 <td style="text-align: right; font-style: italic; background-color: rgba(245, 245, 245, 255) !important;">99.1</td>
 </tr>
 <tr class="even">
@@ -758,7 +771,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Independent Media</td>
-<td style="text-align: left;">31,404</td>
+<td style="text-align: left;">31,403</td>
 <td style="text-align: left;">5.2%</td>
 <td style="text-align: left;">19</td>
 <td style="text-align: left;">0.1%</td>
@@ -768,47 +781,47 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="even">
 <td style="text-align: left;">Lay Influencers</td>
-<td style="text-align: left;">27,910</td>
-<td style="text-align: left;">4.6%</td>
-<td style="text-align: left;">52</td>
-<td style="text-align: left;">0.3%</td>
-<td style="text-align: left;">6,263,000</td>
-<td style="text-align: left;">10.1%</td>
-<td style="text-align: right;">226.4</td>
+<td style="text-align: left;">28,451</td>
+<td style="text-align: left;">4.7%</td>
+<td style="text-align: left;">62</td>
+<td style="text-align: left;">0.4%</td>
+<td style="text-align: left;">6,333,433</td>
+<td style="text-align: left;">10.2%</td>
+<td style="text-align: right;">224.7</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Diocesan</td>
-<td style="text-align: left;">13,631</td>
-<td style="text-align: left;">2.2%</td>
-<td style="text-align: left;">46</td>
+<td style="text-align: left;">13,841</td>
+<td style="text-align: left;">2.3%</td>
+<td style="text-align: left;">50</td>
 <td style="text-align: left;">0.3%</td>
-<td style="text-align: left;">628,419</td>
+<td style="text-align: left;">636,001</td>
 <td style="text-align: left;">1.0%</td>
-<td style="text-align: right;">46.1</td>
+<td style="text-align: right;">46.0</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Religious Orders</td>
-<td style="text-align: left;">1,750</td>
+<td style="text-align: left;">1,720</td>
 <td style="text-align: left;">0.3%</td>
 <td style="text-align: left;">13</td>
 <td style="text-align: left;">0.1%</td>
-<td style="text-align: left;">37,973</td>
+<td style="text-align: left;">37,390</td>
 <td style="text-align: left;">0.1%</td>
 <td style="text-align: right;">21.7</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Charismatic Communities</td>
-<td style="text-align: left;">1,284</td>
+<td style="text-align: left;">1,282</td>
 <td style="text-align: left;">0.2%</td>
 <td style="text-align: left;">12</td>
 <td style="text-align: left;">0.1%</td>
-<td style="text-align: left;">193,561</td>
+<td style="text-align: left;">193,550</td>
 <td style="text-align: left;">0.3%</td>
-<td style="text-align: right;">153.5</td>
+<td style="text-align: right;">153.7</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Academic</td>
-<td style="text-align: left;">675</td>
+<td style="text-align: left;">674</td>
 <td style="text-align: left;">0.1%</td>
 <td style="text-align: left;">7</td>
 <td style="text-align: left;">0.0%</td>
@@ -985,7 +998,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="even">
 <td style="text-align: left;">unicath.hr</td>
-<td style="text-align: left;">462</td>
+<td style="text-align: left;">461</td>
 <td style="text-align: left;">3,589</td>
 <td style="text-align: right;">1</td>
 </tr>
@@ -1053,8 +1066,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="odd">
 <td style="text-align: left;">zg-nadbiskupija.hr</td>
-<td style="text-align: left;">894</td>
-<td style="text-align: left;">83,266</td>
+<td style="text-align: left;">888</td>
+<td style="text-align: left;">82,621</td>
 <td style="text-align: right;">1</td>
 </tr>
 <tr class="even">
@@ -1164,15 +1177,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="odd">
 <td rowspan="5" style="text-align: left; vertical-align: top !important;">Religious Orders</td>
-<td style="text-align: left;">ofm.hr</td>
-<td style="text-align: left;">691</td>
-<td style="text-align: left;">15,759</td>
-<td style="text-align: right;">1</td>
-</tr>
-<tr class="even">
 <td style="text-align: left;">isusovci.hr</td>
 <td style="text-align: left;">196</td>
 <td style="text-align: left;">15,754</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">ofm.hr</td>
+<td style="text-align: left;">673</td>
+<td style="text-align: left;">15,178</td>
 <td style="text-align: right;">1</td>
 </tr>
 <tr class="odd">
@@ -1189,8 +1202,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="odd">
 <td style="text-align: left;">ofmconv.hr</td>
-<td style="text-align: left;">339</td>
-<td style="text-align: left;">811</td>
+<td style="text-align: left;">327</td>
+<td style="text-align: left;">809</td>
 <td style="text-align: right;">1</td>
 </tr>
 <tr class="even">
@@ -1265,6 +1278,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="classification-quality-diagnostics" class="level2" data-number="2.7">
 <h2 data-number="2.7" class="anchored" data-anchor-id="classification-quality-diagnostics"><span class="header-section-number">2.7</span> Classification Quality Diagnostics</h2>
+<details>
+<summary>
+<strong>Click to expand diagnostics</strong> (Quality assurance tables for identifying potential misclassifications)
+</summary>
 <p>Quality assurance is essential for any classification system. The diagnostics below help identify potential misclassifications that may require manual review or pattern refinement.</p>
 <div class="cell">
 <details class="code-fold">
@@ -1489,73 +1506,76 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">3,679</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">MOLITVE BOGU</td>
-<td style="text-align: left;">24</td>
-<td style="text-align: left;">3,672</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Vojnik Sreće - Duhovne poruke i inspiracija</td>
-<td style="text-align: left;">14</td>
-<td style="text-align: left;">3,136</td>
-</tr>
-<tr class="odd">
 <td style="text-align: left;">Crkva Svemogućeg Boga</td>
 <td style="text-align: left;">67</td>
 <td style="text-align: left;">2,897</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Dubrovacka Biskupija</td>
-<td style="text-align: left;">66</td>
-<td style="text-align: left;">2,708</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Zupa Tramosnica</td>
-<td style="text-align: left;">73</td>
-<td style="text-align: left;">2,476</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">KES Duhovni kutak</td>
-<td style="text-align: left;">34</td>
-<td style="text-align: left;">2,473</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">molitve.hr</td>
-<td style="text-align: left;">41</td>
-<td style="text-align: left;">2,402</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Duhovniportal.com</td>
-<td style="text-align: left;">166</td>
-<td style="text-align: left;">2,264</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">dubrovacka-biskupija.hr</td>
-<td style="text-align: left;">69</td>
-<td style="text-align: left;">2,225</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Župa sv. Vida - Petruševec</td>
-<td style="text-align: left;">88</td>
-<td style="text-align: left;">2,066</td>
+<td style="text-align: left;">zg-nadbiskupija.hr</td>
+<td style="text-align: left;">22</td>
+<td style="text-align: left;">2,565</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Domovinski pokret Splitsko-dalmatinska županija</td>
 <td style="text-align: left;">6</td>
 <td style="text-align: left;">2,002</td>
 </tr>
+<tr class="even">
+<td style="text-align: left;">Molitvena zajednica Eho</td>
+<td style="text-align: left;">10</td>
+<td style="text-align: left;">1,952</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Zadarska županija</td>
+<td style="text-align: left;">45</td>
+<td style="text-align: left;">1,928</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">OMNIA DEO - Molitve</td>
+<td style="text-align: left;">25</td>
+<td style="text-align: left;">1,665</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">biskupija-varazdinska.hr</td>
+<td style="text-align: left;">39</td>
+<td style="text-align: left;">1,660</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Molitve za svaki dan</td>
+<td style="text-align: left;">48</td>
+<td style="text-align: left;">1,607</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">🧿Tarot duhovnog buđenja🧿 |4</td>
+<td style="text-align: left;">|1</td>
+<td style="text-align: left;">456 |</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Župa svetog Petra apostola - Zadar (Ploča)</td>
+<td style="text-align: left;">63</td>
+<td style="text-align: left;">1,435</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Kršćanska zajednica Šibenik</td>
+<td style="text-align: left;">36</td>
+<td style="text-align: left;">1,337</td>
+</tr>
 </tbody>
 </table>
 </div>
 </div>
+</details>
 <div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Classification Notes
+Classification Notes (click to expand)
 </div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <p>The classification uses a hierarchical priority system ensuring consistent results:</p>
 <ol type="1">
@@ -1566,6 +1586,7 @@ Classification Notes
 <li><strong>Lay Influencers</strong> captures devotional social media pages</li>
 </ol>
 <p>The Other category contains secular media, unidentified sources, and general public discourse. High engagement sources in Other warrant periodic review for potential pattern improvements.</p>
+</div>
 </div>
 </div>
 </section>
@@ -2334,19 +2355,19 @@ Key Finding on Stratification
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">Diocesan</td>
-<td style="text-align: left;">4</td>
-<td style="text-align: left;">2,752</td>
-<td style="text-align: left;">370,472</td>
-<td style="text-align: left;">708.51%</td>
-<td style="text-align: left;">554.01%</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">2,840</td>
+<td style="text-align: left;">372,538</td>
+<td style="text-align: left;">603.76%</td>
+<td style="text-align: left;">249.53%</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Lay Influencers</td>
-<td style="text-align: left;">11</td>
-<td style="text-align: left;">12,990</td>
-<td style="text-align: left;">3,435,984</td>
-<td style="text-align: left;">512.45%</td>
-<td style="text-align: left;">603.01%</td>
+<td style="text-align: left;">12</td>
+<td style="text-align: left;">13,144</td>
+<td style="text-align: left;">3,437,969</td>
+<td style="text-align: left;">472.49%</td>
+<td style="text-align: left;">501.59%</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Independent Media</td>
@@ -2382,11 +2403,11 @@ Key Finding on Stratification
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Other</td>
-<td style="text-align: left;">4,136</td>
-<td style="text-align: left;">54,065</td>
-<td style="text-align: left;">6,752,805</td>
-<td style="text-align: left;">10.00%</td>
-<td style="text-align: left;">0.68%</td>
+<td style="text-align: left;">4,134</td>
+<td style="text-align: left;">53,823</td>
+<td style="text-align: left;">6,748,754</td>
+<td style="text-align: left;">9.95%</td>
+<td style="text-align: left;">0.67%</td>
 </tr>
 </tbody>
 </table>
@@ -2444,17 +2465,17 @@ Key Finding on Stratification
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">Institutional</td>
-<td style="text-align: right;">82</td>
-<td style="text-align: left;">51.71%</td>
+<td style="text-align: right;">83</td>
+<td style="text-align: left;">53.31%</td>
 <td style="text-align: left;">0.59%</td>
-<td style="text-align: left;">210.95</td>
+<td style="text-align: left;">210.17</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Non-Institutional</td>
-<td style="text-align: right;">4154</td>
-<td style="text-align: left;">11.63%</td>
+<td style="text-align: right;">4153</td>
+<td style="text-align: left;">11.59%</td>
 <td style="text-align: left;">0.68%</td>
-<td style="text-align: left;">65.55</td>
+<td style="text-align: left;">65.50</td>
 </tr>
 </tbody>
 </table>
@@ -2473,14 +2494,14 @@ Key Finding on Stratification
 <div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"W ="</span>, wilcox_result<span class="sc">$</span>statistic, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>W = 178704 </code></pre>
+<pre><code>W = 182808 </code></pre>
 </div>
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"p-value ="</span>, <span class="fu">format.pval</span>(wilcox_result<span class="sc">$</span>p.value, <span class="at">digits =</span> <span class="dv">4</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>p-value = 0.4433 </code></pre>
+<pre><code>p-value = 0.3422 </code></pre>
 </div>
 <details class="code-fold">
 <summary>Show code</summary>

@@ -441,7 +441,12 @@ manual_overrides <- list(
     "kršćanstvo", "krscanstvo",
     "jutarnja molitva duhu svetom",
     "blago molitve",
-    "biblija krunice molitve"
+    "biblija krunice molitve",
+    "molitve bogu",
+    "vojnik sreće", "vojnik srece", "duhovne poruke i inspiracija",
+    "kes duhovni kutak", "duhovni kutak",
+    "molitve.hr",
+    "duhovniportal.com", "duhovniportal"
   ),
   "Diocesan" = c(
     "zagrebačka nadbiskupija", "zagrebacka nadbiskupija",
@@ -451,7 +456,11 @@ manual_overrides <- list(
     "župa sv. ilije proroka metković", "zupa sv. ilije proroka metkovic",
     "župa uznesenja bdm", "zupa uznesenja bdm", "župa uznesenja bdm - stenjevec",
     "šibenska biskupija", "sibenska biskupija",
-    "požeška biskupija", "pozeskа biskupija"
+    "požeška biskupija", "pozeskа biskupija",
+    "dubrovacka biskupija", "dubrovačka biskupija",
+    "dubrovacka-biskupija.hr",
+    "zupa tramosnica", "župa tramošnica",
+    "župa sv. vida", "zupa sv. vida", "župa sv. vida - petruševec"
   ),
   "Youth Organizations" = c(
     "susret hrvatske katoličke mladeži", "susret hrvatske katolicke mladezi",
@@ -516,8 +525,12 @@ secular_exclusions <- c(
   "facebook.com", "youtube.com", "instagram.com", "twitter.com",
   # Government and administrative
   "županija", "zupanija", "grad ", "opcina", "općina",
-  # Non-Catholic religious
-  "kršćanska proročka crkva", "krscanska prorocka crkva"
+  # Non-Catholic religious groups
+  "kršćanska proročka crkva", "krscanska prorocka crkva",
+  "crkva svemogućeg boga", "crkva svemoguceg boga",
+  "jehovini svjedoci", "adventisti", "baptisti", "pentekostalna",
+  # Political parties
+  "domovinski pokret", "hdz", "sdp", "most", "možemo", "mozemo"
 )
 
 # -----------------------------------------------------------------------------
@@ -991,6 +1004,9 @@ ggplot(actor_platform, aes(x = SOURCE_TYPE, y = ACTOR_TYPE, fill = Pct)) +
 
 ## Classification Quality Diagnostics
 
+<details>
+<summary>**Click to expand diagnostics** (Quality assurance tables for identifying potential misclassifications)</summary>
+
 Quality assurance is essential for any classification system. The diagnostics below help identify potential misclassifications that may require manual review or pattern refinement.
 
 ```{r classification-diagnostics}
@@ -1050,8 +1066,10 @@ if (length(flagged_sources) > 0) {
 }
 ```
 
-::: {.callout-note}
-## Classification Notes
+</details>
+
+::: {.callout-note collapse="true"}
+## Classification Notes (click to expand)
 
 The classification uses a hierarchical priority system ensuring consistent results:
 
