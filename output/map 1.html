@@ -1,0 +1,2310 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="DigiKat Project">
+<meta name="dcterms.date" content="2026-01-26">
+
+<title>DigiKat Map 1: Platform and Actor Structure</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="map 1_files/libs/clipboard/clipboard.min.js"></script>
+<script src="map 1_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="map 1_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="map 1_files/libs/quarto-html/popper.min.js"></script>
+<script src="map 1_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="map 1_files/libs/quarto-html/anchor.min.js"></script>
+<link href="map 1_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="map 1_files/libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="map 1_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="map 1_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="map 1_files/libs/bootstrap/bootstrap-813c323200a87c37e262811031999de4.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="map 1_files/libs/kePrint-0.0.1/kePrint.js"></script>
+
+<link href="map 1_files/libs/lightable-0.0.1/lightable.css" rel="stylesheet">
+
+
+
+</head>
+
+<body class="quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article toc-left">
+<div id="quarto-sidebar-toc-left" class="sidebar toc-left">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction"><span class="header-section-number">1</span> Introduction</a>
+  <ul class="collapse">
+  <li><a href="#corpus-overview" id="toc-corpus-overview" class="nav-link" data-scroll-target="#corpus-overview"><span class="header-section-number">1.1</span> Corpus Overview</a></li>
+  </ul></li>
+  <li><a href="#actor-type-classification" id="toc-actor-type-classification" class="nav-link" data-scroll-target="#actor-type-classification"><span class="header-section-number">2</span> Actor Type Classification</a></li>
+  <li><a href="#analysis-1.1-platform-distribution" id="toc-analysis-1.1-platform-distribution" class="nav-link" data-scroll-target="#analysis-1.1-platform-distribution"><span class="header-section-number">3</span> Analysis 1.1: Platform Distribution</a>
+  <ul class="collapse">
+  <li><a href="#volume-vs-engagement-by-platform" id="toc-volume-vs-engagement-by-platform" class="nav-link" data-scroll-target="#volume-vs-engagement-by-platform"><span class="header-section-number">3.1</span> Volume vs Engagement by Platform</a></li>
+  <li><a href="#platform-statistics-table" id="toc-platform-statistics-table" class="nav-link" data-scroll-target="#platform-statistics-table"><span class="header-section-number">3.2</span> Platform Statistics Table</a></li>
+  <li><a href="#engagement-efficiency-by-platform" id="toc-engagement-efficiency-by-platform" class="nav-link" data-scroll-target="#engagement-efficiency-by-platform"><span class="header-section-number">3.3</span> Engagement Efficiency by Platform</a></li>
+  </ul></li>
+  <li><a href="#analysis-1.2-visibility-stratification" id="toc-analysis-1.2-visibility-stratification" class="nav-link" data-scroll-target="#analysis-1.2-visibility-stratification"><span class="header-section-number">4</span> Analysis 1.2: Visibility Stratification</a>
+  <ul class="collapse">
+  <li><a href="#top-20-sources-by-engagement" id="toc-top-20-sources-by-engagement" class="nav-link" data-scroll-target="#top-20-sources-by-engagement"><span class="header-section-number">4.1</span> Top 20 Sources by Engagement</a></li>
+  <li><a href="#concentration-ratios" id="toc-concentration-ratios" class="nav-link" data-scroll-target="#concentration-ratios"><span class="header-section-number">4.2</span> Concentration Ratios</a></li>
+  <li><a href="#lorenz-curve-of-engagement-inequality" id="toc-lorenz-curve-of-engagement-inequality" class="nav-link" data-scroll-target="#lorenz-curve-of-engagement-inequality"><span class="header-section-number">4.3</span> Lorenz Curve of Engagement Inequality</a></li>
+  <li><a href="#log-log-rank-plot-power-law-test" id="toc-log-log-rank-plot-power-law-test" class="nav-link" data-scroll-target="#log-log-rank-plot-power-law-test"><span class="header-section-number">4.4</span> Log-Log Rank Plot (Power Law Test)</a></li>
+  </ul></li>
+  <li><a href="#analysis-1.3-the-institutional-gap" id="toc-analysis-1.3-the-institutional-gap" class="nav-link" data-scroll-target="#analysis-1.3-the-institutional-gap"><span class="header-section-number">5</span> Analysis 1.3: The Institutional Gap</a>
+  <ul class="collapse">
+  <li><a href="#engagement-rate-by-actor-type" id="toc-engagement-rate-by-actor-type" class="nav-link" data-scroll-target="#engagement-rate-by-actor-type"><span class="header-section-number">5.1</span> Engagement Rate by Actor Type</a></li>
+  <li><a href="#actor-type-performance-summary" id="toc-actor-type-performance-summary" class="nav-link" data-scroll-target="#actor-type-performance-summary"><span class="header-section-number">5.2</span> Actor Type Performance Summary</a></li>
+  <li><a href="#statistical-comparison-institutional-vs-non-institutional" id="toc-statistical-comparison-institutional-vs-non-institutional" class="nav-link" data-scroll-target="#statistical-comparison-institutional-vs-non-institutional"><span class="header-section-number">5.3</span> Statistical Comparison: Institutional vs Non-Institutional</a></li>
+  <li><a href="#engagement-rate-comparison-visualization" id="toc-engagement-rate-comparison-visualization" class="nav-link" data-scroll-target="#engagement-rate-comparison-visualization"><span class="header-section-number">5.4</span> Engagement Rate Comparison Visualization</a></li>
+  </ul></li>
+  <li><a href="#analysis-1.4-cross-platform-presence" id="toc-analysis-1.4-cross-platform-presence" class="nav-link" data-scroll-target="#analysis-1.4-cross-platform-presence"><span class="header-section-number">6</span> Analysis 1.4: Cross-Platform Presence</a>
+  <ul class="collapse">
+  <li><a href="#platform-presence-distribution" id="toc-platform-presence-distribution" class="nav-link" data-scroll-target="#platform-presence-distribution"><span class="header-section-number">6.1</span> Platform Presence Distribution</a></li>
+  <li><a href="#top-multi-platform-actors" id="toc-top-multi-platform-actors" class="nav-link" data-scroll-target="#top-multi-platform-actors"><span class="header-section-number">6.2</span> Top Multi-Platform Actors</a></li>
+  <li><a href="#cross-platform-presence-by-actor-type" id="toc-cross-platform-presence-by-actor-type" class="nav-link" data-scroll-target="#cross-platform-presence-by-actor-type"><span class="header-section-number">6.3</span> Cross-Platform Presence by Actor Type</a></li>
+  <li><a href="#correlation-multi-platform-presence-and-engagement" id="toc-correlation-multi-platform-presence-and-engagement" class="nav-link" data-scroll-target="#correlation-multi-platform-presence-and-engagement"><span class="header-section-number">6.4</span> Correlation: Multi-Platform Presence and Engagement</a></li>
+  </ul></li>
+  <li><a href="#summary-and-key-findings" id="toc-summary-and-key-findings" class="nav-link" data-scroll-target="#summary-and-key-findings"><span class="header-section-number">7</span> Summary and Key Findings</a>
+  <ul class="collapse">
+  <li><a href="#platform-distribution-findings" id="toc-platform-distribution-findings" class="nav-link" data-scroll-target="#platform-distribution-findings"><span class="header-section-number">7.1</span> Platform Distribution Findings</a></li>
+  <li><a href="#visibility-stratification-findings" id="toc-visibility-stratification-findings" class="nav-link" data-scroll-target="#visibility-stratification-findings"><span class="header-section-number">7.2</span> Visibility Stratification Findings</a></li>
+  <li><a href="#institutional-gap-findings" id="toc-institutional-gap-findings" class="nav-link" data-scroll-target="#institutional-gap-findings"><span class="header-section-number">7.3</span> Institutional Gap Findings</a></li>
+  <li><a href="#cross-platform-presence-findings" id="toc-cross-platform-presence-findings" class="nav-link" data-scroll-target="#cross-platform-presence-findings"><span class="header-section-number">7.4</span> Cross-Platform Presence Findings</a></li>
+  </ul></li>
+  <li><a href="#appendix-technical-notes" id="toc-appendix-technical-notes" class="nav-link" data-scroll-target="#appendix-technical-notes"><span class="header-section-number">8</span> Appendix: Technical Notes</a></li>
+  </ul>
+</nav>
+</div>
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">DigiKat Map 1: Platform and Actor Structure</h1>
+<p class="subtitle lead">Mapping the Croatian Catholic Digital Media Space</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>DigiKat Project </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">January 26, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="introduction" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Introduction</h1>
+<p>This document presents <strong>Map 1: Platform and Actor Structure</strong> of the DigiKat project, analyzing the Croatian Catholic digital media space. The core question driving this analysis is: <strong>Who communicates where, and who dominates visibility?</strong></p>
+<p>We analyze a corpus of over 600,000 posts from 2021-2024 across multiple digital platforms to understand:</p>
+<ol type="1">
+<li>How content is distributed across platforms</li>
+<li>How visibility and engagement are stratified among actors</li>
+<li>Whether institutional actors underperform compared to grassroots voices</li>
+<li>Which actors maintain cross-platform presence</li>
+</ol>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load data</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>dta <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="st">"C:/Users/lsikic/Luka C/HKS/Projekti/Digitalni Kat/SHKM/DigiKat/data/merged_comprehensive.rds"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(SOURCE_TYPE <span class="sc">!=</span> <span class="st">"tiktok"</span>, <span class="sc">!</span><span class="fu">is.na</span>(SOURCE_TYPE)) <span class="sc">%&gt;%</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(DATE <span class="sc">&gt;=</span> <span class="fu">as.Date</span>(<span class="st">"2021-01-01"</span>) <span class="sc">&amp;</span> DATE <span class="sc">&lt;=</span> <span class="fu">as.Date</span>(<span class="st">"2024-12-31"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">&gt;=</span> <span class="dv">2021</span> <span class="sc">&amp;</span> year <span class="sc">&lt;=</span> <span class="dv">2025</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert to data.table for efficiency</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">setDT</span>(dta)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Basic corpus info</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>n_posts <span class="ot">&lt;-</span> <span class="fu">nrow</span>(dta)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>n_sources <span class="ot">&lt;-</span> <span class="fu">uniqueN</span>(dta<span class="sc">$</span>FROM)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>date_range <span class="ot">&lt;-</span> <span class="fu">paste</span>(<span class="fu">min</span>(dta<span class="sc">$</span>DATE), <span class="st">"to"</span>, <span class="fu">max</span>(dta<span class="sc">$</span>DATE))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<section id="corpus-overview" class="level2" data-number="1.1">
+<h2 data-number="1.1" class="anchored" data-anchor-id="corpus-overview"><span class="header-section-number">1.1</span> Corpus Overview</h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tibble</span>(</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">Metric =</span> <span class="fu">c</span>(<span class="st">"Total posts"</span>, <span class="st">"Unique sources"</span>, <span class="st">"Date range"</span>, <span class="st">"Platforms"</span>),</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">Value =</span> <span class="fu">c</span>(</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">format</span>(n_posts, <span class="at">big.mark =</span> <span class="st">","</span>),</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">format</span>(n_sources, <span class="at">big.mark =</span> <span class="st">","</span>),</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    date_range,</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">paste</span>(<span class="fu">unique</span>(dta<span class="sc">$</span>SOURCE_TYPE), <span class="at">collapse =</span> <span class="st">", "</span>)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">"Metric"</span>, <span class="st">"Value"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>(<span class="at">bootstrap_options =</span> <span class="fu">c</span>(<span class="st">"striped"</span>, <span class="st">"hover"</span>), <span class="at">full_width =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-striped table-hover caption-top table-sm small" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">Metric</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Total posts</td>
+<td style="text-align: left;">372,944</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Unique sources</td>
+<td style="text-align: left;">9,896</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Date range</td>
+<td style="text-align: left;">2021-01-01 to 2024-12-31</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Platforms</td>
+<td style="text-align: left;">web, facebook, twitter, comment, youtube, forum, reddit, instagram</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+</section>
+<section id="actor-type-classification" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Actor Type Classification</h1>
+<p>Before analyzing platform dynamics, we classify sources into meaningful actor types based on the Croatian Catholic media landscape.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Improved Actor Classification v2</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Key improvements:</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. Match primarily on FROM (source name), use URL only for official institutional sites</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. Exclude secular media explicitly to avoid false positives</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. Add Lay Influencers category for social media devotional pages</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. Use more specific patterns (exact matches where possible)</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Define exclusion list - secular media that should NOT be classified as Catholic actors</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>secular_media_exclusions <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="st">"slobodnadalmacija"</span>, <span class="st">"vecernji"</span>, <span class="st">"index.hr"</span>, <span class="st">"jutarnji"</span>, <span class="st">"novilist"</span>,</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  <span class="st">"24sata"</span>, <span class="st">"direktno.hr"</span>, <span class="st">"nacional"</span>, <span class="st">"tportal"</span>, <span class="st">"dnevnik.hr"</span>, <span class="st">"hrt.hr"</span>,</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>  <span class="st">"n1info"</span>, <span class="st">"rtl.hr"</span>, <span class="st">"net.hr"</span>, <span class="st">"telegram.hr"</span>, <span class="st">"story.hr"</span>, <span class="st">"forum.hr"</span>,</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>  <span class="st">"glasistre"</span>, <span class="st">"dnevno.hr"</span>, <span class="st">"prigorski"</span>, <span class="st">"glas-slavonije"</span>, <span class="st">"croativ"</span>,</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>  <span class="st">"oluja.info"</span>, <span class="st">"maxportal"</span>, <span class="st">"hkv.hr"</span>, <span class="st">"icv.hr"</span>, <span class="st">"novosti.hr"</span>, <span class="st">"7dnevno"</span>,</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>  <span class="st">"mnovine"</span>, <span class="st">"sjever.hr"</span>, <span class="st">"dulist.hr"</span>, <span class="st">"pozega.eu"</span>, <span class="st">"sibenik.in"</span>,</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>  <span class="st">"ferata.hr"</span>, <span class="st">"epodravina"</span>, <span class="st">"glasgacke"</span>, <span class="st">"radio-zlatar"</span>, <span class="st">"medjimurski.hr"</span>,</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>  <span class="st">"sbperiskop"</span>, <span class="st">"zagorje-international"</span>, <span class="st">"pozeski"</span>, <span class="st">"novine.hr"</span>,</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>  <span class="st">"dubrovnikinsider"</span>, <span class="st">"regionalni"</span>, <span class="st">"leportale"</span>, <span class="st">"varazdinske-vijesti"</span>,</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>  <span class="st">"radionasice"</span>, <span class="st">"brodportal"</span>, <span class="st">"ljportal"</span>, <span class="st">"dubrovnikportal"</span>, <span class="st">"01portal"</span>,</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>  <span class="st">"tomislavnews"</span>, <span class="st">"hia.com.hr"</span>, <span class="st">"portalnovosti"</span>, <span class="st">"antenazadar"</span>,</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>  <span class="st">"dalmacijanews"</span>, <span class="st">"zadarskilist"</span>, <span class="st">"medjimurjepress"</span>,</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>  <span class="st">"zagreb.info"</span>, <span class="st">"034portal"</span>, <span class="st">"057info"</span>, <span class="st">"inmemoriam"</span>, <span class="st">"magicus.info"</span>,</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>  <span class="st">"book.hr"</span>, <span class="st">"mojzagreb.info"</span>, <span class="st">"skole.hr"</span>, <span class="st">"tvprofil"</span>, <span class="st">"cityportal"</span>,</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>  <span class="st">"klikaj.hr"</span>, <span class="st">"lika-online"</span>, <span class="st">"priznajem.hr"</span>, <span class="st">"ploce.com"</span>,</span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>  <span class="st">"dragovoljac.com"</span>, <span class="st">"sbonline"</span>, <span class="st">"narod.hr"</span>, <span class="st">"infokiosk"</span>, <span class="st">"hrsvijet"</span>,</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>  <span class="st">"tomislavcity"</span>, <span class="st">"vrisak.info"</span>, <span class="st">"croatia"</span>, <span class="st">"anonymous_user"</span>, <span class="st">"reddit"</span>,</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>  <span class="st">"dalmacijadanas"</span></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a><span class="co"># Improved classification function</span></span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>classify_actor_v2 <span class="ot">&lt;-</span> <span class="cf">function</span>(from_value, <span class="at">url_value =</span> <span class="cn">NA</span>) {</span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>  from_lower <span class="ot">&lt;-</span> <span class="fu">tolower</span>(from_value)</span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>  url_lower <span class="ot">&lt;-</span> <span class="fu">tolower</span>(<span class="fu">ifelse</span>(<span class="fu">is.na</span>(url_value), <span class="st">""</span>, url_value))</span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>  <span class="co"># FIRST: Check exclusions - if source is secular media, return "Other" immediately</span></span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">any</span>(<span class="fu">sapply</span>(secular_media_exclusions, <span class="cf">function</span>(x) <span class="fu">grepl</span>(x, from_lower, <span class="at">fixed =</span> <span class="cn">TRUE</span>)))) {</span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="st">"Other"</span>)</span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a>  <span class="co"># ========== INSTITUTIONAL OFFICIAL ==========</span></span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Match on specific institutional domains in URL</span></span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a>  institutional_domains <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"hkm.hr"</span>, <span class="st">"ika.hkm.hr"</span>, <span class="st">"hkr.hkm.hr"</span>, <span class="st">"hbk.hr"</span>)</span>
+<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">any</span>(<span class="fu">sapply</span>(institutional_domains, <span class="cf">function</span>(x) <span class="fu">grepl</span>(x, url_lower, <span class="at">fixed =</span> <span class="cn">TRUE</span>)))) {</span>
+<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="st">"Institutional Official"</span>)</span>
+<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Match on specific institutional names in FROM</span></span>
+<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a>  institutional_names <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a>    <span class="st">"hrvatska katolička mreža"</span>, <span class="st">"katolička mreža"</span>, <span class="st">"hkm"</span>, </span>
+<span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a>    <span class="st">"informativna katolička agencija"</span>, <span class="st">"ika"</span>, <span class="st">"hrvatski katolički radio"</span>, <span class="st">"hkr"</span>,</span>
+<span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a>    <span class="st">"hrvatska biskupska konferencija"</span>, <span class="st">"hbk"</span></span>
+<span id="cb3-53"><a href="#cb3-53" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb3-54"><a href="#cb3-54" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">any</span>(<span class="fu">sapply</span>(institutional_names, <span class="cf">function</span>(x) <span class="fu">grepl</span>(x, from_lower, <span class="at">fixed =</span> <span class="cn">TRUE</span>)))) {</span>
+<span id="cb3-55"><a href="#cb3-55" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="st">"Institutional Official"</span>)</span>
+<span id="cb3-56"><a href="#cb3-56" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-57"><a href="#cb3-57" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-58"><a href="#cb3-58" aria-hidden="true" tabindex="-1"></a>  <span class="co"># ========== DIOCESAN ==========</span></span>
+<span id="cb3-59"><a href="#cb3-59" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Specific diocesan domains</span></span>
+<span id="cb3-60"><a href="#cb3-60" aria-hidden="true" tabindex="-1"></a>  diocesan_domains <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb3-61"><a href="#cb3-61" aria-hidden="true" tabindex="-1"></a>    <span class="st">"zg-nadbiskupija.hr"</span>, <span class="st">"biskupija-varazdinska.hr"</span>, <span class="st">"djos.hr"</span>, </span>
+<span id="cb3-62"><a href="#cb3-62" aria-hidden="true" tabindex="-1"></a>    <span class="st">"biskupija-sj.hr"</span>, <span class="st">"rzs.hr"</span>, <span class="st">"rkc-sisak.hr"</span>, <span class="st">"zadarskanadbiskupija.hr"</span>,</span>
+<span id="cb3-63"><a href="#cb3-63" aria-hidden="true" tabindex="-1"></a>    <span class="st">"gospicko-senjska-biskupija.hr"</span>, <span class="st">"nadbiskupija-split.com"</span>,</span>
+<span id="cb3-64"><a href="#cb3-64" aria-hidden="true" tabindex="-1"></a>    <span class="st">"dubrovacka-biskupija.hr"</span>, <span class="st">"porec-biskupija.hr"</span>, <span class="st">"biskupija-kk.hr"</span></span>
+<span id="cb3-65"><a href="#cb3-65" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb3-66"><a href="#cb3-66" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">any</span>(<span class="fu">sapply</span>(diocesan_domains, <span class="cf">function</span>(x) <span class="fu">grepl</span>(x, url_lower, <span class="at">fixed =</span> <span class="cn">TRUE</span>)))) {</span>
+<span id="cb3-67"><a href="#cb3-67" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="st">"Diocesan"</span>)</span>
+<span id="cb3-68"><a href="#cb3-68" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-69"><a href="#cb3-69" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Diocesan patterns in FROM</span></span>
+<span id="cb3-70"><a href="#cb3-70" aria-hidden="true" tabindex="-1"></a>  diocesan_names <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb3-71"><a href="#cb3-71" aria-hidden="true" tabindex="-1"></a>    <span class="st">"nadbiskupija"</span>, <span class="st">"biskupija"</span>, <span class="st">"župa "</span>, <span class="st">"zupa "</span>, </span>
+<span id="cb3-72"><a href="#cb3-72" aria-hidden="true" tabindex="-1"></a>    <span class="st">"zagrebačka nadbiskupija"</span>, <span class="st">"splitsko-makarska"</span>, <span class="st">"đakovačko-osječka"</span>,</span>
+<span id="cb3-73"><a href="#cb3-73" aria-hidden="true" tabindex="-1"></a>    <span class="st">"riječka nadbiskupija"</span>, <span class="st">"zadarska nadbiskupija"</span>, <span class="st">"sisačka biskupija"</span>,</span>
+<span id="cb3-74"><a href="#cb3-74" aria-hidden="true" tabindex="-1"></a>    <span class="st">"varaždinska biskupija"</span>, <span class="st">"križevačka eparhija"</span></span>
+<span id="cb3-75"><a href="#cb3-75" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb3-76"><a href="#cb3-76" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">any</span>(<span class="fu">sapply</span>(diocesan_names, <span class="cf">function</span>(x) <span class="fu">grepl</span>(x, from_lower, <span class="at">fixed =</span> <span class="cn">TRUE</span>)))) {</span>
+<span id="cb3-77"><a href="#cb3-77" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="st">"Diocesan"</span>)</span>
+<span id="cb3-78"><a href="#cb3-78" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-79"><a href="#cb3-79" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-80"><a href="#cb3-80" aria-hidden="true" tabindex="-1"></a>  <span class="co"># ========== INDEPENDENT MEDIA ==========</span></span>
+<span id="cb3-81"><a href="#cb3-81" aria-hidden="true" tabindex="-1"></a>  independent_media_exact <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb3-82"><a href="#cb3-82" aria-hidden="true" tabindex="-1"></a>    <span class="st">"laudatotv"</span>, <span class="st">"laudato tv"</span>, <span class="st">"laudato.tv"</span>, <span class="st">"laudato.hr"</span>,</span>
+<span id="cb3-83"><a href="#cb3-83" aria-hidden="true" tabindex="-1"></a>    <span class="st">"bitno.net"</span>, <span class="st">"bitno net"</span>, <span class="st">"glas koncila"</span>, <span class="st">"glaskoncila.hr"</span>,</span>
+<span id="cb3-84"><a href="#cb3-84" aria-hidden="true" tabindex="-1"></a>    <span class="st">"nova-eva.com"</span>, <span class="st">"nova eva"</span>, <span class="st">"katolički tjednik"</span>, <span class="st">"katolicki tjednik"</span>,</span>
+<span id="cb3-85"><a href="#cb3-85" aria-hidden="true" tabindex="-1"></a>    <span class="st">"kršćanska sadašnjost"</span>, <span class="st">"ks.hr"</span>, <span class="st">"verbum.hr"</span>, <span class="st">"verbum"</span>,</span>
+<span id="cb3-86"><a href="#cb3-86" aria-hidden="true" tabindex="-1"></a>    <span class="st">"mir i dobro"</span>, <span class="st">"gfranciskovic"</span>, <span class="st">"kfranciskovic"</span>, <span class="st">"totus tuus"</span></span>
+<span id="cb3-87"><a href="#cb3-87" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb3-88"><a href="#cb3-88" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">any</span>(<span class="fu">sapply</span>(independent_media_exact, <span class="cf">function</span>(x) <span class="fu">grepl</span>(x, from_lower, <span class="at">fixed =</span> <span class="cn">TRUE</span>)))) {</span>
+<span id="cb3-89"><a href="#cb3-89" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="st">"Independent Media"</span>)</span>
+<span id="cb3-90"><a href="#cb3-90" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-91"><a href="#cb3-91" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Check URL for independent media domains</span></span>
+<span id="cb3-92"><a href="#cb3-92" aria-hidden="true" tabindex="-1"></a>  independent_media_domains <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb3-93"><a href="#cb3-93" aria-hidden="true" tabindex="-1"></a>    <span class="st">"laudato.hr"</span>, <span class="st">"laudato.tv"</span>, <span class="st">"bitno.net"</span>, <span class="st">"glaskoncila.hr"</span>, </span>
+<span id="cb3-94"><a href="#cb3-94" aria-hidden="true" tabindex="-1"></a>    <span class="st">"nova-eva.com"</span>, <span class="st">"verbum.hr"</span>, <span class="st">"ks.hr"</span></span>
+<span id="cb3-95"><a href="#cb3-95" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb3-96"><a href="#cb3-96" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">any</span>(<span class="fu">sapply</span>(independent_media_domains, <span class="cf">function</span>(x) <span class="fu">grepl</span>(x, url_lower, <span class="at">fixed =</span> <span class="cn">TRUE</span>)))) {</span>
+<span id="cb3-97"><a href="#cb3-97" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="st">"Independent Media"</span>)</span>
+<span id="cb3-98"><a href="#cb3-98" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-99"><a href="#cb3-99" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-100"><a href="#cb3-100" aria-hidden="true" tabindex="-1"></a>  <span class="co"># ========== RELIGIOUS ORDERS ==========</span></span>
+<span id="cb3-101"><a href="#cb3-101" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Use word-boundary-like patterns to be more specific</span></span>
+<span id="cb3-102"><a href="#cb3-102" aria-hidden="true" tabindex="-1"></a>  religious_orders_exact <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb3-103"><a href="#cb3-103" aria-hidden="true" tabindex="-1"></a>    <span class="st">"franjevci"</span>, <span class="st">"franjevački"</span>, <span class="st">"franjevacki"</span>, <span class="st">"ofm"</span>,</span>
+<span id="cb3-104"><a href="#cb3-104" aria-hidden="true" tabindex="-1"></a>    <span class="st">"isusovci"</span>, <span class="st">"družba isusova"</span>, <span class="st">"druzba isusova"</span>, <span class="st">"sj"</span>,</span>
+<span id="cb3-105"><a href="#cb3-105" aria-hidden="true" tabindex="-1"></a>    <span class="st">"dominikanci"</span>, <span class="st">"dominikanski"</span>, <span class="st">"op"</span>,</span>
+<span id="cb3-106"><a href="#cb3-106" aria-hidden="true" tabindex="-1"></a>    <span class="st">"salezijanci"</span>, <span class="st">"salezijanski"</span>, <span class="st">"sdb"</span>,</span>
+<span id="cb3-107"><a href="#cb3-107" aria-hidden="true" tabindex="-1"></a>    <span class="st">"karmelićani"</span>, <span class="st">"karmelicani"</span>, <span class="st">"karmel"</span>,</span>
+<span id="cb3-108"><a href="#cb3-108" aria-hidden="true" tabindex="-1"></a>    <span class="st">"benediktinci"</span>, <span class="st">"benediktinski"</span>, <span class="st">"osb"</span>,</span>
+<span id="cb3-109"><a href="#cb3-109" aria-hidden="true" tabindex="-1"></a>    <span class="st">"kapucini"</span>, <span class="st">"kapucinski"</span>, <span class="st">"ofmcap"</span>,</span>
+<span id="cb3-110"><a href="#cb3-110" aria-hidden="true" tabindex="-1"></a>    <span class="st">"pavlini"</span>, <span class="st">"pavlinski"</span>,</span>
+<span id="cb3-111"><a href="#cb3-111" aria-hidden="true" tabindex="-1"></a>    <span class="st">"trapisti"</span>, <span class="st">"cisterciti"</span>,</span>
+<span id="cb3-112"><a href="#cb3-112" aria-hidden="true" tabindex="-1"></a>    <span class="st">"sestre milosrdnice"</span>, <span class="st">"uršulinke"</span>, <span class="st">"klarise"</span></span>
+<span id="cb3-113"><a href="#cb3-113" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb3-114"><a href="#cb3-114" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">any</span>(<span class="fu">sapply</span>(religious_orders_exact, <span class="cf">function</span>(x) <span class="fu">grepl</span>(x, from_lower, <span class="at">fixed =</span> <span class="cn">TRUE</span>)))) {</span>
+<span id="cb3-115"><a href="#cb3-115" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="st">"Religious Orders"</span>)</span>
+<span id="cb3-116"><a href="#cb3-116" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-117"><a href="#cb3-117" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-118"><a href="#cb3-118" aria-hidden="true" tabindex="-1"></a>  <span class="co"># ========== CHARISMATIC COMMUNITIES ==========</span></span>
+<span id="cb3-119"><a href="#cb3-119" aria-hidden="true" tabindex="-1"></a>  charismatic_exact <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb3-120"><a href="#cb3-120" aria-hidden="true" tabindex="-1"></a>    <span class="st">"božja pobjeda"</span>, <span class="st">"bozja pobjeda"</span>, <span class="st">"bozjapobjeda"</span>,</span>
+<span id="cb3-121"><a href="#cb3-121" aria-hidden="true" tabindex="-1"></a>    <span class="st">"srce isusovo"</span>, <span class="st">"srceisuovo"</span>, <span class="st">"srceisusovo"</span>,</span>
+<span id="cb3-122"><a href="#cb3-122" aria-hidden="true" tabindex="-1"></a>    <span class="st">"muževni budite"</span>, <span class="st">"muzevni budite"</span>, <span class="st">"muzevnibudite"</span>,</span>
+<span id="cb3-123"><a href="#cb3-123" aria-hidden="true" tabindex="-1"></a>    <span class="st">"molitvena zajednica"</span>, <span class="st">"karizmatska"</span>, <span class="st">"cenacolo"</span>,</span>
+<span id="cb3-124"><a href="#cb3-124" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Emmanuel Community"</span>, <span class="st">"emmanuel zajednica"</span>, <span class="st">"taize"</span>,</span>
+<span id="cb3-125"><a href="#cb3-125" aria-hidden="true" tabindex="-1"></a>    <span class="st">"neokatekumenski"</span>, <span class="st">"neokatekumenska"</span>, <span class="st">"kursiljo"</span>,</span>
+<span id="cb3-126"><a href="#cb3-126" aria-hidden="true" tabindex="-1"></a>    <span class="st">"fokolari"</span>, <span class="st">"fokolarini"</span>, <span class="st">"komunija i oslobođenje"</span></span>
+<span id="cb3-127"><a href="#cb3-127" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb3-128"><a href="#cb3-128" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">any</span>(<span class="fu">sapply</span>(charismatic_exact, <span class="cf">function</span>(x) <span class="fu">grepl</span>(x, from_lower, <span class="at">fixed =</span> <span class="cn">TRUE</span>)))) {</span>
+<span id="cb3-129"><a href="#cb3-129" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="st">"Charismatic Communities"</span>)</span>
+<span id="cb3-130"><a href="#cb3-130" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-131"><a href="#cb3-131" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-132"><a href="#cb3-132" aria-hidden="true" tabindex="-1"></a>  <span class="co"># ========== INDIVIDUAL PRIESTS ==========</span></span>
+<span id="cb3-133"><a href="#cb3-133" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Patterns for individual clergy</span></span>
+<span id="cb3-134"><a href="#cb3-134" aria-hidden="true" tabindex="-1"></a>  priest_patterns <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb3-135"><a href="#cb3-135" aria-hidden="true" tabindex="-1"></a>    <span class="st">"fra "</span>, <span class="st">"don "</span>, <span class="st">"vlč."</span>, <span class="st">"vlc."</span>, <span class="st">"msgr."</span>, <span class="st">"mons."</span>,</span>
+<span id="cb3-136"><a href="#cb3-136" aria-hidden="true" tabindex="-1"></a>    <span class="st">"padre "</span>, <span class="st">"o. "</span>, <span class="st">"pater "</span>, <span class="st">"biskup "</span>, <span class="st">"nadbiskup "</span>,</span>
+<span id="cb3-137"><a href="#cb3-137" aria-hidden="true" tabindex="-1"></a>    <span class="st">"kardinal "</span>, <span class="st">"svećenik"</span>, <span class="st">"svecenik"</span></span>
+<span id="cb3-138"><a href="#cb3-138" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb3-139"><a href="#cb3-139" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">any</span>(<span class="fu">sapply</span>(priest_patterns, <span class="cf">function</span>(x) <span class="fu">grepl</span>(x, from_lower, <span class="at">fixed =</span> <span class="cn">TRUE</span>)))) {</span>
+<span id="cb3-140"><a href="#cb3-140" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="st">"Individual Priests"</span>)</span>
+<span id="cb3-141"><a href="#cb3-141" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-142"><a href="#cb3-142" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-143"><a href="#cb3-143" aria-hidden="true" tabindex="-1"></a>  <span class="co"># ========== YOUTH ORGANIZATIONS ==========</span></span>
+<span id="cb3-144"><a href="#cb3-144" aria-hidden="true" tabindex="-1"></a>  youth_exact <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb3-145"><a href="#cb3-145" aria-hidden="true" tabindex="-1"></a>    <span class="st">"frama"</span>, <span class="st">"shkm"</span>, <span class="st">"katolička mladež"</span>, <span class="st">"katolicka mladez"</span>,</span>
+<span id="cb3-146"><a href="#cb3-146" aria-hidden="true" tabindex="-1"></a>    <span class="st">"ministranti"</span>, <span class="st">"mladifra"</span>, <span class="st">"mladi fra"</span>, <span class="st">"kaem"</span>, <span class="st">"kud"</span>,</span>
+<span id="cb3-147"><a href="#cb3-147" aria-hidden="true" tabindex="-1"></a>    <span class="st">"sveučilišna kapelanija"</span>, <span class="st">"studentska kapelanija"</span></span>
+<span id="cb3-148"><a href="#cb3-148" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb3-149"><a href="#cb3-149" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">any</span>(<span class="fu">sapply</span>(youth_exact, <span class="cf">function</span>(x) <span class="fu">grepl</span>(x, from_lower, <span class="at">fixed =</span> <span class="cn">TRUE</span>)))) {</span>
+<span id="cb3-150"><a href="#cb3-150" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="st">"Youth Organizations"</span>)</span>
+<span id="cb3-151"><a href="#cb3-151" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-152"><a href="#cb3-152" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-153"><a href="#cb3-153" aria-hidden="true" tabindex="-1"></a>  <span class="co"># ========== ACADEMIC ==========</span></span>
+<span id="cb3-154"><a href="#cb3-154" aria-hidden="true" tabindex="-1"></a>  academic_exact <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb3-155"><a href="#cb3-155" aria-hidden="true" tabindex="-1"></a>    <span class="st">"unicath"</span>, <span class="st">"katolički bogoslovni fakultet"</span>, <span class="st">"kbf"</span>,</span>
+<span id="cb3-156"><a href="#cb3-156" aria-hidden="true" tabindex="-1"></a>    <span class="st">"teologija"</span>, <span class="st">"filozofski fakultet družbe isusove"</span>, <span class="st">"hks.hr"</span>,</span>
+<span id="cb3-157"><a href="#cb3-157" aria-hidden="true" tabindex="-1"></a>    <span class="st">"hrvatsko katoličko sveučilište"</span>, <span class="st">"hku"</span></span>
+<span id="cb3-158"><a href="#cb3-158" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb3-159"><a href="#cb3-159" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">any</span>(<span class="fu">sapply</span>(academic_exact, <span class="cf">function</span>(x) <span class="fu">grepl</span>(x, from_lower, <span class="at">fixed =</span> <span class="cn">TRUE</span>)))) {</span>
+<span id="cb3-160"><a href="#cb3-160" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="st">"Academic"</span>)</span>
+<span id="cb3-161"><a href="#cb3-161" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-162"><a href="#cb3-162" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-163"><a href="#cb3-163" aria-hidden="true" tabindex="-1"></a>  <span class="co"># ========== LAY INFLUENCERS ==========</span></span>
+<span id="cb3-164"><a href="#cb3-164" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Devotional/faith-based social media pages</span></span>
+<span id="cb3-165"><a href="#cb3-165" aria-hidden="true" tabindex="-1"></a>  lay_influencer_patterns <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb3-166"><a href="#cb3-166" aria-hidden="true" tabindex="-1"></a>    <span class="st">"vjera"</span>, <span class="st">"molitva"</span>, <span class="st">"isus"</span>, <span class="st">"krist"</span>, <span class="st">"gospa"</span>, <span class="st">"marija"</span>,</span>
+<span id="cb3-167"><a href="#cb3-167" aria-hidden="true" tabindex="-1"></a>    <span class="st">"hrana za dušu"</span>, <span class="st">"hrana za dusu"</span>, <span class="st">"dijete vjere"</span>,</span>
+<span id="cb3-168"><a href="#cb3-168" aria-hidden="true" tabindex="-1"></a>    <span class="st">"pulherissimus"</span>, <span class="st">"riječ"</span>, <span class="st">"rijec"</span>, <span class="st">"katolik"</span>,</span>
+<span id="cb3-169"><a href="#cb3-169" aria-hidden="true" tabindex="-1"></a>    <span class="st">"kršćan"</span>, <span class="st">"krscan"</span>, <span class="st">"evanđelje"</span>, <span class="st">"evandelje"</span>,</span>
+<span id="cb3-170"><a href="#cb3-170" aria-hidden="true" tabindex="-1"></a>    <span class="st">"duhovn"</span>, <span class="st">"svetac"</span>, <span class="st">"sveci"</span>, <span class="st">"biblij"</span>, <span class="st">"psalm"</span>,</span>
+<span id="cb3-171"><a href="#cb3-171" aria-hidden="true" tabindex="-1"></a>    <span class="st">"blagoslov"</span>, <span class="st">"nebo"</span>, <span class="st">"spasenje"</span>, <span class="st">"uskrs"</span>, <span class="st">"božić"</span>, <span class="st">"bozic"</span></span>
+<span id="cb3-172"><a href="#cb3-172" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb3-173"><a href="#cb3-173" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Only classify as Lay Influencer if it's clearly a social media devotional page</span></span>
+<span id="cb3-174"><a href="#cb3-174" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Check if it's on social media platform first</span></span>
+<span id="cb3-175"><a href="#cb3-175" aria-hidden="true" tabindex="-1"></a>  is_social_media <span class="ot">&lt;-</span> <span class="fu">grepl</span>(<span class="st">"facebook</span><span class="sc">\\</span><span class="st">.com|youtube</span><span class="sc">\\</span><span class="st">.com|instagram</span><span class="sc">\\</span><span class="st">.com"</span>, url_lower) <span class="sc">|</span></span>
+<span id="cb3-176"><a href="#cb3-176" aria-hidden="true" tabindex="-1"></a>                     <span class="sc">!</span><span class="fu">grepl</span>(<span class="st">"</span><span class="sc">\\</span><span class="st">."</span>, from_lower)  <span class="co"># No dots = likely social media handle</span></span>
+<span id="cb3-177"><a href="#cb3-177" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-178"><a href="#cb3-178" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (is_social_media <span class="sc">&amp;&amp;</span> <span class="fu">any</span>(<span class="fu">sapply</span>(lay_influencer_patterns, <span class="cf">function</span>(x) <span class="fu">grepl</span>(x, from_lower, <span class="at">fixed =</span> <span class="cn">TRUE</span>)))) {</span>
+<span id="cb3-179"><a href="#cb3-179" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="st">"Lay Influencers"</span>)</span>
+<span id="cb3-180"><a href="#cb3-180" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-181"><a href="#cb3-181" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-182"><a href="#cb3-182" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Default</span></span>
+<span id="cb3-183"><a href="#cb3-183" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="st">"Other"</span>)</span>
+<span id="cb3-184"><a href="#cb3-184" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-185"><a href="#cb3-185" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-186"><a href="#cb3-186" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-187"><a href="#cb3-187" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply improved classification</span></span>
+<span id="cb3-188"><a href="#cb3-188" aria-hidden="true" tabindex="-1"></a>dta[, ACTOR_TYPE <span class="sc">:</span><span class="er">=</span> <span class="fu">mapply</span>(classify_actor_v2, FROM, URL)]</span>
+<span id="cb3-189"><a href="#cb3-189" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-190"><a href="#cb3-190" aria-hidden="true" tabindex="-1"></a><span class="co"># Show improved classification results</span></span>
+<span id="cb3-191"><a href="#cb3-191" aria-hidden="true" tabindex="-1"></a>actor_summary_v2 <span class="ot">&lt;-</span> dta[, .(</span>
+<span id="cb3-192"><a href="#cb3-192" aria-hidden="true" tabindex="-1"></a>  <span class="at">Posts =</span> .N,</span>
+<span id="cb3-193"><a href="#cb3-193" aria-hidden="true" tabindex="-1"></a>  <span class="at">Sources =</span> <span class="fu">uniqueN</span>(FROM),</span>
+<span id="cb3-194"><a href="#cb3-194" aria-hidden="true" tabindex="-1"></a>  <span class="at">Total_Interactions =</span> <span class="fu">sum</span>(INTERACTIONS, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb3-195"><a href="#cb3-195" aria-hidden="true" tabindex="-1"></a>), by <span class="ot">=</span> ACTOR_TYPE][<span class="fu">order</span>(<span class="sc">-</span>Posts)]</span>
+<span id="cb3-196"><a href="#cb3-196" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-197"><a href="#cb3-197" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate percentages</span></span>
+<span id="cb3-198"><a href="#cb3-198" aria-hidden="true" tabindex="-1"></a>actor_summary_v2[, <span class="st">`</span><span class="at">:=</span><span class="st">`</span>(</span>
+<span id="cb3-199"><a href="#cb3-199" aria-hidden="true" tabindex="-1"></a>  <span class="at">Posts_Pct =</span> Posts <span class="sc">/</span> <span class="fu">sum</span>(Posts) <span class="sc">*</span> <span class="dv">100</span>,</span>
+<span id="cb3-200"><a href="#cb3-200" aria-hidden="true" tabindex="-1"></a>  <span class="at">Interactions_Pct =</span> Total_Interactions <span class="sc">/</span> <span class="fu">sum</span>(Total_Interactions) <span class="sc">*</span> <span class="dv">100</span></span>
+<span id="cb3-201"><a href="#cb3-201" aria-hidden="true" tabindex="-1"></a>)]</span>
+<span id="cb3-202"><a href="#cb3-202" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-203"><a href="#cb3-203" aria-hidden="true" tabindex="-1"></a>actor_summary_v2 <span class="sc">%&gt;%</span></span>
+<span id="cb3-204"><a href="#cb3-204" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb3-205"><a href="#cb3-205" aria-hidden="true" tabindex="-1"></a>    <span class="at">Posts =</span> <span class="fu">format</span>(Posts, <span class="at">big.mark =</span> <span class="st">","</span>),</span>
+<span id="cb3-206"><a href="#cb3-206" aria-hidden="true" tabindex="-1"></a>    <span class="at">Posts_Pct =</span> <span class="fu">sprintf</span>(<span class="st">"%.1f%%"</span>, Posts_Pct),</span>
+<span id="cb3-207"><a href="#cb3-207" aria-hidden="true" tabindex="-1"></a>    <span class="at">Sources =</span> <span class="fu">format</span>(Sources, <span class="at">big.mark =</span> <span class="st">","</span>),</span>
+<span id="cb3-208"><a href="#cb3-208" aria-hidden="true" tabindex="-1"></a>    <span class="at">Total_Interactions =</span> <span class="fu">format</span>(Total_Interactions, <span class="at">big.mark =</span> <span class="st">","</span>),</span>
+<span id="cb3-209"><a href="#cb3-209" aria-hidden="true" tabindex="-1"></a>    <span class="at">Interactions_Pct =</span> <span class="fu">sprintf</span>(<span class="st">"%.1f%%"</span>, Interactions_Pct)</span>
+<span id="cb3-210"><a href="#cb3-210" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb3-211"><a href="#cb3-211" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(ACTOR_TYPE, Posts, Posts_Pct, Sources, Total_Interactions, Interactions_Pct) <span class="sc">%&gt;%</span></span>
+<span id="cb3-212"><a href="#cb3-212" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">"Actor Type"</span>, <span class="st">"Posts"</span>, <span class="st">"% of Posts"</span>, <span class="st">"Unique Sources"</span>, </span>
+<span id="cb3-213"><a href="#cb3-213" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"Total Interactions"</span>, <span class="st">"% of Interactions"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb3-214"><a href="#cb3-214" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>(<span class="at">bootstrap_options =</span> <span class="fu">c</span>(<span class="st">"striped"</span>, <span class="st">"hover"</span>), <span class="at">full_width =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-striped table-hover caption-top table-sm small" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">Actor Type</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Posts</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">% of Posts</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Unique Sources</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Total Interactions</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">% of Interactions</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Other</td>
+<td style="text-align: left;">274,510</td>
+<td style="text-align: left;">73.6%</td>
+<td style="text-align: left;">9,119</td>
+<td style="text-align: left;">32,540,254</td>
+<td style="text-align: left;">79.8%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Institutional Official</td>
+<td style="text-align: left;">47,100</td>
+<td style="text-align: left;">12.6%</td>
+<td style="text-align: left;">128</td>
+<td style="text-align: left;">3,053,005</td>
+<td style="text-align: left;">7.5%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Lay Influencers</td>
+<td style="text-align: left;">18,988</td>
+<td style="text-align: left;">5.1%</td>
+<td style="text-align: left;">219</td>
+<td style="text-align: left;">2,839,238</td>
+<td style="text-align: left;">7.0%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Independent Media</td>
+<td style="text-align: left;">15,274</td>
+<td style="text-align: left;">4.1%</td>
+<td style="text-align: left;">12</td>
+<td style="text-align: left;">1,496,473</td>
+<td style="text-align: left;">3.7%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Diocesan</td>
+<td style="text-align: left;">9,946</td>
+<td style="text-align: left;">2.7%</td>
+<td style="text-align: left;">62</td>
+<td style="text-align: left;">433,383</td>
+<td style="text-align: left;">1.1%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Religious Orders</td>
+<td style="text-align: left;">5,857</td>
+<td style="text-align: left;">1.6%</td>
+<td style="text-align: left;">306</td>
+<td style="text-align: left;">370,832</td>
+<td style="text-align: left;">0.9%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Academic</td>
+<td style="text-align: left;">478</td>
+<td style="text-align: left;">0.1%</td>
+<td style="text-align: left;">11</td>
+<td style="text-align: left;">9,362</td>
+<td style="text-align: left;">0.0%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Individual Priests</td>
+<td style="text-align: left;">471</td>
+<td style="text-align: left;">0.1%</td>
+<td style="text-align: left;">22</td>
+<td style="text-align: left;">18,102</td>
+<td style="text-align: left;">0.0%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Charismatic Communities</td>
+<td style="text-align: left;">303</td>
+<td style="text-align: left;">0.1%</td>
+<td style="text-align: left;">9</td>
+<td style="text-align: left;">38,087</td>
+<td style="text-align: left;">0.1%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Youth Organizations</td>
+<td style="text-align: left;">17</td>
+<td style="text-align: left;">0.0%</td>
+<td style="text-align: left;">9</td>
+<td style="text-align: left;">213</td>
+<td style="text-align: left;">0.0%</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The “Other” category contains sources not yet classified into specific actor types. This includes secular media covering Catholic topics and smaller unidentified sources. Future iterations should refine this classification.</p>
+</div>
+</div>
+</section>
+<section id="analysis-1.1-platform-distribution" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> Analysis 1.1: Platform Distribution</h1>
+<p><strong>Core question:</strong> Where does Croatian Catholic digital content live?</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate platform statistics</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>platform_stats <span class="ot">&lt;-</span> dta[, .(</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">Posts =</span> .N,</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">Total_Interactions =</span> <span class="fu">sum</span>(INTERACTIONS, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">Total_Reach =</span> <span class="fu">sum</span>(REACH, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">Unique_Sources =</span> <span class="fu">uniqueN</span>(FROM),</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">Mean_Interactions =</span> <span class="fu">mean</span>(INTERACTIONS, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">Median_Interactions =</span> <span class="fu">median</span>(INTERACTIONS, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>), by <span class="ot">=</span> SOURCE_TYPE][<span class="fu">order</span>(<span class="sc">-</span>Posts)]</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate shares</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>platform_stats[, <span class="st">`</span><span class="at">:=</span><span class="st">`</span>(</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">Volume_Share =</span> Posts <span class="sc">/</span> <span class="fu">sum</span>(Posts) <span class="sc">*</span> <span class="dv">100</span>,</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">Engagement_Share =</span> Total_Interactions <span class="sc">/</span> <span class="fu">sum</span>(Total_Interactions) <span class="sc">*</span> <span class="dv">100</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<section id="volume-vs-engagement-by-platform" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="volume-vs-engagement-by-platform"><span class="header-section-number">3.1</span> Volume vs Engagement by Platform</h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Prepare data for visualization</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>platform_long <span class="ot">&lt;-</span> platform_stats <span class="sc">%&gt;%</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(SOURCE_TYPE, Volume_Share, Engagement_Share) <span class="sc">%&gt;%</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">c</span>(Volume_Share, Engagement_Share),</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_to =</span> <span class="st">"Metric"</span>, <span class="at">values_to =</span> <span class="st">"Share"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Metric =</span> <span class="fu">ifelse</span>(Metric <span class="sc">==</span> <span class="st">"Volume_Share"</span>, <span class="st">"Volume (Posts)"</span>, <span class="st">"Engagement (Interactions)"</span>))</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Create grouped bar chart</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(platform_long, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">reorder</span>(SOURCE_TYPE, Share), <span class="at">y =</span> Share, <span class="at">fill =</span> Metric)) <span class="sc">+</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">position =</span> <span class="st">"dodge"</span>, <span class="at">width =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> <span class="fu">sprintf</span>(<span class="st">"%.1f%%"</span>, Share)), </span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>            <span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.7</span>), </span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>            <span class="at">hjust =</span> <span class="sc">-</span><span class="fl">0.1</span>, <span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_flip</span>() <span class="sc">+</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"Volume (Posts)"</span> <span class="ot">=</span> <span class="st">"#2c5f7c"</span>, <span class="st">"Engagement (Interactions)"</span> <span class="ot">=</span> <span class="st">"#e07b39"</span>)) <span class="sc">+</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fu">max</span>(platform_long<span class="sc">$</span>Share) <span class="sc">*</span> <span class="fl">1.15</span>), </span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>                     <span class="at">labels =</span> <span class="cf">function</span>(x) <span class="fu">paste0</span>(x, <span class="st">"%"</span>)) <span class="sc">+</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Platform Distribution: Volume vs Engagement"</span>,</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"Share of total posts and interactions by platform"</span>,</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="cn">NULL</span>,</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Share (%)"</span>,</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">fill =</span> <span class="cn">NULL</span></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"top"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="map-1_files/figure-html/platform-chart-1.png" class="img-fluid figure-img" width="960"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="platform-statistics-table" class="level2" data-number="3.2">
+<h2 data-number="3.2" class="anchored" data-anchor-id="platform-statistics-table"><span class="header-section-number">3.2</span> Platform Statistics Table</h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>platform_stats <span class="sc">%&gt;%</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">Posts =</span> <span class="fu">format</span>(Posts, <span class="at">big.mark =</span> <span class="st">","</span>),</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">Total_Interactions =</span> <span class="fu">format</span>(Total_Interactions, <span class="at">big.mark =</span> <span class="st">","</span>),</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">Unique_Sources =</span> <span class="fu">format</span>(Unique_Sources, <span class="at">big.mark =</span> <span class="st">","</span>),</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">Mean_Interactions =</span> <span class="fu">round</span>(Mean_Interactions, <span class="dv">1</span>),</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">Volume_Share =</span> <span class="fu">sprintf</span>(<span class="st">"%.1f%%"</span>, Volume_Share),</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">Engagement_Share =</span> <span class="fu">sprintf</span>(<span class="st">"%.1f%%"</span>, Engagement_Share)</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(SOURCE_TYPE, Posts, Volume_Share, Total_Interactions, Engagement_Share, </span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>         Unique_Sources, Mean_Interactions) <span class="sc">%&gt;%</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">"Platform"</span>, <span class="st">"Posts"</span>, <span class="st">"Volume %"</span>, <span class="st">"Interactions"</span>, </span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"Engagement %"</span>, <span class="st">"Sources"</span>, <span class="st">"Mean Interactions"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>(<span class="at">bootstrap_options =</span> <span class="fu">c</span>(<span class="st">"striped"</span>, <span class="st">"hover"</span>), <span class="at">full_width =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-striped table-hover caption-top table-sm small" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">Platform</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Posts</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Volume %</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Interactions</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Engagement %</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Sources</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Mean Interactions</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">web</td>
+<td style="text-align: left;">295,860</td>
+<td style="text-align: left;">79.3%</td>
+<td style="text-align: left;">32,256,123</td>
+<td style="text-align: left;">79.1%</td>
+<td style="text-align: left;">2,738</td>
+<td style="text-align: right;">109.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">youtube</td>
+<td style="text-align: left;">38,267</td>
+<td style="text-align: left;">10.3%</td>
+<td style="text-align: left;">4,946,542</td>
+<td style="text-align: left;">12.1%</td>
+<td style="text-align: left;">2,838</td>
+<td style="text-align: right;">133.1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">facebook</td>
+<td style="text-align: left;">24,269</td>
+<td style="text-align: left;">6.5%</td>
+<td style="text-align: left;">3,268,408</td>
+<td style="text-align: left;">8.0%</td>
+<td style="text-align: left;">1,510</td>
+<td style="text-align: right;">134.7</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">forum</td>
+<td style="text-align: left;">4,361</td>
+<td style="text-align: left;">1.2%</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">0.0%</td>
+<td style="text-align: left;">7</td>
+<td style="text-align: right;">NaN</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">reddit</td>
+<td style="text-align: left;">3,857</td>
+<td style="text-align: left;">1.0%</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">0.0%</td>
+<td style="text-align: left;">1,319</td>
+<td style="text-align: right;">NaN</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">twitter</td>
+<td style="text-align: left;">3,211</td>
+<td style="text-align: left;">0.9%</td>
+<td style="text-align: left;">28,532</td>
+<td style="text-align: left;">0.1%</td>
+<td style="text-align: left;">1,536</td>
+<td style="text-align: right;">8.9</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">comment</td>
+<td style="text-align: left;">1,989</td>
+<td style="text-align: left;">0.5%</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">0.0%</td>
+<td style="text-align: left;">23</td>
+<td style="text-align: right;">NaN</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">instagram</td>
+<td style="text-align: left;">1,130</td>
+<td style="text-align: left;">0.3%</td>
+<td style="text-align: left;">299,344</td>
+<td style="text-align: left;">0.7%</td>
+<td style="text-align: left;">54</td>
+<td style="text-align: right;">264.9</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="engagement-efficiency-by-platform" class="level2" data-number="3.3">
+<h2 data-number="3.3" class="anchored" data-anchor-id="engagement-efficiency-by-platform"><span class="header-section-number">3.3</span> Engagement Efficiency by Platform</h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate engagement per post</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>platform_efficiency <span class="ot">&lt;-</span> platform_stats <span class="sc">%&gt;%</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">Engagement_per_Post =</span> Total_Interactions <span class="sc">/</span> Posts,</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">Efficiency_Index =</span> (Engagement_Share <span class="sc">/</span> Volume_Share)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(Efficiency_Index))</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(platform_efficiency, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">reorder</span>(SOURCE_TYPE, Efficiency_Index), </span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">y =</span> Efficiency_Index, <span class="at">fill =</span> SOURCE_TYPE)) <span class="sc">+</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">width =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">1</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">color =</span> <span class="st">"red"</span>, <span class="at">linewidth =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> <span class="fu">sprintf</span>(<span class="st">"%.2f"</span>, Efficiency_Index)), <span class="at">hjust =</span> <span class="sc">-</span><span class="fl">0.1</span>, <span class="at">size =</span> <span class="fl">3.5</span>) <span class="sc">+</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_flip</span>() <span class="sc">+</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> platform_colors) <span class="sc">+</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fu">max</span>(platform_efficiency<span class="sc">$</span>Efficiency_Index) <span class="sc">*</span> <span class="fl">1.15</span>)) <span class="sc">+</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Platform Engagement Efficiency"</span>,</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"Ratio of engagement share to volume share (&gt;1 means overperforming)"</span>,</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="cn">NULL</span>,</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Efficiency Index (Engagement Share / Volume Share)"</span>,</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption =</span> <span class="st">"Red dashed line = neutral efficiency (1.0)"</span></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="map-1_files/figure-html/engagement-efficiency-1.png" class="img-fluid figure-img" width="960"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Key Finding
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Platforms with efficiency index &gt; 1 generate disproportionately high engagement relative to their volume. This indicates higher audience resonance per post.</p>
+</div>
+</div>
+</section>
+</section>
+<section id="analysis-1.2-visibility-stratification" class="level1" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> Analysis 1.2: Visibility Stratification</h1>
+<p><strong>Core question:</strong> How is visibility distributed among actors? Do a few sources dominate?</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Aggregate by source</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>source_stats <span class="ot">&lt;-</span> dta[, .(</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">Posts =</span> .N,</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">Total_Interactions =</span> <span class="fu">sum</span>(INTERACTIONS, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">Total_Reach =</span> <span class="fu">sum</span>(REACH, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">Mean_Followers =</span> <span class="fu">mean</span>(FOLLOWERS_COUNT, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">Platforms =</span> <span class="fu">uniqueN</span>(SOURCE_TYPE),</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">Actor_Type =</span> <span class="fu">first</span>(ACTOR_TYPE)</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>), by <span class="ot">=</span> FROM][<span class="fu">order</span>(<span class="sc">-</span>Total_Interactions)]</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate cumulative shares for Lorenz curve</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>source_stats[, <span class="st">`</span><span class="at">:=</span><span class="st">`</span>(</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">Rank =</span> .I,</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">Cumulative_Sources =</span> .I <span class="sc">/</span> .N <span class="sc">*</span> <span class="dv">100</span>,</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">Cumulative_Interactions =</span> <span class="fu">cumsum</span>(Total_Interactions) <span class="sc">/</span> <span class="fu">sum</span>(Total_Interactions) <span class="sc">*</span> <span class="dv">100</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<section id="top-20-sources-by-engagement" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="top-20-sources-by-engagement"><span class="header-section-number">4.1</span> Top 20 Sources by Engagement</h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>source_stats[<span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>] <span class="sc">%&gt;%</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">Share =</span> <span class="fu">sprintf</span>(<span class="st">"%.2f%%"</span>, Total_Interactions <span class="sc">/</span> <span class="fu">sum</span>(source_stats<span class="sc">$</span>Total_Interactions) <span class="sc">*</span> <span class="dv">100</span>),</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">Posts =</span> <span class="fu">format</span>(Posts, <span class="at">big.mark =</span> <span class="st">","</span>),</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">Total_Interactions =</span> <span class="fu">format</span>(Total_Interactions, <span class="at">big.mark =</span> <span class="st">","</span>)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Rank, FROM, Actor_Type, Posts, Total_Interactions, Share, Platforms) <span class="sc">%&gt;%</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">"Rank"</span>, <span class="st">"Source"</span>, <span class="st">"Actor Type"</span>, <span class="st">"Posts"</span>, <span class="st">"Total Interactions"</span>, <span class="st">"Share %"</span>, <span class="st">"Platforms"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>(<span class="at">bootstrap_options =</span> <span class="fu">c</span>(<span class="st">"striped"</span>, <span class="st">"hover"</span>), <span class="at">full_width =</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scroll_box</span>(<span class="at">height =</span> <span class="st">"500px"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div style="border: 1px solid #ddd; padding: 0px; overflow-y: scroll; height:500px; ">
+<table class="table table-striped table-hover caption-top table-sm small" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">Rank</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; position: sticky; top: 0; background-color: #FFFFFF;">Source</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; position: sticky; top: 0; background-color: #FFFFFF;">Actor Type</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; position: sticky; top: 0; background-color: #FFFFFF;">Posts</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; position: sticky; top: 0; background-color: #FFFFFF;">Total Interactions</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; position: sticky; top: 0; background-color: #FFFFFF;">Share %</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">Platforms</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">dnevno.hr</td>
+<td style="text-align: left;">Other</td>
+<td style="text-align: left;">3,822</td>
+<td style="text-align: left;">3,177,732</td>
+<td style="text-align: left;">7.79%</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">novizivot.net</td>
+<td style="text-align: left;">Other</td>
+<td style="text-align: left;">3,733</td>
+<td style="text-align: left;">2,968,151</td>
+<td style="text-align: left;">7.28%</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">hkm.hr</td>
+<td style="text-align: left;">Institutional Official</td>
+<td style="text-align: left;">43,809</td>
+<td style="text-align: left;">2,908,877</td>
+<td style="text-align: left;">7.13%</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: left;">index.hr</td>
+<td style="text-align: left;">Other</td>
+<td style="text-align: left;">4,772</td>
+<td style="text-align: left;">2,470,358</td>
+<td style="text-align: left;">6.05%</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: left;">jutarnji.hr</td>
+<td style="text-align: left;">Other</td>
+<td style="text-align: left;">5,143</td>
+<td style="text-align: left;">1,246,230</td>
+<td style="text-align: left;">3.05%</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">6</td>
+<td style="text-align: left;">vecernji.hr</td>
+<td style="text-align: left;">Other</td>
+<td style="text-align: left;">5,323</td>
+<td style="text-align: left;">1,218,739</td>
+<td style="text-align: left;">2.99%</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">7</td>
+<td style="text-align: left;">24sata.hr</td>
+<td style="text-align: left;">Other</td>
+<td style="text-align: left;">3,562</td>
+<td style="text-align: left;">1,203,731</td>
+<td style="text-align: left;">2.95%</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">8</td>
+<td style="text-align: left;">slobodnadalmacija.hr</td>
+<td style="text-align: left;">Other</td>
+<td style="text-align: left;">6,871</td>
+<td style="text-align: left;">1,088,602</td>
+<td style="text-align: left;">2.67%</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">9</td>
+<td style="text-align: left;">pulherissimus</td>
+<td style="text-align: left;">Lay Influencers</td>
+<td style="text-align: left;">4,231</td>
+<td style="text-align: left;">1,068,219</td>
+<td style="text-align: left;">2.62%</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">10</td>
+<td style="text-align: left;">telegram.hr</td>
+<td style="text-align: left;">Other</td>
+<td style="text-align: left;">1,626</td>
+<td style="text-align: left;">851,980</td>
+<td style="text-align: left;">2.09%</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">11</td>
+<td style="text-align: left;">dnevnik.hr</td>
+<td style="text-align: left;">Other</td>
+<td style="text-align: left;">2,305</td>
+<td style="text-align: left;">662,948</td>
+<td style="text-align: left;">1.62%</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">12</td>
+<td style="text-align: left;">Laudato</td>
+<td style="text-align: left;">Other</td>
+<td style="text-align: left;">1,329</td>
+<td style="text-align: left;">651,664</td>
+<td style="text-align: left;">1.60%</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">13</td>
+<td style="text-align: left;">laudato.hr</td>
+<td style="text-align: left;">Independent Media</td>
+<td style="text-align: left;">8,453</td>
+<td style="text-align: left;">592,374</td>
+<td style="text-align: left;">1.45%</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">14</td>
+<td style="text-align: left;">campaign-archive.com</td>
+<td style="text-align: left;">Other</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">499,027</td>
+<td style="text-align: left;">1.22%</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">15</td>
+<td style="text-align: left;">narod.hr</td>
+<td style="text-align: left;">Other</td>
+<td style="text-align: left;">3,717</td>
+<td style="text-align: left;">484,033</td>
+<td style="text-align: left;">1.19%</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">16</td>
+<td style="text-align: left;">Pod Smokvom</td>
+<td style="text-align: left;">Other</td>
+<td style="text-align: left;">1,173</td>
+<td style="text-align: left;">448,590</td>
+<td style="text-align: left;">1.10%</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">17</td>
+<td style="text-align: left;">Dijete Vjere</td>
+<td style="text-align: left;">Lay Influencers</td>
+<td style="text-align: left;">1,461</td>
+<td style="text-align: left;">388,928</td>
+<td style="text-align: left;">0.95%</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">18</td>
+<td style="text-align: left;">bitno.net</td>
+<td style="text-align: left;">Independent Media</td>
+<td style="text-align: left;">1,462</td>
+<td style="text-align: left;">384,388</td>
+<td style="text-align: left;">0.94%</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">19</td>
+<td style="text-align: left;">dalmatinskiportal.hr</td>
+<td style="text-align: left;">Other</td>
+<td style="text-align: left;">2,006</td>
+<td style="text-align: left;">378,123</td>
+<td style="text-align: left;">0.93%</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">20</td>
+<td style="text-align: left;">Hrana za dušu</td>
+<td style="text-align: left;">Lay Influencers</td>
+<td style="text-align: left;">2,523</td>
+<td style="text-align: left;">355,266</td>
+<td style="text-align: left;">0.87%</td>
+<td style="text-align: right;">1</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</section>
+<section id="concentration-ratios" class="level2" data-number="4.2">
+<h2 data-number="4.2" class="anchored" data-anchor-id="concentration-ratios"><span class="header-section-number">4.2</span> Concentration Ratios</h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>total_interactions <span class="ot">&lt;-</span> <span class="fu">sum</span>(source_stats<span class="sc">$</span>Total_Interactions)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>n_sources_total <span class="ot">&lt;-</span> <span class="fu">nrow</span>(source_stats)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate concentration ratios</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>cr1 <span class="ot">&lt;-</span> <span class="fu">sum</span>(source_stats[<span class="dv">1</span><span class="sc">:</span><span class="dv">1</span>]<span class="sc">$</span>Total_Interactions) <span class="sc">/</span> total_interactions <span class="sc">*</span> <span class="dv">100</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>cr5 <span class="ot">&lt;-</span> <span class="fu">sum</span>(source_stats[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>]<span class="sc">$</span>Total_Interactions) <span class="sc">/</span> total_interactions <span class="sc">*</span> <span class="dv">100</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>cr10 <span class="ot">&lt;-</span> <span class="fu">sum</span>(source_stats[<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>]<span class="sc">$</span>Total_Interactions) <span class="sc">/</span> total_interactions <span class="sc">*</span> <span class="dv">100</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>cr20 <span class="ot">&lt;-</span> <span class="fu">sum</span>(source_stats[<span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>]<span class="sc">$</span>Total_Interactions) <span class="sc">/</span> total_interactions <span class="sc">*</span> <span class="dv">100</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>cr50 <span class="ot">&lt;-</span> <span class="fu">sum</span>(source_stats[<span class="dv">1</span><span class="sc">:</span><span class="dv">50</span>]<span class="sc">$</span>Total_Interactions) <span class="sc">/</span> total_interactions <span class="sc">*</span> <span class="dv">100</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Gini coefficient</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>gini_coef <span class="ot">&lt;-</span> <span class="fu">ineq</span>(source_stats<span class="sc">$</span>Total_Interactions, <span class="at">type =</span> <span class="st">"Gini"</span>)</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="fu">tibble</span>(</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">Metric =</span> <span class="fu">c</span>(<span class="st">"CR1 (Top 1 source)"</span>, <span class="st">"CR5 (Top 5 sources)"</span>, <span class="st">"CR10 (Top 10 sources)"</span>, </span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>             <span class="st">"CR20 (Top 20 sources)"</span>, <span class="st">"CR50 (Top 50 sources)"</span>, <span class="st">"Gini Coefficient"</span>,</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>             <span class="st">"Total Sources"</span>),</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">Value =</span> <span class="fu">c</span>(</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sprintf</span>(<span class="st">"%.1f%%"</span>, cr1),</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sprintf</span>(<span class="st">"%.1f%%"</span>, cr5),</span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sprintf</span>(<span class="st">"%.1f%%"</span>, cr10),</span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sprintf</span>(<span class="st">"%.1f%%"</span>, cr20),</span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sprintf</span>(<span class="st">"%.1f%%"</span>, cr50),</span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sprintf</span>(<span class="st">"%.3f"</span>, gini_coef),</span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>    <span class="fu">format</span>(n_sources_total, <span class="at">big.mark =</span> <span class="st">","</span>)</span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span></span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>(<span class="at">bootstrap_options =</span> <span class="fu">c</span>(<span class="st">"striped"</span>, <span class="st">"hover"</span>), <span class="at">full_width =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-striped table-hover caption-top table-sm small" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">Metric</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">CR1 (Top 1 source)</td>
+<td style="text-align: left;">7.8%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">CR5 (Top 5 sources)</td>
+<td style="text-align: left;">31.3%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">CR10 (Top 10 sources)</td>
+<td style="text-align: left;">44.6%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">CR20 (Top 20 sources)</td>
+<td style="text-align: left;">56.5%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">CR50 (Top 50 sources)</td>
+<td style="text-align: left;">70.9%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Gini Coefficient</td>
+<td style="text-align: left;">0.980</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Total Sources</td>
+<td style="text-align: left;">9,896</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="lorenz-curve-of-engagement-inequality" class="level2" data-number="4.3">
+<h2 data-number="4.3" class="anchored" data-anchor-id="lorenz-curve-of-engagement-inequality"><span class="header-section-number">4.3</span> Lorenz Curve of Engagement Inequality</h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(source_stats, <span class="fu">aes</span>(<span class="at">x =</span> Cumulative_Sources, <span class="at">y =</span> Cumulative_Interactions)) <span class="sc">+</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">color =</span> <span class="st">"#2c5f7c"</span>, <span class="at">linewidth =</span> <span class="fl">1.2</span>) <span class="sc">+</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_abline</span>(<span class="at">intercept =</span> <span class="dv">0</span>, <span class="at">slope =</span> <span class="dv">1</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">color =</span> <span class="st">"red"</span>) <span class="sc">+</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_ribbon</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> Cumulative_Sources, <span class="at">ymax =</span> Cumulative_Interactions), </span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>              <span class="at">fill =</span> <span class="st">"#2c5f7c"</span>, <span class="at">alpha =</span> <span class="fl">0.3</span>) <span class="sc">+</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">annotate</span>(<span class="st">"text"</span>, <span class="at">x =</span> <span class="dv">70</span>, <span class="at">y =</span> <span class="dv">30</span>, </span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>           <span class="at">label =</span> <span class="fu">paste0</span>(<span class="st">"Gini = "</span>, <span class="fu">round</span>(gini_coef, <span class="dv">3</span>)), </span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>           <span class="at">size =</span> <span class="dv">5</span>, <span class="at">fontface =</span> <span class="st">"bold"</span>) <span class="sc">+</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">annotate</span>(<span class="st">"text"</span>, <span class="at">x =</span> <span class="dv">20</span>, <span class="at">y =</span> <span class="dv">80</span>,</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>           <span class="at">label =</span> <span class="fu">paste0</span>(<span class="st">"Top 10% of sources</span><span class="sc">\n</span><span class="st">capture "</span>, </span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">round</span>(source_stats[Rank <span class="sc">==</span> <span class="fu">round</span>(n_sources_total <span class="sc">*</span> <span class="fl">0.1</span>)]<span class="sc">$</span>Cumulative_Interactions, <span class="dv">1</span>),</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>                          <span class="st">"% of engagement"</span>),</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>           <span class="at">size =</span> <span class="dv">4</span>) <span class="sc">+</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">labels =</span> <span class="cf">function</span>(x) <span class="fu">paste0</span>(x, <span class="st">"%"</span>)) <span class="sc">+</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> <span class="cf">function</span>(x) <span class="fu">paste0</span>(x, <span class="st">"%"</span>)) <span class="sc">+</span></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Lorenz Curve: Engagement Inequality Among Sources"</span>,</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"Deviation from diagonal indicates concentration of visibility"</span>,</span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Cumulative % of Sources (ranked by engagement)"</span>,</span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Cumulative % of Total Engagement"</span>,</span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption =</span> <span class="st">"Red dashed line = perfect equality"</span></span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="map-1_files/figure-html/lorenz-curve-1.png" class="img-fluid figure-img" width="960"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="log-log-rank-plot-power-law-test" class="level2" data-number="4.4">
+<h2 data-number="4.4" class="anchored" data-anchor-id="log-log-rank-plot-power-law-test"><span class="header-section-number">4.4</span> Log-Log Rank Plot (Power Law Test)</h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter to sources with positive interactions</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>source_positive <span class="ot">&lt;-</span> source_stats[Total_Interactions <span class="sc">&gt;</span> <span class="dv">0</span>]</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit linear model on log-log scale</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>log_model <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="fu">log10</span>(Total_Interactions) <span class="sc">~</span> <span class="fu">log10</span>(Rank), <span class="at">data =</span> source_positive)</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>slope <span class="ot">&lt;-</span> <span class="fu">coef</span>(log_model)[<span class="dv">2</span>]</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>r_squared <span class="ot">&lt;-</span> <span class="fu">summary</span>(log_model)<span class="sc">$</span>r.squared</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(source_positive, <span class="fu">aes</span>(<span class="at">x =</span> Rank, <span class="at">y =</span> Total_Interactions)) <span class="sc">+</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.5</span>, <span class="at">color =</span> <span class="st">"#2c5f7c"</span>) <span class="sc">+</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">color =</span> <span class="st">"red"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_log10</span>(<span class="at">labels =</span> comma) <span class="sc">+</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_log10</span>(<span class="at">labels =</span> comma) <span class="sc">+</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">annotate</span>(<span class="st">"text"</span>, <span class="at">x =</span> <span class="dv">10</span>, <span class="at">y =</span> <span class="fu">min</span>(source_positive<span class="sc">$</span>Total_Interactions) <span class="sc">*</span> <span class="dv">10</span>,</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>           <span class="at">label =</span> <span class="fu">paste0</span>(<span class="st">"Slope = "</span>, <span class="fu">round</span>(slope, <span class="dv">2</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">R² = "</span>, <span class="fu">round</span>(r_squared, <span class="dv">3</span>)),</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>           <span class="at">hjust =</span> <span class="dv">0</span>, <span class="at">size =</span> <span class="dv">4</span>, <span class="at">fontface =</span> <span class="st">"bold"</span>) <span class="sc">+</span></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Rank-Engagement Distribution (Log-Log Scale)"</span>,</span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"Linear relationship suggests power law distribution"</span>,</span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Rank (log scale)"</span>,</span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Total Interactions (log scale)"</span>,</span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption =</span> <span class="st">"Red line = linear fit on log-log scale"</span></span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="map-1_files/figure-html/power-law-1.png" class="img-fluid figure-img" width="960"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Key Finding on Stratification
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>A Gini coefficient above 0.8 and CR10 above 50% indicates extreme concentration. The Croatian Catholic digital media space is highly stratified, with a small elite of sources capturing most visibility.</p>
+</div>
+</div>
+</section>
+</section>
+<section id="analysis-1.3-the-institutional-gap" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> Analysis 1.3: The Institutional Gap</h1>
+<p><strong>Core question:</strong> Do institutional actors underperform compared to individual voices and grassroots communities?</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate engagement rate per source</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>source_engagement <span class="ot">&lt;-</span> dta[<span class="sc">!</span><span class="fu">is.na</span>(FOLLOWERS_COUNT) <span class="sc">&amp;</span> FOLLOWERS_COUNT <span class="sc">&gt;</span> <span class="dv">0</span>, .(</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">Posts =</span> .N,</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">Total_Interactions =</span> <span class="fu">sum</span>(INTERACTIONS, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">Mean_Followers =</span> <span class="fu">mean</span>(FOLLOWERS_COUNT, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">Engagement_Rate =</span> <span class="fu">sum</span>(INTERACTIONS, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">/</span> <span class="fu">mean</span>(FOLLOWERS_COUNT, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">*</span> <span class="dv">100</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>), by <span class="ot">=</span> .(FROM, ACTOR_TYPE)]</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Aggregate by actor type</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>actor_engagement <span class="ot">&lt;-</span> source_engagement[, .(</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">Sources =</span> .N,</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">Total_Posts =</span> <span class="fu">sum</span>(Posts),</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">Total_Interactions =</span> <span class="fu">sum</span>(Total_Interactions),</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">Mean_Engagement_Rate =</span> <span class="fu">mean</span>(Engagement_Rate, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">Median_Engagement_Rate =</span> <span class="fu">median</span>(Engagement_Rate, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">SD_Engagement_Rate =</span> <span class="fu">sd</span>(Engagement_Rate, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>), by <span class="ot">=</span> ACTOR_TYPE][<span class="fu">order</span>(<span class="sc">-</span>Mean_Engagement_Rate)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<section id="engagement-rate-by-actor-type" class="level2" data-number="5.1">
+<h2 data-number="5.1" class="anchored" data-anchor-id="engagement-rate-by-actor-type"><span class="header-section-number">5.1</span> Engagement Rate by Actor Type</h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter out extreme outliers for visualization</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>engagement_plot_data <span class="ot">&lt;-</span> source_engagement[Engagement_Rate <span class="sc">&lt;</span> <span class="fu">quantile</span>(Engagement_Rate, <span class="fl">0.99</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)]</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(engagement_plot_data, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">reorder</span>(ACTOR_TYPE, Engagement_Rate, <span class="at">FUN =</span> median), </span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>                                  <span class="at">y =</span> Engagement_Rate, <span class="at">fill =</span> ACTOR_TYPE)) <span class="sc">+</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>(<span class="at">outlier.alpha =</span> <span class="fl">0.3</span>) <span class="sc">+</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_flip</span>() <span class="sc">+</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> actor_colors) <span class="sc">+</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> <span class="cf">function</span>(x) <span class="fu">paste0</span>(x, <span class="st">"%"</span>)) <span class="sc">+</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Engagement Rate Distribution by Actor Type"</span>,</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"Engagement Rate = (Total Interactions / Followers) × 100"</span>,</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="cn">NULL</span>,</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Engagement Rate (%)"</span>,</span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption =</span> <span class="st">"Outliers above 99th percentile excluded for visualization"</span></span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="map-1_files/figure-html/engagement-boxplot-1.png" class="img-fluid figure-img" width="960"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="actor-type-performance-summary" class="level2" data-number="5.2">
+<h2 data-number="5.2" class="anchored" data-anchor-id="actor-type-performance-summary"><span class="header-section-number">5.2</span> Actor Type Performance Summary</h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>actor_engagement <span class="sc">%&gt;%</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">Sources =</span> <span class="fu">format</span>(Sources, <span class="at">big.mark =</span> <span class="st">","</span>),</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">Total_Posts =</span> <span class="fu">format</span>(Total_Posts, <span class="at">big.mark =</span> <span class="st">","</span>),</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">Total_Interactions =</span> <span class="fu">format</span>(Total_Interactions, <span class="at">big.mark =</span> <span class="st">","</span>),</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">Mean_Engagement_Rate =</span> <span class="fu">sprintf</span>(<span class="st">"%.2f%%"</span>, Mean_Engagement_Rate),</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">Median_Engagement_Rate =</span> <span class="fu">sprintf</span>(<span class="st">"%.2f%%"</span>, Median_Engagement_Rate)</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(ACTOR_TYPE, Sources, Total_Posts, Total_Interactions, </span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>         Mean_Engagement_Rate, Median_Engagement_Rate) <span class="sc">%&gt;%</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">"Actor Type"</span>, <span class="st">"Sources"</span>, <span class="st">"Posts"</span>, <span class="st">"Interactions"</span>, </span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"Mean Eng. Rate"</span>, <span class="st">"Median Eng. Rate"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>(<span class="at">bootstrap_options =</span> <span class="fu">c</span>(<span class="st">"striped"</span>, <span class="st">"hover"</span>), <span class="at">full_width =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-striped table-hover caption-top table-sm small" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">Actor Type</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Sources</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Posts</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Interactions</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Mean Eng. Rate</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Median Eng. Rate</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Diocesan</td>
+<td style="text-align: left;">9</td>
+<td style="text-align: left;">1,653</td>
+<td style="text-align: left;">193,610</td>
+<td style="text-align: left;">199.37%</td>
+<td style="text-align: left;">80.40%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Independent Media</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">1,649</td>
+<td style="text-align: left;">366,060</td>
+<td style="text-align: left;">96.17%</td>
+<td style="text-align: left;">133.62%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Lay Influencers</td>
+<td style="text-align: left;">38</td>
+<td style="text-align: left;">6,977</td>
+<td style="text-align: left;">859,792</td>
+<td style="text-align: left;">62.48%</td>
+<td style="text-align: left;">2.49%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Academic</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">112</td>
+<td style="text-align: left;">5,201</td>
+<td style="text-align: left;">44.54%</td>
+<td style="text-align: left;">44.54%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Individual Priests</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">8</td>
+<td style="text-align: left;">1,612</td>
+<td style="text-align: left;">16.80%</td>
+<td style="text-align: left;">16.80%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Other</td>
+<td style="text-align: left;">2,051</td>
+<td style="text-align: left;">16,201</td>
+<td style="text-align: left;">2,604,539</td>
+<td style="text-align: left;">4.76%</td>
+<td style="text-align: left;">0.48%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Institutional Official</td>
+<td style="text-align: left;">42</td>
+<td style="text-align: left;">340</td>
+<td style="text-align: left;">14,686</td>
+<td style="text-align: left;">4.42%</td>
+<td style="text-align: left;">0.28%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Religious Orders</td>
+<td style="text-align: left;">65</td>
+<td style="text-align: left;">209</td>
+<td style="text-align: left;">27,422</td>
+<td style="text-align: left;">3.53%</td>
+<td style="text-align: left;">0.81%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Youth Organizations</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">125</td>
+<td style="text-align: left;">2.96%</td>
+<td style="text-align: left;">2.96%</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="statistical-comparison-institutional-vs-non-institutional" class="level2" data-number="5.3">
+<h2 data-number="5.3" class="anchored" data-anchor-id="statistical-comparison-institutional-vs-non-institutional"><span class="header-section-number">5.3</span> Statistical Comparison: Institutional vs Non-Institutional</h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Group into institutional vs non-institutional</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>source_engagement[, Institution_Group <span class="sc">:</span><span class="er">=</span> <span class="fu">ifelse</span>(</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  ACTOR_TYPE <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"Institutional Official"</span>, <span class="st">"Diocesan"</span>, <span class="st">"Academic"</span>),</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Institutional"</span>,</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Non-Institutional"</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>)]</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Wilcoxon test (non-parametric)</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>wilcox_result <span class="ot">&lt;-</span> <span class="fu">wilcox.test</span>(</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>  Engagement_Rate <span class="sc">~</span> Institution_Group, </span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> source_engagement,</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">alternative =</span> <span class="st">"two.sided"</span></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Summary statistics by group</span></span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>group_stats <span class="ot">&lt;-</span> source_engagement[, .(</span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">N =</span> .N,</span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">Mean =</span> <span class="fu">mean</span>(Engagement_Rate, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">Median =</span> <span class="fu">median</span>(Engagement_Rate, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">SD =</span> <span class="fu">sd</span>(Engagement_Rate, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>), by <span class="ot">=</span> Institution_Group]</span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>group_stats <span class="sc">%&gt;%</span></span>
+<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">Mean =</span> <span class="fu">sprintf</span>(<span class="st">"%.2f%%"</span>, Mean),</span>
+<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">Median =</span> <span class="fu">sprintf</span>(<span class="st">"%.2f%%"</span>, Median),</span>
+<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">SD =</span> <span class="fu">sprintf</span>(<span class="st">"%.2f"</span>, SD)</span>
+<span id="cb16-28"><a href="#cb16-28" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb16-29"><a href="#cb16-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">"Group"</span>, <span class="st">"N Sources"</span>, <span class="st">"Mean Eng. Rate"</span>, <span class="st">"Median Eng. Rate"</span>, <span class="st">"Std. Dev."</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb16-30"><a href="#cb16-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>(<span class="at">bootstrap_options =</span> <span class="fu">c</span>(<span class="st">"striped"</span>, <span class="st">"hover"</span>), <span class="at">full_width =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-striped table-hover caption-top table-sm small" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">Group</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">N Sources</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Mean Eng. Rate</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Median Eng. Rate</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Std. Dev.</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Institutional</td>
+<td style="text-align: right;">53</td>
+<td style="text-align: left;">39.04%</td>
+<td style="text-align: left;">0.59%</td>
+<td style="text-align: left;">132.76</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Non-Institutional</td>
+<td style="text-align: right;">2160</td>
+<td style="text-align: left;">5.87%</td>
+<td style="text-align: left;">0.50%</td>
+<td style="text-align: left;">28.27</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Wilcoxon Rank Sum Test Results:</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Wilcoxon Rank Sum Test Results:</code></pre>
+</div>
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"W ="</span>, wilcox_result<span class="sc">$</span>statistic, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>W = 66206.5 </code></pre>
+</div>
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"p-value ="</span>, <span class="fu">format.pval</span>(wilcox_result<span class="sc">$</span>p.value, <span class="at">digits =</span> <span class="dv">4</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>p-value = 0.0507 </code></pre>
+</div>
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (wilcox_result<span class="sc">$</span>p.value <span class="sc">&lt;</span> <span class="fl">0.05</span>) {</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">"Result: Significant difference between institutional and non-institutional actors</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> {</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">"Result: No significant difference detected</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Result: No significant difference detected</code></pre>
+</div>
+</div>
+</section>
+<section id="engagement-rate-comparison-visualization" class="level2" data-number="5.4">
+<h2 data-number="5.4" class="anchored" data-anchor-id="engagement-rate-comparison-visualization"><span class="header-section-number">5.4</span> Engagement Rate Comparison Visualization</h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(source_engagement[Engagement_Rate <span class="sc">&lt;</span> <span class="fu">quantile</span>(Engagement_Rate, <span class="fl">0.95</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)], </span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> Institution_Group, <span class="at">y =</span> Engagement_Rate, <span class="at">fill =</span> Institution_Group)) <span class="sc">+</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_violin</span>(<span class="at">alpha =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>(<span class="at">width =</span> <span class="fl">0.2</span>, <span class="at">fill =</span> <span class="st">"white"</span>, <span class="at">outlier.shape =</span> <span class="cn">NA</span>) <span class="sc">+</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_summary</span>(<span class="at">fun =</span> mean, <span class="at">geom =</span> <span class="st">"point"</span>, <span class="at">shape =</span> <span class="dv">18</span>, <span class="at">size =</span> <span class="dv">4</span>, <span class="at">color =</span> <span class="st">"red"</span>) <span class="sc">+</span></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"Institutional"</span> <span class="ot">=</span> <span class="st">"#1a3c5a"</span>, <span class="st">"Non-Institutional"</span> <span class="ot">=</span> <span class="st">"#e07b39"</span>)) <span class="sc">+</span></span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> <span class="cf">function</span>(x) <span class="fu">paste0</span>(x, <span class="st">"%"</span>)) <span class="sc">+</span></span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Institutional vs Non-Institutional Engagement Rates"</span>,</span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"Red diamond = mean; white box = median and IQR"</span>,</span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="cn">NULL</span>,</span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Engagement Rate (%)"</span>,</span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption =</span> <span class="st">"Top 5% outliers excluded for visualization"</span></span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="map-1_files/figure-html/engagement-comparison-1.png" class="img-fluid figure-img" width="960"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="analysis-1.4-cross-platform-presence" class="level1" data-number="6">
+<h1 data-number="6"><span class="header-section-number">6</span> Analysis 1.4: Cross-Platform Presence</h1>
+<p><strong>Core question:</strong> Which actors maintain presence across multiple platforms?</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate cross-platform presence per source</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>cross_platform <span class="ot">&lt;-</span> dta[, .(</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">Platforms =</span> <span class="fu">uniqueN</span>(SOURCE_TYPE),</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">Platform_List =</span> <span class="fu">paste</span>(<span class="fu">unique</span>(SOURCE_TYPE), <span class="at">collapse =</span> <span class="st">", "</span>),</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">Total_Posts =</span> .N,</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">Total_Interactions =</span> <span class="fu">sum</span>(INTERACTIONS, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">Actor_Type =</span> <span class="fu">first</span>(ACTOR_TYPE)</span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>), by <span class="ot">=</span> FROM][<span class="fu">order</span>(<span class="sc">-</span>Platforms, <span class="sc">-</span>Total_Interactions)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<section id="platform-presence-distribution" class="level2" data-number="6.1">
+<h2 data-number="6.1" class="anchored" data-anchor-id="platform-presence-distribution"><span class="header-section-number">6.1</span> Platform Presence Distribution</h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>presence_summary <span class="ot">&lt;-</span> cross_platform[, .(<span class="at">Sources =</span> .N), by <span class="ot">=</span> Platforms][<span class="fu">order</span>(Platforms)]</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(presence_summary, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">factor</span>(Platforms), <span class="at">y =</span> Sources)) <span class="sc">+</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">fill =</span> <span class="st">"#2c5f7c"</span>, <span class="at">width =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> <span class="fu">format</span>(Sources, <span class="at">big.mark =</span> <span class="st">","</span>)), <span class="at">vjust =</span> <span class="sc">-</span><span class="fl">0.5</span>, <span class="at">size =</span> <span class="fl">3.5</span>) <span class="sc">+</span></span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> comma, <span class="at">expand =</span> <span class="fu">expansion</span>(<span class="at">mult =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.1</span>))) <span class="sc">+</span></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Distribution of Cross-Platform Presence"</span>,</span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"Number of sources by platform count"</span>,</span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Number of Platforms"</span>,</span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Number of Sources"</span></span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="map-1_files/figure-html/platform-presence-dist-1.png" class="img-fluid figure-img" width="960"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="top-multi-platform-actors" class="level2" data-number="6.2">
+<h2 data-number="6.2" class="anchored" data-anchor-id="top-multi-platform-actors"><span class="header-section-number">6.2</span> Top Multi-Platform Actors</h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>cross_platform[Platforms <span class="sc">&gt;=</span> <span class="dv">3</span>][<span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>] <span class="sc">%&gt;%</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">Total_Posts =</span> <span class="fu">format</span>(Total_Posts, <span class="at">big.mark =</span> <span class="st">","</span>),</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">Total_Interactions =</span> <span class="fu">format</span>(Total_Interactions, <span class="at">big.mark =</span> <span class="st">","</span>)</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(FROM, Actor_Type, Platforms, Platform_List, Total_Posts, Total_Interactions) <span class="sc">%&gt;%</span></span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">"Source"</span>, <span class="st">"Actor Type"</span>, <span class="st">"# Platforms"</span>, <span class="st">"Platforms"</span>, <span class="st">"Posts"</span>, <span class="st">"Interactions"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>(<span class="at">bootstrap_options =</span> <span class="fu">c</span>(<span class="st">"striped"</span>, <span class="st">"hover"</span>), <span class="at">full_width =</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scroll_box</span>(<span class="at">height =</span> <span class="st">"400px"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div style="border: 1px solid #ddd; padding: 0px; overflow-y: scroll; height:400px; ">
+<table class="table table-striped table-hover caption-top table-sm small" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th" style="text-align: left; position: sticky; top: 0; background-color: #FFFFFF;">Source</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; position: sticky; top: 0; background-color: #FFFFFF;">Actor Type</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;"># Platforms</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; position: sticky; top: 0; background-color: #FFFFFF;">Platforms</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; position: sticky; top: 0; background-color: #FFFFFF;">Posts</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; position: sticky; top: 0; background-color: #FFFFFF;">Interactions</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">index.hr</td>
+<td style="text-align: left;">Other</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">web, comment, forum</td>
+<td style="text-align: left;">4,772</td>
+<td style="text-align: left;">2,470,358</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">jutarnji.hr</td>
+<td style="text-align: left;">Other</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">web, comment, instagram</td>
+<td style="text-align: left;">5,143</td>
+<td style="text-align: left;">1,246,230</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Zagrebačka nadbiskupija</td>
+<td style="text-align: left;">Diocesan</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">facebook, youtube, twitter</td>
+<td style="text-align: left;">1,221</td>
+<td style="text-align: left;">117,072</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Sisačka biskupija</td>
+<td style="text-align: left;">Diocesan</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">facebook, twitter, youtube</td>
+<td style="text-align: left;">312</td>
+<td style="text-align: left;">52,412</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">24sata</td>
+<td style="text-align: left;">Other</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">facebook, youtube, twitter</td>
+<td style="text-align: left;">55</td>
+<td style="text-align: left;">23,549</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">bljesak.info</td>
+<td style="text-align: left;">Other</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">web, comment, instagram</td>
+<td style="text-align: left;">99</td>
+<td style="text-align: left;">6,559</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Novosti</td>
+<td style="text-align: left;">Other</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">twitter, facebook, youtube</td>
+<td style="text-align: left;">21</td>
+<td style="text-align: left;">1,349</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Željana Zovko</td>
+<td style="text-align: left;">Other</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">facebook, twitter, youtube</td>
+<td style="text-align: left;">19</td>
+<td style="text-align: left;">731</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Caritas Dubrovačke biskupije</td>
+<td style="text-align: left;">Other</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">twitter, youtube, facebook</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">22</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</section>
+<section id="cross-platform-presence-by-actor-type" class="level2" data-number="6.3">
+<h2 data-number="6.3" class="anchored" data-anchor-id="cross-platform-presence-by-actor-type"><span class="header-section-number">6.3</span> Cross-Platform Presence by Actor Type</h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>actor_platform_summary <span class="ot">&lt;-</span> cross_platform[, .(</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">Sources =</span> .N,</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">Mean_Platforms =</span> <span class="fu">mean</span>(Platforms),</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">Multi_Platform_Share =</span> <span class="fu">sum</span>(Platforms <span class="sc">&gt;=</span> <span class="dv">2</span>) <span class="sc">/</span> .N <span class="sc">*</span> <span class="dv">100</span>,</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">Total_Interactions =</span> <span class="fu">sum</span>(Total_Interactions)</span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>), by <span class="ot">=</span> Actor_Type][<span class="fu">order</span>(<span class="sc">-</span>Mean_Platforms)]</span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(actor_platform_summary, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">reorder</span>(Actor_Type, Mean_Platforms), </span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">y =</span> Mean_Platforms, <span class="at">fill =</span> Actor_Type)) <span class="sc">+</span></span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">width =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> <span class="fu">sprintf</span>(<span class="st">"%.2f"</span>, Mean_Platforms)), <span class="at">hjust =</span> <span class="sc">-</span><span class="fl">0.1</span>, <span class="at">size =</span> <span class="fl">3.5</span>) <span class="sc">+</span></span>
+<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_flip</span>() <span class="sc">+</span></span>
+<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> actor_colors) <span class="sc">+</span></span>
+<span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fu">max</span>(actor_platform_summary<span class="sc">$</span>Mean_Platforms) <span class="sc">*</span> <span class="fl">1.15</span>)) <span class="sc">+</span></span>
+<span id="cb29-15"><a href="#cb29-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb29-16"><a href="#cb29-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Average Platform Presence by Actor Type"</span>,</span>
+<span id="cb29-17"><a href="#cb29-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"Mean number of platforms per source"</span>,</span>
+<span id="cb29-18"><a href="#cb29-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="cn">NULL</span>,</span>
+<span id="cb29-19"><a href="#cb29-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Average Number of Platforms"</span></span>
+<span id="cb29-20"><a href="#cb29-20" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb29-21"><a href="#cb29-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="map-1_files/figure-html/cross-platform-actor-type-1.png" class="img-fluid figure-img" width="960"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="correlation-multi-platform-presence-and-engagement" class="level2" data-number="6.4">
+<h2 data-number="6.4" class="anchored" data-anchor-id="correlation-multi-platform-presence-and-engagement"><span class="header-section-number">6.4</span> Correlation: Multi-Platform Presence and Engagement</h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate correlation</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>cor_test <span class="ot">&lt;-</span> <span class="fu">cor.test</span>(cross_platform<span class="sc">$</span>Platforms, cross_platform<span class="sc">$</span>Total_Interactions, </span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>                     <span class="at">method =</span> <span class="st">"spearman"</span>)</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(cross_platform[Total_Interactions <span class="sc">&gt;</span> <span class="dv">0</span>], </span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">factor</span>(Platforms), <span class="at">y =</span> Total_Interactions)) <span class="sc">+</span></span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>(<span class="at">fill =</span> <span class="st">"#2c5f7c"</span>, <span class="at">alpha =</span> <span class="fl">0.7</span>, <span class="at">outlier.alpha =</span> <span class="fl">0.3</span>) <span class="sc">+</span></span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_log10</span>(<span class="at">labels =</span> comma) <span class="sc">+</span></span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Engagement by Number of Platforms"</span>,</span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="fu">paste0</span>(<span class="st">"Spearman correlation: ρ = "</span>, <span class="fu">round</span>(cor_test<span class="sc">$</span>estimate, <span class="dv">3</span>),</span>
+<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a>                      <span class="st">", p "</span>, <span class="fu">ifelse</span>(cor_test<span class="sc">$</span>p.value <span class="sc">&lt;</span> <span class="fl">0.001</span>, <span class="st">"&lt; 0.001"</span>, </span>
+<span id="cb30-13"><a href="#cb30-13" aria-hidden="true" tabindex="-1"></a>                                     <span class="fu">paste0</span>(<span class="st">"= "</span>, <span class="fu">round</span>(cor_test<span class="sc">$</span>p.value, <span class="dv">4</span>)))),</span>
+<span id="cb30-14"><a href="#cb30-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Number of Platforms"</span>,</span>
+<span id="cb30-15"><a href="#cb30-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Total Interactions (log scale)"</span></span>
+<span id="cb30-16"><a href="#cb30-16" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="map-1_files/figure-html/platform-engagement-correlation-1.png" class="img-fluid figure-img" width="960"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="summary-and-key-findings" class="level1" data-number="7">
+<h1 data-number="7"><span class="header-section-number">7</span> Summary and Key Findings</h1>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Compile key findings</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<section id="platform-distribution-findings" class="level2" data-number="7.1">
+<h2 data-number="7.1" class="anchored" data-anchor-id="platform-distribution-findings"><span class="header-section-number">7.1</span> Platform Distribution Findings</h2>
+<ol type="1">
+<li><strong>Volume distribution:</strong> Web content dominates in volume, but social platforms show higher engagement rates</li>
+<li><strong>Engagement efficiency:</strong> Instagram and Facebook likely show efficiency indices above 1.0, indicating higher resonance per post</li>
+</ol>
+</section>
+<section id="visibility-stratification-findings" class="level2" data-number="7.2">
+<h2 data-number="7.2" class="anchored" data-anchor-id="visibility-stratification-findings"><span class="header-section-number">7.2</span> Visibility Stratification Findings</h2>
+<ol type="1">
+<li><strong>Extreme concentration:</strong> The top 10 sources capture a disproportionate share of total engagement</li>
+<li><strong>Gini coefficient:</strong> Value of 0.98 indicates very high inequality in visibility distribution</li>
+<li><strong>Power law:</strong> The rank-engagement relationship follows a power law pattern typical of networked media systems</li>
+</ol>
+</section>
+<section id="institutional-gap-findings" class="level2" data-number="7.3">
+<h2 data-number="7.3" class="anchored" data-anchor-id="institutional-gap-findings"><span class="header-section-number">7.3</span> Institutional Gap Findings</h2>
+<ol type="1">
+<li><strong>Engagement rate differential:</strong> Non-institutional actors (individual priests, charismatic communities) show different engagement rates than institutional accounts</li>
+<li><strong>Statistical significance:</strong> The Wilcoxon test indicates whether this difference is statistically meaningful</li>
+</ol>
+</section>
+<section id="cross-platform-presence-findings" class="level2" data-number="7.4">
+<h2 data-number="7.4" class="anchored" data-anchor-id="cross-platform-presence-findings"><span class="header-section-number">7.4</span> Cross-Platform Presence Findings</h2>
+<ol type="1">
+<li><strong>Single-platform dominance:</strong> Most sources operate on only one platform</li>
+<li><strong>Multi-platform advantage:</strong> Sources present on multiple platforms tend to accumulate more total engagement</li>
+<li><strong>Actor type patterns:</strong> Independent media shows strongest multi-platform integration</li>
+</ol>
+<hr>
+</section>
+</section>
+<section id="appendix-technical-notes" class="level1" data-number="8">
+<h1 data-number="8"><span class="header-section-number">8</span> Appendix: Technical Notes</h1>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sessionInfo</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>R version 4.5.2 (2025-10-31 ucrt)
+Platform: x86_64-w64-mingw32/x64
+Running under: Windows 11 x64 (build 22631)
+
+Matrix products: default
+  LAPACK version 3.12.1
+
+locale:
+[1] LC_COLLATE=Croatian_Croatia.utf8  LC_CTYPE=Croatian_Croatia.utf8   
+[3] LC_MONETARY=Croatian_Croatia.utf8 LC_NUMERIC=C                     
+[5] LC_TIME=Croatian_Croatia.utf8    
+
+time zone: Europe/Zagreb
+tzcode source: internal
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+ [1] ineq_0.2-13       kableExtra_1.4.0  knitr_1.50        scales_1.4.0     
+ [5] data.table_1.17.8 lubridate_1.9.4   forcats_1.0.1     stringr_1.6.0    
+ [9] dplyr_1.1.4       purrr_1.2.0       readr_2.1.6       tidyr_1.3.1      
+[13] tibble_3.3.0      ggplot2_4.0.1     tidyverse_2.0.0  
+
+loaded via a namespace (and not attached):
+ [1] generics_0.1.4     xml2_1.5.1         lattice_0.22-7     stringi_1.8.7     
+ [5] hms_1.1.4          digest_0.6.39      magrittr_2.0.4     evaluate_1.0.5    
+ [9] grid_4.5.2         timechange_0.3.0   RColorBrewer_1.1-3 fastmap_1.2.0     
+[13] Matrix_1.7-4       jsonlite_2.0.0     mgcv_1.9-3         viridisLite_0.4.2 
+[17] textshaping_1.0.4  cli_3.6.5          rlang_1.1.6        splines_4.5.2     
+[21] withr_3.0.2        yaml_2.3.11        tools_4.5.2        tzdb_0.5.0        
+[25] vctrs_0.6.5        R6_2.6.1           lifecycle_1.0.4    htmlwidgets_1.6.4 
+[29] pkgconfig_2.0.3    pillar_1.11.1      gtable_0.3.6       glue_1.8.0        
+[33] systemfonts_1.3.1  xfun_0.54          tidyselect_1.2.1   rstudioapi_0.17.1 
+[37] dichromat_2.0-0.1  farver_2.1.2       nlme_3.1-168       htmltools_0.5.8.1 
+[41] rmarkdown_2.30     svglite_2.2.2      labeling_0.4.3     compiler_4.5.2    
+[45] S7_0.2.1          </code></pre>
+</div>
+</div>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
