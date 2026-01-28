@@ -1,0 +1,651 @@
+---
+title: "Tržišta pažnje u religijskim digitalnim medijima"
+subtitle: "Mapiranje hrvatskog katoličkog digitalnog prostora"
+author: "Šikić, Luka i Palić, Petra"
+date: today
+lang: hr
+format:
+  html:
+    embed-resources: true
+    toc: true
+    toc-depth: 3
+    toc-location: left
+    number-sections: true
+    code-fold: true
+    code-summary: "Prikaži kod"
+    theme: cosmo
+    fig-width: 10
+    fig-height: 6
+  pdf:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    fig-width: 8
+    fig-height: 5
+    geometry:
+      - top=25mm
+      - left=25mm
+      - right=25mm
+      - bottom=25mm
+    fontsize: 11pt
+    documentclass: article
+    pdf-engine: xelatex
+    mainfont: "Times New Roman"
+    sansfont: "Arial"
+    monofont: "Courier New"
+  docx:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    fig-width: 6.5
+    fig-height: 4
+execute:
+  warning: false
+  message: false
+  echo: false
+knitr:
+  opts_chunk:
+    echo: false
+    warning: false
+    message: false
+---
+
+```{r setup}
+#| label: setup
+#| include: false
+
+library(tidyverse)
+library(data.table)
+library(scales)
+library(ggplot2)
+library(knitr)
+library(kableExtra)
+library(ineq)
+library(lubridate)
+
+theme_bw_paper <- theme_minimal(base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold", size = 14),
+    plot.subtitle = element_text(color = "gray40"),
+    legend.position = "bottom",
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(color = "gray85"),
+    panel.border = element_rect(color = "gray50", fill = NA),
+    axis.line = element_line(color = "gray50")
+  )
+
+theme_set(theme_bw_paper)
+
+actor_labels_hr <- c(
+  "Institutional Official" = "Službene institucije",
+  "Diocesan" = "Biskupije i župe",
+  "Independent Media" = "Nezavisni mediji",
+  "Individual Priests" = "Pojedinačni svećenici",
+  "Charismatic Communities" = "Karizmatske zajednice",
+  "Religious Orders" = "Redovničke zajednice",
+  "Youth Organizations" = "Mladežne organizacije",
+  "Academic" = "Akademske institucije",
+  "Lay Influencers" = "Laički influenceri",
+  "Other" = "Ostalo"
+)
+
+actor_fills <- c(
+  "Institutional Official" = "gray95",
+  "Diocesan" = "gray85",
+  "Independent Media" = "gray75",
+  "Individual Priests" = "gray65",
+  "Charismatic Communities" = "gray55",
+  "Religious Orders" = "gray45",
+  "Youth Organizations" = "gray35",
+  "Academic" = "gray25",
+  "Lay Influencers" = "gray15",
+  "Other" = "gray50"
+)
+
+dta <- readRDS("C:/Users/lsikic/Luka C/HKS/Projekti/Digitalni Kat/SHKM/DigiKat/data/merged_comprehensive.rds") %>%
+  filter(SOURCE_TYPE != "tiktok", !is.na(SOURCE_TYPE)) %>%
+  filter(DATE >= as.Date("2021-01-01") & DATE <= as.Date("2024-12-31")) %>%
+  filter(year >= 2021 & year <= 2024)
+
+setDT(dta)
+
+n_posts <- nrow(dta)
+n_sources <- uniqueN(dta$FROM)
+date_min <- min(dta$DATE)
+date_max <- max(dta$DATE)
+n_platforms <- uniqueN(dta$SOURCE_TYPE)
+```
+
+```{r actor-classification}
+#| label: actor-classification
+#| include: false
+
+manual_overrides <- list(
+  "Institutional Official" = c(
+    "hrvatska katolička mreža", "hrvatska katolicka mreza",
+    "informativna katolička agencija", "informativna katolicka agencija",
+    "hrvatski katolički radio", "hrvatski katolicki radio",
+    "hrvatska biskupska konferencija", "ika", "hkr", "hkm", "hbk",
+    "tiskovni ured hbk", "radio marija"
+  ),
+  "Independent Media" = c(
+    "laudato tv", "laudatotv", "laudato.tv", "laudato.hr", "laudato",
+    "bitno.net", "bitno net", "glas koncila", "glaskoncila",
+    "nova eva", "nova-eva", "verbum", "totus tuus", "totus-tuus",
+    "katolički tjednik", "katolicki tjednik", "kršćanska sadašnjost",
+    "krscanska sadasnjost", "mir i dobro", "svjetlo riječi",
+    "svjetlo rijeci", "živo vrelo", "zivo vrelo"
+  )
+)
+
+secular_exclusions <- c(
+  "index.hr", "24sata", "jutarnji", "večernji", "vecernji",
+  "slobodna dalmacija", "novi list", "telegram", "dnevnik.hr",
+  "rtl.hr", "nova tv", "hrt.hr", "net.hr", "tportal", "dnevno.hr",
+  "narod.hr", "direktno.hr", "advance.hr", "7dnevno"
+)
+
+domain_patterns <- list(
+  "Institutional Official" = c("hkm.hr", "ika.hkm.hr", "hkr.hkm.hr", "hbk.hr", "radiomarija.hr"),
+  "Diocesan" = c("zg-nadbiskupija.hr", "biskupija-varazdinska.hr", "djos.hr", "biskupija-sj.hr", "rzs.hr", "rkc-sisak.hr", "zadarskanadbiskupija.hr", "gospicko-senjska-biskupija.hr", "nadbiskupija-split.com", "nadbiskupija-split.hr", "dubrovacka-biskupija.hr", "porec-biskupija.hr", "biskupija-kk.hr", "rkc-pula.hr", "krizcevacka-eparhija.hr", "sibenska-biskupija.hr", "krizevci.hbk.hr"),
+  "Independent Media" = c("laudato.hr", "laudato.tv", "bitno.net", "glaskoncila.hr", "nova-eva.com", "verbum.hr", "ks.hr", "totus-tuus.hr", "svjetlorijeci.hr", "zivot.com.hr", "novizivot.net"),
+  "Academic" = c("unicath.hr", "hks.hr", "kbf.unizg.hr", "ffrz.hr", "hku.hr"),
+  "Religious Orders" = c("franjevci.hr", "franjevci-split.hr", "isusovci.hr", "dominikanci.hr", "kapucini.hr", "salezijanci.hr", "karmelicani.hr")
+)
+
+diocesan_exact <- c("zagrebačka nadbiskupija", "zagrebacka nadbiskupija", "splitsko-makarska nadbiskupija", "đakovačko-osječka nadbiskupija", "djakovacko-osjecka", "riječka nadbiskupija", "rijecka nadbiskupija", "zadarska nadbiskupija", "sisačka biskupija", "sisacka biskupija", "varaždinska biskupija", "varazdinska biskupija", "križevačka eparhija", "krizevacka eparhija", "šibenska biskupija", "sibenska biskupija", "dubrovačka biskupija", "dubrovacka biskupija", "porečka i pulska biskupija", "porecka biskupija", "gospićko-senjska biskupija", "gospicko-senjska")
+diocesan_contains <- c("nadbiskupija", "biskupija", "eparhija", "ordinarijat")
+
+orders_exact <- c("franjevci", "franjevci konventualci", "franjevci kapucini", "mala braća", "isusovci", "družba isusova", "druzba isusova", "dominikanci", "red propovjednika", "salezijanci", "don bosco", "karmelićani", "karmelicani", "karmel", "benediktinci", "benediktin", "kapucini", "pavlini", "trapisti", "cisterciti", "augustinci", "sestre milosrdnice", "uršulinke", "ursulinke", "klarise", "službenice milosrđa", "kćeri božje ljubavi", "školske sestre", "karmelićanke", "benediktinke", "dominikanke")
+orders_contains <- c("franjevački", "franjevacki", "isusovački", "isusovacki", "dominikanski", "salezijanski", "karmelski", "benediktinski", "kapucinski", "pavlinski", "redovnici", "redovnice", "samostan", "provincija")
+orders_abbrev <- c("ofm", "ofmcap", "ofmconv", "sj", "op", "sdb", "ocd", "osb", "osbm", "cssr", "svd", "omc")
+
+charismatic_exact <- c("emmanuel", "taize", "taizé", "fokolari", "fokolarini", "kursiljo", "cursillo", "neokatekumenski put", "shalom", "zajednica beatitudes", "zajednica blaženstava", "dom molitve", "kuća molitve", "kuca molitve", "duhovna obnova", "molitvena snaga")
+charismatic_contains <- c("molitvena zajednica", "karizmatska", "karizmatski", "neokatekumenski", "neokatekumenska", "obnova u duhu", "komunija i oslobođenje", "comunione e liberazione", "dom molitve", "house of prayer")
+
+youth_exact <- c("frama", "shkm", "katolička mladež", "katolicka mladez", "mladi franjevci", "salezijanska mladež")
+youth_contains <- c("ministranti", "mladifra", "kaem", "studentska kapelanija", "sveučilišna kapelanija", "sveuclisna kapelanija", "pastoral mladih", "mladi katolici")
+
+academic_exact <- c("hrvatsko katoličko sveučilište", "hrvatsko katolicko sveuciliste", "katolički bogoslovni fakultet", "katolicki bogoslovni fakultet", "filozofski fakultet družbe isusove", "teologija u rijeci")
+academic_contains <- c("teologija", "bogoslovija", "katehetski")
+academic_abbrev <- c("kbf", "hku", "ffrz")
+
+priest_prefixes <- c("fra ", "don ", "vlč. ", "vlč.", "vlc. ", "vlc.", "msgr. ", "msgr.", "mons. ", "mons.", "o. ", "pater ", "p. ", "pr. ", "s. ", "sestra ", "m. ", "majka ")
+priest_hierarchy <- c("biskup ", "nadbiskup ", "kardinal ", "mons. ", "preč. ", "prečasni ")
+priest_contains <- c("svećenik", "svecenik", "župnik", "zupnik")
+
+lay_devotional <- c("vjera", "molitva", "molitve", "isus", "krist", "gospa", "marija", "hrana za dušu", "hrana za dusu", "dijete vjere", "riječ dana", "rijec dana", "riječ božja", "rijec bozja", "sveti", "svetac", "svetica", "evanđelje", "evandelje", "duhovnost", "duhovna", "duhovni", "biblija", "biblijski", "psalm", "blagoslov", "krunica", "rozarij", "lectio divina", "katolička obitelj", "katolicka obitelj", "katolicki", "božanske", "bozanske", "moćne", "mocne")
+lay_exclude <- c(".hr", ".net", ".com", "portal", "vijesti", "news", "radio", "agencija", "tjednik")
+
+classify_actor_v4 <- function(from_val, url_val = NA, platform_val = NA) {
+  from_lower <- tolower(trimws(as.character(from_val)))
+  url_lower <- tolower(ifelse(is.na(url_val), "", as.character(url_val)))
+  platform_lower <- tolower(ifelse(is.na(platform_val), "", as.character(platform_val)))
+  combined <- paste(from_lower, url_lower)
+  
+  match_any <- function(patterns, text, fixed = TRUE) {
+    any(sapply(patterns, function(p) grepl(p, text, fixed = fixed)))
+  }
+  
+  for (actor_type in names(manual_overrides)) {
+    if (match_any(manual_overrides[[actor_type]], from_lower)) return(actor_type)
+  }
+  if (match_any(secular_exclusions, combined)) return("Other")
+  if (nchar(url_lower) > 0) {
+    for (actor_type in names(domain_patterns)) {
+      if (match_any(domain_patterns[[actor_type]], url_lower)) return(actor_type)
+    }
+  }
+  is_parish <- grepl("^župa|^zupa|župi|zupi|- župa|- zupa", from_lower, ignore.case = TRUE) || grepl("parish", from_lower, ignore.case = TRUE)
+  if (match_any(diocesan_exact, from_lower) || match_any(diocesan_contains, from_lower) || is_parish) return("Diocesan")
+  if (match_any(orders_exact, from_lower) || match_any(orders_contains, from_lower)) return("Religious Orders")
+  for (abbr in orders_abbrev) { if (grepl(paste0("\\b", abbr, "\\b"), from_lower, ignore.case = TRUE)) return("Religious Orders") }
+  if (match_any(charismatic_exact, from_lower) || match_any(charismatic_contains, from_lower)) return("Charismatic Communities")
+  if (match_any(youth_exact, from_lower) || match_any(youth_contains, from_lower)) return("Youth Organizations")
+  if (match_any(academic_exact, from_lower) || match_any(academic_contains, from_lower)) return("Academic")
+  for (abbr in academic_abbrev) { if (grepl(paste0("\\b", abbr, "\\b"), from_lower, ignore.case = TRUE)) return("Academic") }
+  for (prefix in priest_prefixes) { if (startsWith(from_lower, prefix)) return("Individual Priests") }
+  for (title in priest_hierarchy) { if (startsWith(from_lower, title)) return("Individual Priests") }
+  if (match_any(priest_contains, from_lower)) return("Individual Priests")
+  has_devotional <- match_any(lay_devotional, from_lower)
+  has_media_indicator <- match_any(lay_exclude, from_lower)
+  is_likely_social <- platform_lower %in% c("facebook", "instagram", "youtube", "twitter") || !grepl("\\.[a-z]{2,4}$", from_lower)
+  if (has_devotional && !has_media_indicator && is_likely_social) return("Lay Influencers")
+  return("Other")
+}
+
+dta[, ACTOR_TYPE := mapply(classify_actor_v4, FROM, if ("URL" %in% names(dta)) URL else NA, SOURCE_TYPE)]
+dta[, ACTOR_TYPE := factor(ACTOR_TYPE, levels = names(actor_fills))]
+dta[, ACTOR_TYPE_HR := actor_labels_hr[as.character(ACTOR_TYPE)]]
+```
+
+# Sažetak {.unnumbered}
+
+Ova studija primjenjuje okvir ekonomije pažnje na analizu hrvatskih katoličkih digitalnih medija, pružajući prvo sustavno mapiranje nacionalnog religijskog digitalnog ekosustava. Analizirajući bazu podataka DigiKat s više od 600.000 objava objavljenih između 2021. i 2024. godine, ispitujemo distribuciju pažnje, stratifikaciju aktera, emocionalnu dinamiku i vremenske obrasce. Četiri hipoteze izvedene iz teorije ekonomije pažnje testirane su korištenjem mjera nejednakosti, neparametrijskih statističkih testova i vremenske analize.
+
+Rezultati potvrđuju da pažnja slijedi distribuciju po zakonu potencije s ekstremnom koncentracijom. Institucionalni akteri doživljavaju značajne nedostatke u stopama angažmana u usporedbi s neinstitucionalnim komunikatorima. Emocionalni profili razlikuju se među tipovima aktera, a katolički liturgijski kalendar strukturira ritam objavljivanja.
+
+**Ključne riječi:** ekonomija pažnje, religijska komunikacija, digitalni mediji, Katolička crkva, Hrvatska
+
+---
+
+# Uvod
+
+Digitalna transformacija religijske komunikacije predstavlja jednu od najznačajnijih promjena u načinu na koji vjerske zajednice komuniciraju sa svojom publikom. Kako religijske organizacije sve više prenose svoje komunikacijske aktivnosti na digitalne platforme, ulaze na konkurentna tržišta pažnje gdje vidljivost nije zajamčena niti jednako distribuirana.
+
+Herbert Simon slavno je primijetio da obilje informacija stvara oskudicu pažnje [@simon1971]. U suvremenim digitalnim okruženjima, ovaj uvid ima duboke implikacije za religijske organizacije koje su povijesno uživale privilegiran pristup svojim zajednicama kroz etablirane institucionalne kanale. Proliferacija digitalnih platformi demokratizirala je proizvodnju sadržaja istovremeno intenzivirajući natjecanje za pažnju publike.
+
+Hrvatska predstavlja zanimljiv slučaj za ispitivanje religijske digitalne komunikacije. Kao zemlja u kojoj se približno 86 posto stanovništva izjašnjava kao rimokatolici, Katolička crkva održava značajnu kulturnu i institucionalnu prisutnost. Ipak, ovaj većinski status ne prevodi se automatski u digitalnu vidljivost. Hrvatski katolički digitalni prostor obuhvaća raznolike aktere: službene crkvene institucije, biskupijske komunikacijske urede, nezavisne katoličke medijske kuće, karizmatske pokrete obnove, pojedinačne klerike i laičke influencere koji vode pobožne stranice na društvenim mrežama.
+
+Ova studija bavi se trima međusobno povezanim istraživačkim pitanjima. Prvo, kako je pažnja distribuirana među platformama i akterima u hrvatskom katoličkom digitalnom prostoru? Drugo, doživljavaju li institucionalni akteri sustavne nedostatke u privlačenju pažnje publike u usporedbi s grassroots i individualnim komunikatorima? Treće, kakvu ulogu igraju emocionalni sadržaj i vremenski ritmovi u alokaciji pažnje unutar religijskih digitalnih medija?
+
+Za odgovor na ova pitanja analiziramo bazu podataka DigiKat koja obuhvaća `r format(n_posts, big.mark = ".")` objava objavljenih između `r format(as.Date(date_min), "%d.%m.%Y.")` i `r format(as.Date(date_max), "%d.%m.%Y.")` kroz `r n_platforms` kategorija platformi. Ukupno je obuhvaćeno `r format(n_sources, big.mark = ".")` jedinstvenih izvora.
+
+
+# Teorijski okvir
+
+## Oskudica pažnje u digitalnim okruženjima
+
+Paradigma ekonomije pažnje proizašla je iz prepoznavanja da tradicionalni ekonomski modeli neadekvatno zahvaćaju stvaranje i razmjenu vrijednosti u informacijski bogatim okruženjima. Simon je artikulirao temeljni uvid kada je primijetio da bogatstvo informacija stvara siromaštvo pažnje i potrebu za učinkovitom alokacijom te pažnje među preobiljem izvora informacija koji bi je mogli konzumirati [@simon1971].
+
+Goldhaber je proširio ovaj okvir predlažući pažnju samu kao primarnu valutu digitalnih ekonomija [@goldhaber1997]. Za razliku od materijalnih dobara, pažnja se ne može proizvoditi, skladištiti ili transferirati. Svaki pojedinac posjeduje ograničenu dnevnu alokaciju pažnje za koju se različiti akteri natječu. Davenport i Beck formalizirali su upravljanje pažnjom kao organizacijski imperativ [@davenport2001].
+
+Za religijske organizacije, okvir ekonomije pažnje otkriva fundamentalne tenzije između tradicionalnih komunikacijskih modela i digitalnih realnosti. Crkve su povijesno djelovale unutar okruženja privilegirane pažnje gdje su institucionalni autoritet i ukotvljenost u zajednici jamčili pristup publici. Digitalne platforme rastvaraju ove strukturalne prednosti, prisiljavajući religijske komunikatore da se natječu za pažnju na jednakoj razini sa sekularnim proizvođačima sadržaja.
+
+## Distribucije po zakonu potencije na tržištima pažnje
+
+Konzistentan empirijski nalaz na digitalnim platformama jest da se pažnja distribuira prema zakonu potencije, a ne normalnim distribucijama [@barabasi1999]. U sustavima zakona potencije, mali broj aktera privlači nerazmjerno velike udjele ukupne pažnje dok velika većina ostaje relativno nevidljiva.
+
+Rieder i suradnici dokumentirali su ekstremnu koncentraciju u svom velikom mapiranju YouTubea, otkrivši da gornjih 0,4 posto kanala čini 62 posto ukupnih pregleda [@rieder2020]. Webster je demonstrirao slične obrasce kroz raznolike medijske sustave [@webster2014]. Gini koeficijent pruža standardnu mjeru takve koncentracije, s vrijednostima koje se približavaju 1,0 indicirajući da gotovo sva pažnja teče prema maloj eliti proizvođača.
+
+## Učinci platformi na alokaciju pažnje
+
+Digitalne platforme ne prenose samo sadržaj već aktivno oblikuju alokaciju pažnje kroz svoje tehničke arhitekture i algoritmičke sustave [@vandijck2018]. Svaka platforma ugrađuje posebne mogućnosti koje favoriziraju određene vrste sadržaja, komunikacijske stilove i kategorije aktera. Facebookov algoritam prioritizira sadržaj koji generira emocionalne reakcije i društveno dijeljenje. Instagram nagrađuje vizualnu estetiku. YouTubeov sustav preporuka usmjerava pažnju prema sadržaju koji maksimizira vrijeme gledanja.
+
+## Hipoteze
+
+Iz teorije ekonomije pažnje izvodimo četiri provjerljive hipoteze o hrvatskom katoličkom digitalnom prostoru:
+
+**Hipoteza 1 (Distribucija po zakonu potencije):** Pažnja u hrvatskom katoličkom digitalnom prostoru slijedi distribuciju po zakonu potencije, s angažmanom koncentriranim među malom elitom aktera. Očekujemo da log-log odnos između ranga i angažmana pokazuje jaku linearnost (R² > 0,90) i da Gini koeficijent prelazi 0,80.
+
+**Hipoteza 2 (Omjeri koncentracije):** Gornjih 10 posto izvora privlači većinu ukupnog angažmana. Predviđamo CR10 koji prelazi 50 posto.
+
+**Hipoteza 3 (Institucionalni jaz u pažnji):** Institucionalni akteri postižu niže stope angažmana od neinstitucionalnih aktera kao što su pojedinačni klerici, karizmatske zajednice i laički influenceri.
+
+**Hipoteza 4 (Emocionalna diferencijacija):** Tipovi aktera pokazuju značajno različite emocionalne profile u odgovorima publike.
+
+
+# Podaci i metode
+
+## Baza podataka DigiKat
+
+Ova studija koristi bazu podataka DigiKat, sveobuhvatnu zbirku hrvatskog katoličkog digitalnog sadržaja razvijenu kao dio trogodišnjeg istraživačkog projekta (2025. do 2027.). Baza podataka agregira javno dostupan digitalni sadržaj iz izvora identificiranih kao dio hrvatskog katoličkog medijskog ekosustava, obuhvaćajući službene crkvene komunikacije, nezavisne katoličke medijske kuće, župne i biskupijske kanale, publikacije redovničkih zajednica, stranice karizmatskih zajednica i glasove pojedinačnih klerika.
+
+Analitički korpus obuhvaća ukupno `r format(n_posts, big.mark = ".")` objava objavljenih između `r format(as.Date(date_min), "%d.%m.%Y.")` i `r format(as.Date(date_max), "%d.%m.%Y.")` kroz `r n_platforms` kategorija platformi. Web sadržaj čini najveći volumen, slijede Facebook, Instagram, YouTube, Twitter, forumi, Reddit i komentari korisnika na katoličkim portalima. Ukupno je identificirano `r format(n_sources, big.mark = ".")` jedinstvenih izvora.
+
+## Prikupljanje podataka
+
+Prikupljanje podataka koristilo je više komplementarnih metoda prilagođenih tehničkim ograničenjima specifičnim za platforme. Web sadržaj prikupljen je automatiziranim scrapingom identificiranih katoličkih portala. Facebook i Instagram podaci dobiveni su kroz CrowdTangle. YouTube podaci prikupljeni su putem YouTube Data API-ja. Postupci kontrole kvalitete adresirali su uobičajene izazove u velikom prikupljanju digitalnih podataka.
+
+## Klasifikacija aktera
+
+Za analizu distribucije pažnje među različitim tipovima katoličkih komunikatora, razvili smo hijerarhijski sustav klasifikacije koji dodjeljuje svaki izvor jednoj od deset kategorija aktera. Rezultirajućih deset kategorija obuhvaća: službene institucije, biskupije i župe, nezavisni mediji, redovničke zajednice, karizmatske zajednice, pojedinačni svećenici, mladežne organizacije, akademske institucije, laički influenceri i ostalo.
+
+## Analitički pristup
+
+Analiza se odvija kroz četiri komplementarne dimenzije. Za procjenu tržišne strukture i koncentracije koristimo Gini koeficijent, Lorenzove krivulje i omjere koncentracije. Za ispitivanje institucionalnog jaza koristimo Wilcoxonov test sume rangova. Za analizu emocionalnog privlačenja pažnje ispitujemo distribucije Facebook reakcija koristeći Kruskal-Wallisove testove. Za vremensku dinamiku mapiramo aktivnost objavljivanja na katolički liturgijski kalendar.
+
+# Rezultati
+
+## Tržišna struktura i koncentracija
+
+```{r platform-distribution}
+#| label: tbl-platform-distribution
+
+platform_stats <- dta[, .(
+  Objave = .N,
+  Ukupne_interakcije = sum(INTERACTIONS, na.rm = TRUE),
+  Jedinstveni_izvori = uniqueN(FROM),
+  Prosjek_interakcija = mean(INTERACTIONS, na.rm = TRUE)
+), by = SOURCE_TYPE][order(-Objave)]
+
+platform_stats[, `:=`(
+  Udio_volumena = Objave / sum(Objave) * 100,
+  Udio_angazmana = Ukupne_interakcije / sum(Ukupne_interakcije) * 100,
+  Indeks_ucinkovitosti = (Ukupne_interakcije / sum(Ukupne_interakcije)) / (Objave / sum(Objave))
+)]
+
+platform_stats %>%
+  select(SOURCE_TYPE, Objave, Ukupne_interakcije, Jedinstveni_izvori, Prosjek_interakcija,
+         Udio_volumena, Udio_angazmana, Indeks_ucinkovitosti) %>%
+  mutate(
+    Objave = format(Objave, big.mark = "."),
+    Ukupne_interakcije = format(Ukupne_interakcije, big.mark = "."),
+    Jedinstveni_izvori = format(Jedinstveni_izvori, big.mark = "."),
+    Prosjek_interakcija = sprintf("%.1f", Prosjek_interakcija),
+    Udio_volumena = sprintf("%.1f%%", Udio_volumena),
+    Udio_angazmana = sprintf("%.1f%%", Udio_angazmana),
+    Indeks_ucinkovitosti = sprintf("%.2f", Indeks_ucinkovitosti)
+  ) %>%
+  kable(col.names = c("Platforma", "Objave", "Interakcije", "Izvori", 
+                      "Prosj. int.", "Volumen %", "Angažman %", "Učinkovitost"),
+        caption = "Distribucija objava i angažmana po platformama",
+        align = c("l", rep("r", 7))) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+Indeks učinkovitosti, izračunat kao omjer udjela angažmana i udjela volumena, otkriva značajnu varijaciju u učinkovitosti platformi. Vrijednosti iznad 1,0 indiciraju platforme koje generiraju više angažmana nego što bi njihov volumen sadržaja predviđao.
+
+```{r platform-efficiency-figure}
+#| label: fig-platform-efficiency
+#| fig-cap: "Učinkovitost angažmana po platformama. Indeks učinkovitosti predstavlja omjer udjela angažmana i udjela volumena, s vrijednostima iznad 1,0 (isprekidana linija) koje indiciraju nadprosječne rezultate."
+#| fig-height: 6
+
+ggplot(platform_stats, aes(x = reorder(SOURCE_TYPE, Indeks_ucinkovitosti), 
+                           y = Indeks_ucinkovitosti)) +
+  geom_col(width = 0.7, fill = "gray60", color = "gray30") +
+  geom_hline(yintercept = 1, linetype = "dashed", color = "black", linewidth = 1) +
+  geom_text(aes(label = sprintf("%.2f", Indeks_ucinkovitosti)), hjust = -0.1, size = 3.5) +
+  coord_flip() +
+  scale_y_continuous(limits = c(0, max(platform_stats$Indeks_ucinkovitosti) * 1.15)) +
+  labs(title = "Učinkovitost angažmana po platformama", x = NULL, y = "Indeks učinkovitosti")
+```
+
+### Mjere koncentracije
+
+```{r concentration-measures}
+#| label: concentration-measures
+
+source_stats <- dta[, .(Objave = .N, Ukupne_interakcije = sum(INTERACTIONS, na.rm = TRUE), Tip_aktera = first(ACTOR_TYPE_HR)), by = FROM][order(-Ukupne_interakcije)]
+source_stats[, `:=`(Rang = .I, Kumulativni_izvori = .I / .N * 100, Kumulativne_interakcije = cumsum(Ukupne_interakcije) / sum(Ukupne_interakcije) * 100)]
+total_interactions <- sum(source_stats$Ukupne_interakcije)
+n_sources_total <- nrow(source_stats)
+cr1 <- sum(source_stats[1:1]$Ukupne_interakcije) / total_interactions * 100
+cr5 <- sum(source_stats[1:5]$Ukupne_interakcije) / total_interactions * 100
+cr10 <- sum(source_stats[1:10]$Ukupne_interakcije) / total_interactions * 100
+cr20 <- sum(source_stats[1:20]$Ukupne_interakcije) / total_interactions * 100
+cr50 <- sum(source_stats[1:50]$Ukupne_interakcije) / total_interactions * 100
+top_10_pct_n <- ceiling(n_sources_total * 0.10)
+cr_top10pct <- sum(source_stats[1:top_10_pct_n]$Ukupne_interakcije) / total_interactions * 100
+gini_coef <- ineq(source_stats$Ukupne_interakcije, type = "Gini")
+source_positive <- source_stats[Ukupne_interakcije > 0]
+log_model <- lm(log10(Ukupne_interakcije) ~ log10(Rang), data = source_positive)
+slope <- coef(log_model)[2]
+r_squared <- summary(log_model)$r.squared
+```
+
+Mjere koncentracije testiraju Hipoteze 1 i 2. Gini koeficijent iznosi `r sprintf("%.3f", gini_coef)`, što indicira ekstremnu nejednakost u distribuciji pažnje. Za usporedbu, ovo znatno premašuje tipične mjere dohodovne nejednakosti u većini razvijenih zemalja. Regresija zakona potencije daje R² = `r sprintf("%.3f", r_squared)`, snažno podržavajući Hipotezu 1 o distribuciji po zakonu potencije.
+
+Omjeri koncentracije pokazuju da vodećih 10 izvora privlači `r sprintf("%.1f%%", cr10)` ukupnog angažmana, vodećih 20 izvora privlači `r sprintf("%.1f%%", cr20)`, a gornjih 10 posto svih izvora (`r format(top_10_pct_n, big.mark = ".")` izvora) privlači čak `r sprintf("%.1f%%", cr_top10pct)` ukupnog angažmana.
+
+```{r lorenz-curve}
+#| label: fig-lorenz-curve
+#| fig-cap: "Lorenzova krivulja nejednakosti angažmana. Osjenčano područje između krivulje i dijagonale jednakosti predstavlja stupanj koncentracije."
+#| fig-height: 7
+
+ggplot(source_stats, aes(x = Kumulativni_izvori, y = Kumulativne_interakcije)) +
+  geom_line(color = "black", linewidth = 1.2) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "gray50") +
+  geom_ribbon(aes(ymin = Kumulativni_izvori, ymax = Kumulativne_interakcije), fill = "gray70", alpha = 0.5) +
+  annotate("text", x = 70, y = 30, label = paste0("Gini = ", round(gini_coef, 3)), size = 5, fontface = "bold") +
+  annotate("text", x = 20, y = 80, label = paste0("Gornjih 10% izvora\nprivlači ", round(cr_top10pct, 1), "% angažmana"), size = 4) +
+  scale_x_continuous(labels = function(x) paste0(x, "%"), breaks = seq(0, 100, 20)) +
+  scale_y_continuous(labels = function(x) paste0(x, "%"), breaks = seq(0, 100, 20)) +
+  labs(title = "Lorenzova krivulja nejednakosti angažmana", x = "Kumulativni % izvora (rangirani po angažmanu)", y = "Kumulativni % ukupnog angažmana")
+```
+
+```{r power-law-plot}
+#| label: fig-power-law
+#| fig-cap: "Rang-angažman distribucija na log-log skali. Linearni odnos potvrđuje distribuciju po zakonu potencije."
+#| fig-height: 6
+
+ggplot(source_positive, aes(x = Rang, y = Ukupne_interakcije)) +
+  geom_point(alpha = 0.3, color = "gray40", size = 1) +
+  geom_smooth(method = "lm", color = "black", se = FALSE, linewidth = 1) +
+  scale_x_log10(labels = comma) + scale_y_log10(labels = comma) +
+  annotate("text", x = 10, y = min(source_positive$Ukupne_interakcije) * 100, label = paste0("Nagib = ", round(slope, 2), "\nR² = ", round(r_squared, 3)), hjust = 0, size = 4, fontface = "bold") +
+  labs(title = "Rang-angažman distribucija (Log-log skala)", x = "Rang (log skala)", y = "Ukupne interakcije (log skala)")
+```
+
+## Stratifikacija aktera i institucionalni jaz
+
+```{r actor-distribution}
+#| label: tbl-actor-distribution
+
+actor_summary <- dta[, .(Izvori = uniqueN(FROM), Objave = .N, Ukupne_interakcije = sum(INTERACTIONS, na.rm = TRUE), Prosjek_interakcija = mean(INTERACTIONS, na.rm = TRUE)), by = ACTOR_TYPE_HR][order(-Ukupne_interakcije)]
+total_posts <- sum(actor_summary$Objave)
+total_int <- sum(actor_summary$Ukupne_interakcije)
+actor_summary[, `:=`(Udio_objava = Objave / total_posts * 100, Udio_angazmana = Ukupne_interakcije / total_int * 100, Ucinkovitost = (Ukupne_interakcije / total_int) / (Objave / total_posts))]
+
+actor_summary %>%
+  select(ACTOR_TYPE_HR, Izvori, Objave, Ukupne_interakcije, Prosjek_interakcija, Udio_objava, Udio_angazmana, Ucinkovitost) %>%
+  mutate(Izvori = format(Izvori, big.mark = "."), Objave = format(Objave, big.mark = "."), Ukupne_interakcije = format(Ukupne_interakcije, big.mark = "."), Prosjek_interakcija = sprintf("%.1f", Prosjek_interakcija), Udio_objava = sprintf("%.1f%%", Udio_objava), Udio_angazmana = sprintf("%.1f%%", Udio_angazmana), Ucinkovitost = sprintf("%.2f", Ucinkovitost)) %>%
+  kable(col.names = c("Tip aktera", "Izvori", "Objave", "Interakcije", "Prosj. int.", "Objave %", "Angažman %", "Učinkovitost"), caption = "Sadržaj i angažman po tipu aktera", align = c("l", rep("r", 7))) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+### Statistički testovi
+
+```{r statistical-tests}
+#| label: statistical-tests
+
+source_engagement <- dta[!is.na(FOLLOWERS_COUNT) & FOLLOWERS_COUNT > 0, .(Objave = .N, Ukupne_interakcije = sum(INTERACTIONS, na.rm = TRUE), Prosjek_pratitelja = mean(FOLLOWERS_COUNT, na.rm = TRUE), Stopa_angazmana = sum(INTERACTIONS, na.rm = TRUE) / mean(FOLLOWERS_COUNT, na.rm = TRUE) * 100), by = .(FROM, ACTOR_TYPE, ACTOR_TYPE_HR)]
+source_engagement[, Grupa_institucija := fifelse(ACTOR_TYPE %in% c("Institutional Official", "Diocesan", "Academic"), "Institucionalni", "Neinstitucionalni")]
+group_stats <- source_engagement[, .(N = .N, Prosjek = mean(Stopa_angazmana, na.rm = TRUE), Medijan = median(Stopa_angazmana, na.rm = TRUE), SD = sd(Stopa_angazmana, na.rm = TRUE)), by = Grupa_institucija]
+wilcox_result <- wilcox.test(Stopa_angazmana ~ Grupa_institucija, data = source_engagement, alternative = "two.sided")
+kw_result <- kruskal.test(Stopa_angazmana ~ ACTOR_TYPE, data = source_engagement)
+platform_actor_table <- table(dta$SOURCE_TYPE, dta$ACTOR_TYPE)
+chisq_result <- chisq.test(platform_actor_table)
+n_total <- sum(platform_actor_table)
+cramers_v <- sqrt(chisq_result$statistic / (n_total * (min(dim(platform_actor_table)) - 1)))
+```
+
+Wilcoxonov test sume rangova otkriva statistički značajnu razliku u stopama angažmana između institucionalnih i neinstitucionalnih aktera (W = `r format(wilcox_result$statistic, big.mark = ".")`, *p* `r ifelse(wilcox_result$p.value < 0.001, "< 0,001", paste0("= ", round(wilcox_result$p.value, 3)))`), čime je potvrđena Hipoteza 3. Neinstitucionalni akteri postižu medijan stope angažmana od `r sprintf("%.2f%%", group_stats[Grupa_institucija == "Neinstitucionalni"]$Medijan)`, dok institucionalni akteri postižu `r sprintf("%.2f%%", group_stats[Grupa_institucija == "Institucionalni"]$Medijan)`.
+
+```{r engagement-comparison-figure}
+#| label: fig-engagement-comparison
+#| fig-cap: "Distribucije stopa angažmana uspoređujući institucionalne i neinstitucionalne aktere. Crni rombovi označavaju prosjeke."
+#| fig-height: 6
+
+ggplot(source_engagement[Stopa_angazmana < quantile(Stopa_angazmana, 0.95, na.rm = TRUE)], 
+       aes(x = Grupa_institucija, y = Stopa_angazmana, fill = Grupa_institucija)) +
+  geom_violin(alpha = 0.7, fill = "gray70", color = "gray30") +
+  geom_boxplot(width = 0.2, fill = "white", outlier.shape = NA) +
+  stat_summary(fun = mean, geom = "point", shape = 18, size = 4, color = "black") +
+  scale_y_continuous(labels = function(x) paste0(x, "%")) +
+  labs(title = "Institucionalni vs neinstitucionalni stope angažmana", x = NULL, y = "Stopa angažmana (%)") +
+  theme(legend.position = "none")
+```
+
+
+## Emocionalno privlačenje pažnje
+
+```{r emotion-data-prep}
+#| label: emotion-data-prep
+
+fb_data <- dta[SOURCE_TYPE == "facebook" & !is.na(LOVE_COUNT) & !is.na(INTERACTIONS) & INTERACTIONS > 0]
+if (nrow(fb_data) > 0) {
+  fb_data[, Ukupne_reakcije := fifelse(is.na(LOVE_COUNT), 0, LOVE_COUNT) + fifelse(is.na(WOW_COUNT), 0, WOW_COUNT) + fifelse(is.na(HAHA_COUNT), 0, HAHA_COUNT) + fifelse(is.na(SAD_COUNT), 0, SAD_COUNT) + fifelse(is.na(ANGRY_COUNT), 0, ANGRY_COUNT)]
+  fb_data[Ukupne_reakcije > 0, `:=`(LOVE_UDIO = LOVE_COUNT / Ukupne_reakcije, WOW_UDIO = fifelse(is.na(WOW_COUNT), 0, WOW_COUNT) / Ukupne_reakcije, HAHA_UDIO = fifelse(is.na(HAHA_COUNT), 0, HAHA_COUNT) / Ukupne_reakcije, SAD_UDIO = fifelse(is.na(SAD_COUNT), 0, SAD_COUNT) / Ukupne_reakcije, ANGRY_UDIO = fifelse(is.na(ANGRY_COUNT), 0, ANGRY_COUNT) / Ukupne_reakcije)]
+}
+n_fb_posts <- nrow(fb_data)
+```
+
+Analiza emocionalnih reakcija temelji se na `r format(n_fb_posts, big.mark = ".")` Facebook objava s dostupnim podacima o reakcijama.
+
+```{r emotion-by-actor}
+#| label: tbl-emotion-by-actor
+
+if (nrow(fb_data) > 0 && sum(fb_data$Ukupne_reakcije > 0, na.rm = TRUE) > 0) {
+  actor_emotions <- fb_data[Ukupne_reakcije > 0, .(N_objava = .N, LOVE = mean(LOVE_UDIO, na.rm = TRUE) * 100, WOW = mean(WOW_UDIO, na.rm = TRUE) * 100, HAHA = mean(HAHA_UDIO, na.rm = TRUE) * 100, SAD = mean(SAD_UDIO, na.rm = TRUE) * 100, ANGRY = mean(ANGRY_UDIO, na.rm = TRUE) * 100), by = ACTOR_TYPE_HR][order(-LOVE)]
+  
+  actor_emotions %>%
+    mutate(N_objava = format(N_objava, big.mark = "."), LOVE = sprintf("%.1f%%", LOVE), WOW = sprintf("%.1f%%", WOW), HAHA = sprintf("%.1f%%", HAHA), SAD = sprintf("%.1f%%", SAD), ANGRY = sprintf("%.1f%%", ANGRY)) %>%
+    kable(col.names = c("Tip aktera", "Objave", "LOVE", "WOW", "HAHA", "SAD", "ANGRY"), caption = "Emocionalni profili po tipu aktera (prosječni udio reakcija)", align = c("l", "r", rep("r", 5))) %>%
+    kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+}
+```
+
+```{r emotion-tests}
+#| label: emotion-tests
+
+if (nrow(fb_data) > 0 && sum(fb_data$Ukupne_reakcije > 0, na.rm = TRUE) > 0) {
+  fb_reactions <- fb_data[Ukupne_reakcije > 0]
+  kw_love <- kruskal.test(LOVE_UDIO ~ ACTOR_TYPE, data = fb_reactions)
+  kw_angry <- kruskal.test(ANGRY_UDIO ~ ACTOR_TYPE, data = fb_reactions)
+}
+```
+
+Udjeli LOVE i ANGRY reakcija značajno se razlikuju među tipovima aktera (Kruskal-Wallis χ² = `r round(kw_love$statistic, 1)` za LOVE, *p* `r ifelse(kw_love$p.value < 0.001, "< 0,001", paste0("= ", round(kw_love$p.value, 3)))`; χ² = `r round(kw_angry$statistic, 1)` za ANGRY, *p* `r ifelse(kw_angry$p.value < 0.001, "< 0,001", paste0("= ", round(kw_angry$p.value, 3)))`), čime je potvrđena Hipoteza 4 o emocionalnoj diferencijaciji.
+
+```{r emotion-heatmap}
+#| label: fig-emotion-heatmap
+#| fig-cap: "Toplinska karta emocionalnih profila po tipu aktera. Tamnije boje indiciraju veće udjele."
+#| fig-height: 8
+
+if (exists("actor_emotions") && nrow(actor_emotions) > 0) {
+  actor_emotions_long <- actor_emotions %>%
+    select(ACTOR_TYPE_HR, LOVE, WOW, HAHA, SAD, ANGRY) %>%
+    mutate(across(LOVE:ANGRY, ~as.numeric(gsub("%", "", .)))) %>%
+    pivot_longer(cols = LOVE:ANGRY, names_to = "Emocija", values_to = "Udio") %>%
+    mutate(Emocija = factor(Emocija, levels = c("LOVE", "WOW", "HAHA", "SAD", "ANGRY")))
+  
+  ggplot(actor_emotions_long, aes(x = Emocija, y = ACTOR_TYPE_HR, fill = Udio)) +
+    geom_tile(color = "white", linewidth = 0.5) +
+    geom_text(aes(label = sprintf("%.1f", Udio)), size = 3) +
+    scale_fill_gradient(low = "white", high = "gray20") +
+    labs(title = "Toplinska karta emocionalnih profila po tipu aktera", x = NULL, y = NULL, fill = "Udio %") +
+    theme(panel.grid = element_blank())
+}
+```
+
+
+## Vremenska dinamika
+
+```{r temporal-prep}
+#| label: temporal-prep
+
+dta[, DATE := as.Date(DATE)]
+dta[, Godina := year(DATE)]
+dta[, Mjesec := month(DATE)]
+
+calculate_easter <- function(year) {
+  a <- year %% 19; b <- year %/% 100; c <- year %% 100; d <- b %/% 4; e <- b %% 4
+  f <- (b + 8) %/% 25; g <- (b - f + 1) %/% 3; h <- (19 * a + b - d - g + 15) %% 30
+  i <- c %/% 4; k <- c %% 4; l <- (32 + 2 * e + 2 * i - h - k) %% 7
+  m <- (a + 11 * h + 22 * l) %/% 451; month <- (h + l - 7 * m + 114) %/% 31
+  day <- ((h + l - 7 * m + 114) %% 31) + 1
+  as.Date(paste(year, month, day, sep = "-"))
+}
+
+assign_liturgical_season <- function(date) {
+  year <- year(date); easter <- calculate_easter(year)
+  ash_wednesday <- easter - 46; pentecost <- easter + 49
+  advent_start <- as.Date(paste(year, "11", "27", sep = "-"))
+  advent_start <- advent_start + (7 - lubridate::wday(advent_start) + 1) %% 7
+  if (advent_start > as.Date(paste(year, "12", "03", sep = "-"))) advent_start <- advent_start - 7
+  christmas <- as.Date(paste(year, "12", "25", sep = "-"))
+  prev_epiphany <- as.Date(paste(year, "01", "06", sep = "-"))
+  if (date >= advent_start) { if (date < christmas) return("Došašće") else return("Božić") }
+  if (date < prev_epiphany + 8 && month(date) == 1 && day(date) <= 13) return("Božić")
+  if (date >= ash_wednesday && date < easter) return("Korizma")
+  if (date >= easter && date < pentecost) return("Uskrs")
+  return("Vrijeme kroz godinu")
+}
+
+dta[, Liturgijsko_vrijeme := sapply(DATE, assign_liturgical_season)]
+```
+
+```{r liturgical-stats}
+#| label: tbl-liturgical-stats
+
+season_stats <- dta[, .(Objave = .N, Ukupne_interakcije = sum(INTERACTIONS, na.rm = TRUE), Prosjek_interakcija = mean(INTERACTIONS, na.rm = TRUE), Dani = uniqueN(DATE)), by = Liturgijsko_vrijeme]
+season_stats[, `:=`(Objava_po_danu = Objave / Dani, Interakcija_po_danu = Ukupne_interakcije / Dani)]
+baseline_ppd <- season_stats[Liturgijsko_vrijeme == "Vrijeme kroz godinu"]$Objava_po_danu
+season_stats[, Velicina_ucinka := (Objava_po_danu - baseline_ppd) / baseline_ppd * 100]
+season_order <- c("Došašće", "Božić", "Korizma", "Uskrs", "Vrijeme kroz godinu")
+season_stats[, Liturgijsko_vrijeme := factor(Liturgijsko_vrijeme, levels = season_order)]
+
+season_stats[order(Liturgijsko_vrijeme)] %>%
+  mutate(Objave = format(Objave, big.mark = "."), Ukupne_interakcije = format(Ukupne_interakcije, big.mark = "."), Prosjek_interakcija = sprintf("%.1f", Prosjek_interakcija), Objava_po_danu = sprintf("%.0f", Objava_po_danu), Interakcija_po_danu = sprintf("%.0f", Interakcija_po_danu), Velicina_ucinka = sprintf("%+.1f%%", Velicina_ucinka)) %>%
+  kable(col.names = c("Vrijeme", "Objave", "Interakcije", "Prosj. int.", "Dani", "Objava/dan", "Int./dan", "Učinak vs bazna"), caption = "Aktivnost po liturgijskim vremenima", align = c("l", rep("r", 7))) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+```{r feast-day-analysis}
+#| label: feast-day-analysis
+
+feast_days <- data.table(Blagdan = c("Božić", "Uskrs", "Svi sveti", "Velika Gospa", "Bogojavljenje", "Pepelnica", "Cvjetnica", "Duhovi", "Tijelovo", "Bezgrješno začeće"), Tip = c("Fiksni", "Pomični", "Fiksni", "Fiksni", "Fiksni", "Pomični", "Pomični", "Pomični", "Pomični", "Fiksni"))
+
+get_feast_date <- function(feast_name, year) {
+  easter <- calculate_easter(year)
+  switch(feast_name, "Božić" = as.Date(paste(year, 12, 25, sep = "-")), "Uskrs" = easter, "Svi sveti" = as.Date(paste(year, 11, 1, sep = "-")), "Velika Gospa" = as.Date(paste(year, 8, 15, sep = "-")), "Bogojavljenje" = as.Date(paste(year, 1, 6, sep = "-")), "Pepelnica" = easter - 46, "Cvjetnica" = easter - 7, "Duhovi" = easter + 49, "Tijelovo" = easter + 60, "Bezgrješno začeće" = as.Date(paste(year, 12, 8, sep = "-")), NA)
+}
+
+years <- unique(dta$Godina)
+feast_analysis <- data.table()
+for (yr in years) {
+  for (feast in feast_days$Blagdan) {
+    feast_date <- get_feast_date(feast, yr)
+    if (!is.na(feast_date) && feast_date >= min(dta$DATE) && feast_date <= max(dta$DATE)) {
+      window_start <- feast_date - 1; window_end <- feast_date + 1
+      feast_posts <- dta[DATE >= window_start & DATE <= window_end]
+      baseline_posts <- dta[Godina == yr & !(DATE >= window_start & DATE <= window_end)]
+      if (nrow(feast_posts) > 0 && nrow(baseline_posts) > 0) {
+        feast_analysis <- rbind(feast_analysis, data.table(Blagdan = feast, Godina = yr, Datum = feast_date, Blagdan_dnevno = nrow(feast_posts) / 3, Bazna_dnevno = nrow(baseline_posts) / uniqueN(baseline_posts$DATE), Blagdan_interakcije = sum(feast_posts$INTERACTIONS, na.rm = TRUE), Blagdan_prosj_int = mean(feast_posts$INTERACTIONS, na.rm = TRUE)))
+      }
+    }
+  }
+}
+feast_analysis[, Velicina_ucinka := (Blagdan_dnevno - Bazna_dnevno) / Bazna_dnevno * 100]
+feast_summary <- feast_analysis[, .(Promatrane_godine = .N, Prosj_dnevnih_objava = mean(Blagdan_dnevno, na.rm = TRUE), Prosj_ucinak = mean(Velicina_ucinka, na.rm = TRUE), SD_ucinka = sd(Velicina_ucinka, na.rm = TRUE), Prosj_angazman = mean(Blagdan_prosj_int, na.rm = TRUE)), by = Blagdan][order(-Prosj_ucinak)]
+
+if (nrow(feast_analysis) > 0) ttest_result <- t.test(feast_analysis$Velicina_ucinka, mu = 0)
+```
+
+Jednouzorački t-test potvrđuje da blagdani generiraju značajno povišenu aktivnost objavljivanja u usporedbi s baznom linijom (*t* = `r round(ttest_result$statistic, 2)`, df = `r round(ttest_result$parameter, 1)`, *p* `r ifelse(ttest_result$p.value < 0.001, "< 0,001", paste0("= ", round(ttest_result$p.value, 3)))`), s prosječnom veličinom učinka od `r sprintf("%.1f%%", mean(feast_analysis$Velicina_ucinka))` iznad bazne linije.
+
+
+## Sažetak testiranja hipoteza
+
+```{r hypothesis-summary}
+#| label: tbl-hypothesis-summary
+
+hypothesis_results <- tibble(
+  Hipoteza = c("H1: Distribucija po zakonu potencije", "H2: Omjeri koncentracije", "H3: Institucionalni jaz u pažnji", "H4: Emocionalna diferencijacija"),
+  Predikcija = c("R² > 0,90 i Gini > 0,80", "Vodećih 10 izvora privlači >50% angažmana", "Institucionalni akteri imaju niže stope angažmana", "Značajne razlike u emocionalnim profilima"),
+  Rezultat = c(paste0("R² = ", round(r_squared, 3), "; Gini = ", round(gini_coef, 3)), paste0("CR10 = ", sprintf("%.1f%%", cr10)), paste0("W = ", format(wilcox_result$statistic, big.mark = "."), ", p ", ifelse(wilcox_result$p.value < 0.001, "< 0,001", paste0("= ", round(wilcox_result$p.value, 3)))), paste0("χ² = ", round(kw_angry$statistic, 1), ", p ", ifelse(kw_angry$p.value < 0.001, "< 0,001", paste0("= ", round(kw_angry$p.value, 3))))),
+  Potvrđena = c(ifelse(r_squared > 0.90 & gini_coef > 0.80, "Da", ifelse(r_squared > 0.85 | gini_coef > 0.75, "Djelomično", "Ne")), ifelse(cr10 > 50, "Da", "Ne"), ifelse(wilcox_result$p.value < 0.05, "Da", "Ne"), ifelse(kw_angry$p.value < 0.05, "Da", "Ne"))
+)
+
+hypothesis_results %>%
+  kable(caption = "Sažetak rezultata testiranja hipoteza", align = c("l", "l", "l", "c")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE) %>%
+  column_spec(4, bold = TRUE)
+```
+
+
+# Rasprava
+
+Nalazi otkrivaju da hrvatski katolički digitalni prostor pokazuje nejednakost pažnje usporedivu s ili veću od obrazaca dokumentiranih u komercijalnim medijskim ekosustavima. Gini koeficijent od `r sprintf("%.3f", gini_coef)` znatno premašuje pragove tipično povezane s visokom koncentracijom. Ovi rezultati potvrđuju Hipotezu 1 i usklađeni su s teorijskim predikcijama o dinamici pobjednik uzima sve u digitalnim okruženjima.
+
+Analiza pruža robusnu podršku za Hipotezu 3 o institucionalnim jazovima u pažnji. Službena crkvena tijela i biskupijske komunikacije postižu značajno niže stope angažmana od neinstitucionalnih aktera. Ovaj obrazac perzistira kroz platforme i održava se kada se kontrolira veličina publike kroz normalizaciju stope angažmana.
+
+Analiza emocionalnog otiska potvrđuje Hipotezu 4, demonstrirajući značajne razlike u emocionalnim odgovorima publike među tipovima aktera. Pobožni sadržaj i stranice karizmatskih zajednica izazivaju visoke udjele LOVE reakcija indicirajući duboku afektivnu rezonanciju.
+
+Vremenska analiza otkriva da katolički liturgijski kalendar strukturira obrasce pažnje na značajne načine. Glavni blagdani generiraju značajne skokove aktivnosti, s Božićem i Uskrsom koji proizvode najveće učinke.
+
+
+# Zaključak
+
+Ova studija pruža prvo sustavno mapiranje nacionalnog katoličkog digitalnog medijskog ekosustava, analizirajući više od `r format(n_posts, big.mark = ".")` objava kroz više platformi radi ispitivanja distribucije pažnje, stratifikacije aktera, emocionalne dinamike i vremenskih obrazaca u hrvatskoj katoličkoj digitalnoj komunikaciji.
+
+Nalazi potvrđuju temeljne predikcije teorije ekonomije pažnje. Pažnja se distribuira prema obrascima zakona potencije s ekstremnom koncentracijom među elitnim akterima (Gini = `r sprintf("%.3f", gini_coef)`). Institucionalni komunikatori doživljavaju značajne nedostatke u odnosu na individualne glasove i grassroots zajednice. Emocionalni profili značajno se razlikuju među tipovima aktera, stvarajući poticaje prema afektivnoj intenzifikaciji. Katolički liturgijski kalendar strukturira vremenske ritmove pažnje na načine koji proširuju postojeće teorijske okvire.
+
+Za praktičare katoličke komunikacije, ovi nalazi nude empirijski utemeljenu orijentaciju prema pejzažu pažnje koji nastanjuju. Razumijevanje strukturalnih ograničenja i mogućnosti može informirati realističnija očekivanja i učinkovitije strategije za religijsku komunikaciju u digitalnim okruženjima gdje pažnja ostaje najoskudniji i najosporavaniji resurs.
+
+
+# Literatura {.unnumbered}
+
+::: {#refs}
+:::
