@@ -38,6 +38,9 @@ format:
 execute:
   warning: false
   message: false
+knitr:
+  opts_chunk:
+    screenshot.force: true
 ---
 
 ```{r setup}
