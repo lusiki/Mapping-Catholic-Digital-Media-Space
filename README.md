@@ -12,6 +12,8 @@ A comprehensive computational analysis of **600,000+ posts** from Croatian Catho
 
 🇭🇷 **[Tržišta pažnje u religijskim digitalnim medijima (kratka verzija)](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/paper/hr/drafts/attention_markets_paper_hr_v2.html)**
 
+🇭🇷 **[Tržišta pažnje u religijskim digitalnim medijima: Mapiranje hrvatskog katoličkog digitalnog prostora](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/paper/hr/drafts/attention_markets_paper_hr_v3.html)**
+
 ---
 
 ## Interactive Maps
