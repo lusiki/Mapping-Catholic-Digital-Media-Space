@@ -2,18 +2,21 @@
 
 A comprehensive computational analysis of **600,000+ posts** from Croatian Catholic digital media across multiple platforms (2021-2026). This project maps the structure, themes, emotions, and temporal dynamics of religious communication in the Croatian digital public sphere.
 
-## Working Paper
+## Working Papers
 
-📄 **[Attention Markets in Religious Digital Media: Mapping the Croatian Catholic Digital Space](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/paper/en/final/attention_markets_paper_complete.html)**
+📄 **[v4: Attention Markets in Religious Digital Media: Mapping the Croatian Catholic Digital Space](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/paper/hr/drafts/attention_markets_paper_hr_v4.html)**
 
-📄 **[Attention Markets in Religious Digital Media: Mapping the Croatian Catholic Digital Space (short version)](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/paper/en/drafts/attention_markets_paper_en_short.html)**
+🇭🇷 **[v3:Tržišta pažnje u religijskim digitalnim medijima: Mapiranje hrvatskog katoličkog digitalnog prostora](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/paper/hr/drafts/attention_markets_paper_hr_v3.html)**
 
-🇭🇷 **[Tržišta pažnje u religijskim digitalnim medijima: Mapiranje hrvatskog katoličkog digitalnog prostora](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/paper/hr/final/attention_markets_paper_hr.html)**
+🇭🇷 **[v2: Tržišta pažnje u religijskim digitalnim medijima (kratka verzija)](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/paper/hr/drafts/attention_markets_paper_hr_v2.html)**
 
-🇭🇷 **[Tržišta pažnje u religijskim digitalnim medijima (kratka verzija)](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/paper/hr/drafts/attention_markets_paper_hr_v2.html)**
 
-🇭🇷 **[Tržišta pažnje u religijskim digitalnim medijima: Mapiranje hrvatskog katoličkog digitalnog prostora](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/paper/hr/drafts/attention_markets_paper_hr_v3.html)**
+🇭🇷 **[v1: Tržišta pažnje u religijskim digitalnim medijima: Mapiranje hrvatskog katoličkog digitalnog prostora](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/paper/hr/final/attention_markets_paper_hr.html)**
 
+
+**[Attention Markets in Religious Digital Media: Mapping the Croatian Catholic Digital Space](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/paper/en/final/attention_markets_paper_complete.html)**
+
+**[Attention Markets in Religious Digital Media: Mapping the Croatian Catholic Digital Space (short version)](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/paper/en/drafts/attention_markets_paper_en_short.html)**
 ---
 
 ## Interactive Maps
