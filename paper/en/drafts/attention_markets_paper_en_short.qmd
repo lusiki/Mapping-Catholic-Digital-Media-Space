@@ -3,6 +3,7 @@ title: "Attention Markets in Religious Digital Media"
 subtitle: "Mapping the Croatian Catholic Digital Space"
 author: "Sikic, Luka and Palic, Petra"
 date: today
+bibliography: references.bib
 lang: en
 format:
   html:
@@ -26,6 +27,7 @@ knitr:
     warning: false
     message: false
 ---
+
 
 ```{r setup}
 #| label: setup

@@ -1,7 +1,7 @@
 ---
 title: "Tržišta pažnje u religijskim digitalnim medijima"
 subtitle: "Mapiranje hrvatskog katoličkog digitalnog prostora"
-author: "Šikić, Luka i Palić, Petra"
+author: "Šikić, Luka, Palić, Petra i Kovačić, Siniša"
 date: today
 lang: hr
 format:
@@ -104,8 +104,8 @@ actor_fills <- c(
 
 dta <- readRDS("C:/Users/lsikic/Luka C/HKS/Projekti/Digitalni Kat/SHKM/DigiKat/data/merged_comprehensive.rds") %>%
   filter(SOURCE_TYPE != "tiktok", !is.na(SOURCE_TYPE)) %>%
-  filter(DATE >= as.Date("2021-01-01") & DATE <= as.Date("2024-12-31")) %>%
-  filter(year >= 2021 & year <= 2024)
+  filter(DATE >= as.Date("2021-01-01") & DATE <= as.Date("2025-12-31")) %>%
+  filter(year >= 2021 & year <= 2025)
 
 setDT(dta)
 
@@ -279,13 +279,7 @@ Iz teorije ekonomije pažnje izvodimo četiri provjerljive hipoteze o hrvatskom 
 
 ## Baza podataka DigiKat
 
-Ova studija koristi bazu podataka DigiKat, sveobuhvatnu zbirku hrvatskog katoličkog digitalnog sadržaja razvijenu kao dio trogodišnjeg istraživačkog projekta (2025. do 2027.). Baza podataka agregira javno dostupan digitalni sadržaj iz izvora identificiranih kao dio hrvatskog katoličkog medijskog ekosustava, obuhvaćajući službene crkvene komunikacije, nezavisne katoličke medijske kuće, župne i biskupijske kanale, publikacije redovničkih zajednica, stranice karizmatskih zajednica i glasove pojedinačnih klerika.
-
-Analitički korpus obuhvaća ukupno `r format(n_posts, big.mark = ".")` objava objavljenih između `r format(as.Date(date_min), "%d.%m.%Y.")` i `r format(as.Date(date_max), "%d.%m.%Y.")` kroz `r n_platforms` kategorija platformi. Web sadržaj čini najveći volumen, slijede Facebook, Instagram, YouTube, Twitter, forumi, Reddit i komentari korisnika na katoličkim portalima. Ukupno je identificirano `r format(n_sources, big.mark = ".")` jedinstvenih izvora.
-
-## Prikupljanje podataka
-
-Prikupljanje podataka koristilo je više komplementarnih metoda prilagođenih tehničkim ograničenjima specifičnim za platforme. Web sadržaj prikupljen je automatiziranim scrapingom identificiranih katoličkih portala. Facebook i Instagram podaci dobiveni su kroz CrowdTangle. YouTube podaci prikupljeni su putem YouTube Data API-ja. Postupci kontrole kvalitete adresirali su uobičajene izazove u velikom prikupljanju digitalnih podataka.
+Ova studija koristi bazu podataka DigiKat, sveobuhvatnu zbirku hrvatskog katoličkog digitalnog sadržaja koja agregira javno dostupan digitalni sadržaj iz izvora identificiranih kao dio hrvatskog katoličkog medijskog ekosustava, obuhvaćajući službene crkvene komunikacije, nezavisne katoličke medijske kuće, župne i biskupijske kanale, publikacije redovničkih zajednica, stranice karizmatskih zajednica i glasove pojedinačnih klerika. Prikupljanje podataka koristilo je više komplementarnih metoda prilagođenih tehničkim ograničenjima specifičnim za platforme. Web sadržaj prikupljen je automatiziranim scrapingom identificiranih katoličkih portala. Facebook i Instagram podaci preuzeti su putem sustava Apify. YouTube podaci prikupljeni su putem YouTube Data API-ja. Postupci kontrole kvalitete su uključivali provjeru u odnosu na medijske podatke dostupne u bazi podatka Determ i adresirali uobičajene izazove u velikom prikupljanju digitalnih podataka te.Analitički korpus u ovome istraživanju obuhvaća ukupno `r format(n_posts, big.mark = ".")` objava objavljenih između `r format(as.Date(date_min), "%d.%m.%Y.")` i `r format(as.Date(date_max), "%d.%m.%Y.")` kroz `r n_platforms` kategorija platformi. Web sadržaj čini najveći volumen, slijede Facebook, Instagram, YouTube, Twitter, forumi, Reddit i komentari korisnika na katoličkim portalima. Ukupno je identificirano `r format(n_sources, big.mark = ".")` jedinstvenih izvora.
 
 ## Klasifikacija aktera
 
