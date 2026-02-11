@@ -283,11 +283,11 @@ Ova studija koristi bazu podataka DigiKat, sveobuhvatnu zbirku hrvatskog katoli�
 
 ## Klasifikacija aktera
 
-Za analizu distribucije pažnje među različitim tipovima katoličkih komunikatora, razvili smo hijerarhijski sustav klasifikacije koji dodjeljuje svaki izvor jednoj od deset kategorija aktera. Rezultirajućih deset kategorija obuhvaća: službene institucije, biskupije i župe, nezavisni mediji, redovničke zajednice, karizmatske zajednice, pojedinačni svećenici, mladežne organizacije, akademske institucije, laički influenceri i ostalo.
+Za analizu distribucije pažnje među različitim tipovima katoličkih komunikatora, razvili smo hijerarhijski sustav klasifikacije koji dodjeljuje svaki izvor jednoj od deset kategorija aktera. Rezultirajućih deset kategorija obuhvaća službene institucije, biskupije i župe, nezavisni mediji, redovničke zajednice, karizmatske zajednice, pojedinačni svećenici, mladežne organizacije, akademske institucije, laički influenceri i ostalo. Klasifikacija se temelji na kombinaciji ručnih pravila, prepoznavanja obrazaca i algoritamskih pravila koji su iterativno razvijani i testirani na podskupu podataka. Ovaj sustav omogućava nam da ispitamo kako različiti tipovi aktera privlače pažnju i angažman unutar hrvatskog katoličkog digitalnog prostora. Naše klasifikacije su ručno provjerene i validirane na reprezentativnom uzorku izvora, osiguravajući visoku razinu točnosti i pouzdanosti u identifikaciji aktera. Ova kategorizacija je ključna za testiranje naših hipoteza o institucionalnom jazu u pažnji i emocionalnoj diferencijaciji među tipovima aktera. 
 
 ## Analitički pristup
 
-Analiza se odvija kroz četiri komplementarne dimenzije. Za procjenu tržišne strukture i koncentracije koristimo Gini koeficijent, Lorenzove krivulje i omjere koncentracije. Za ispitivanje institucionalnog jaza koristimo Wilcoxonov test sume rangova. Za analizu emocionalnog privlačenja pažnje ispitujemo distribucije Facebook reakcija koristeći Kruskal-Wallisove testove. Za vremensku dinamiku mapiramo aktivnost objavljivanja na katolički liturgijski kalendar.
+Analiza se odvija kroz četiri komplementarne dimenzije. Za procjenu tržišne strukture i koncentracije koristimo Gini koeficijent, Lorenzove krivulje i omjere koncentracije. Za ispitivanje institucionalnog jaza koristimo Wilcoxonov test sume rangova. Za analizu emocionalnog privlačenja pažnje ispitujemo distribucije Facebook reakcija koristeći Kruskal-Wallisove testove. Za vremensku dinamiku mapiramo aktivnost objavljivanja na katolički liturgijski kalendar. Ovaj višedimenzionalni pristup nam omogućava da dobijemo sveobuhvatnu sliku alokacije pažnje unutar hrvatskog katoličkog digitalnog prostora i da testiramo naše hipoteze na rigorozan i informativan način. 
 
 # Rezultati
 
