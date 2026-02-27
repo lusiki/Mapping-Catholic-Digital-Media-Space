@@ -1,186 +1,121 @@
-# Mapping the Croatian Catholic Digital Media Space
+# Attention Markets in Religious Digital Media: Mapping the Croatian Catholic Digital Space
 
-A comprehensive computational analysis of **600,000+ posts** from Croatian Catholic digital media across multiple platforms (2021-2026). This project maps the structure, themes, emotions, and temporal dynamics of religious communication in the Croatian digital public sphere.
-
-## Working Papers
-
-📄 **[v4: Attention Markets in Religious Digital Media: Mapping the Croatian Catholic Digital Space](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/paper/hr/drafts/attention_markets_paper_hr_v4.html)**
-
-🇭🇷 **[v3:Tržišta pažnje u religijskim digitalnim medijima: Mapiranje hrvatskog katoličkog digitalnog prostora](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/paper/hr/drafts/attention_markets_paper_hr_v3.html)**
-
-🇭🇷 **[v2: Tržišta pažnje u religijskim digitalnim medijima (kratka verzija)](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/paper/hr/drafts/attention_markets_paper_hr_v2.html)**
-
-
-🇭🇷 **[v1: Tržišta pažnje u religijskim digitalnim medijima: Mapiranje hrvatskog katoličkog digitalnog prostora](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/paper/hr/final/attention_markets_paper_hr.html)**
-
-
-**[Attention Markets in Religious Digital Media: Mapping the Croatian Catholic Digital Space](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/paper/en/final/attention_markets_paper_complete.html)**
-
-**[Attention Markets in Religious Digital Media: Mapping the Croatian Catholic Digital Space (short version)](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/paper/en/drafts/attention_markets_paper_en_short.html)**
----
-
-## Interactive Maps
-
-Explore the full interactive analyses:
-
-| Map | Title | View |
-|:---:|-------|:----:|
-| 1 | **Platform and Actor Structure** | [**Open Map 1**](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/maps/map_1_platform_actors.html) |
-| 2 | **Thematic Structure** | [**Open Map 2**](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/maps/map_2_thematic.html) |
-| 3 | **Emotional Structure** | [**Open Map 3**](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/maps/map_3_emotional.html) |
-| 4 | **Temporal Dynamics** | [**Open Map 4**](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/maps/map_4_temporal.html) |
+A computational analysis of **600,000+ posts** from Croatian Catholic digital media across 8 platforms (2021--2026), examining attention concentration, engagement quality, sentiment dynamics, liturgical temporality, and platform effects.
 
 ---
 
-## Project Overview
+## Working Paper
 
-The analysis applies computational social science methods to understand how the Catholic Church and Catholic voices communicate in Croatia's digital landscape. Each "map" addresses a distinct research question:
+**Sikic, L. (2026). Tržišta pažnje u religijskim digitalnim medijima: Mapiranje hrvatskog katoličkog digitalnog prostora.**
 
-### Map 1: Platform and Actor Structure
-> **Who communicates where, and who dominates visibility?**
-
-Analyzes the distribution of content across platforms and the stratification of visibility among different actor types. Examines engagement metrics, Lorenz curves, and power-law distributions to understand concentration of attention in Catholic digital spaces.
-
-**Key analyses:**
-- Platform distribution (Web, Facebook, Instagram, YouTube, Twitter, Forums)
-- Actor type classification and engagement patterns
-- Cross-platform presence strategies
-- Gini coefficients and visibility inequality
-
-### Map 2: Thematic Structure
-> **What is Croatian Catholic digital media about, and who specializes in what?**
-
-Uses **Structural Topic Modeling (STM)** to discover the 35 latent themes in the corpus. Maps how different actors and platforms specialize in particular topics.
-
-**Key analyses:**
-- Topic modeling with 35 discovered themes
-- Actor-topic specialization profiles
-- Platform-topic distributions
-- Thematic categories: Liturgical/Sacramental, Devotional, Institutional, Social/Ethical, Political, Youth/Community, Educational
-
-### Map 3: Emotional Structure
-> **What emotional register characterizes Croatian Catholic digital communication, and where does controversy emerge?**
-
-Combines automated sentiment analysis with Facebook reaction data (LOVE, WOW, HAHA, SAD, ANGRY) to map the emotional landscape of religious digital discourse.
-
-**Key analyses:**
-- Sentiment distribution (positive/neutral/negative)
-- Emotional fingerprints by actor type
-- Controversy detection and analysis
-- Temporal patterns of emotional expression
-
-### Map 4: Temporal Dynamics
-> **How does Croatian Catholic digital communication evolve over time, and how does it respond to events?**
-
-Examines communication patterns across multiple time scales—from hourly posting rhythms to annual liturgical cycles.
-
-**Key analyses:**
-- Macro trends (yearly, monthly growth patterns)
-- Weekly and daily posting rhythms
-- Liturgical calendar effects (Advent, Lent, Easter, feast days)
-- Event response patterns
-- Platform growth trajectories
+| Format | Link |
+|:------:|:----:|
+| HTML | [**Read online**](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/paper/hr/drafts/attention_markets_paper_hr_v5.html) |
+| PDF | [**Download PDF**](https://github.com/lusiki/Mapping-Catholic-Digital-Media-Space/raw/main/paper/hr/drafts/attention_markets_paper_hr_v5.pdf) |
+| Word | [**Download DOCX**](https://github.com/lusiki/Mapping-Catholic-Digital-Media-Space/raw/main/paper/hr/drafts/attention_markets_paper_hr_v5.docx) |
+| Source | [`attention_markets_paper_hr_v5.qmd`](paper/hr/drafts/attention_markets_paper_hr_v5.qmd) |
 
 ---
 
-## Actor Classification
+## Abstract
 
-The project classifies sources into meaningful actor types within the Croatian Catholic media landscape:
+The paper applies the attention economics framework to a non-commercial religious digital ecosystem. Using the DigiKat database (600,000+ posts, 2021--2026, 8 platforms), five interconnected hypotheses are tested:
 
-| Actor Type | Description |
-|------------|-------------|
-| **Institutional Official** | HKM (Croatian Catholic Network), IKA (Catholic News Agency), HBK (Bishops' Conference) |
-| **Diocesan** | Dioceses and archdioceses (Zagreb, Split-Makarska, Rijeka, etc.) |
-| **Independent Media** | Laudato TV, Bitno.net, Glas Koncila, Nova Eva |
-| **Religious Orders** | Franciscans, Jesuits, Dominicans, Salesians, Carmelites, etc. |
-| **Individual Priests** | Personal accounts of clergy members |
-| **Charismatic Communities** | Charismatic renewal movements |
-| **Youth Organizations** | Catholic youth groups and initiatives |
-| **Academic** | Catholic educational institutions |
-| **Lay Influencers** | Individual Catholic content creators |
+1. **H1 -- Concentration**: Attention follows power-law distributions (Gini > 0.80, R² > 0.90)
+2. **H2 -- Engagement quality**: Institutional actors attract qualitatively different engagement (more deliberative, less affective)
+3. **H3 -- Sentiment mechanism**: Negative content drives disproportionate engagement, but less so for institutionally constrained actors
+4. **H4 -- Liturgical temporality**: The liturgical calendar explains significant variance in posting activity beyond secular temporal patterns
+5. **H5 -- Platform architecture**: Algorithmically curated platforms show higher attention concentration than editorially curated ones
 
----
+### Key findings
 
-## Platforms Analyzed
-
-| Platform | Color Code |
-|----------|------------|
-| Web portals | ![#4285F4](https://via.placeholder.com/15/4285F4/4285F4.png) `#4285F4` |
-| Facebook | ![#1877F2](https://via.placeholder.com/15/1877F2/1877F2.png) `#1877F2` |
-| Instagram | ![#E4405F](https://via.placeholder.com/15/E4405F/E4405F.png) `#E4405F` |
-| YouTube | ![#FF0000](https://via.placeholder.com/15/FF0000/FF0000.png) `#FF0000` |
-| Twitter/X | ![#1DA1F2](https://via.placeholder.com/15/1DA1F2/1DA1F2.png) `#1DA1F2` |
-| Forums | ![#FF6600](https://via.placeholder.com/15/FF6600/FF6600.png) `#FF6600` |
-| Reddit | ![#FF4500](https://via.placeholder.com/15/FF4500/FF4500.png) `#FF4500` |
-
----
-
-## Methodology
-
-### Data Collection
-- **Corpus size:** 600,000+ posts
-- **Time period:** 2021 – 2026
-- **Sources:** Web scraping, API collection, platform exports
-
-### Analytical Methods
-- **Topic Modeling:** Structural Topic Models (STM) for thematic discovery
-- **Sentiment Analysis:** Automated classification + Facebook reactions
-- **Network Metrics:** Gini coefficients, Lorenz curves, power-law fitting
-- **Time Series Analysis:** Rolling averages, YoY comparisons, CAGR calculations
-
-### Technology Stack
-- **Language:** R
-- **Document System:** Quarto
-- **Key Packages:** tidyverse, ggplot2, quanteda, stm, tidytext, data.table
+- Extreme attention inequality across all platforms (Gini = 0.96)
+- Institutional actors receive proportionally more comments and shares relative to likes
+- Negative sentiment amplifies engagement 2--3x, with institutional actors showing a smaller negativity boost
+- The liturgical calendar significantly structures digital activity (F-test p < 0.001)
+- Algorithmically curated platforms exhibit stronger winner-takes-all dynamics
 
 ---
 
 ## Repository Structure
 
 ```
-├── paper/                          # Working paper
-│   ├── attention_markets_paper.qmd # Paper source
-│   └── attention_markets_paper.html# Paper rendered
-├── maps/                           # Interactive map analyses
-│   ├── map_1_platform_actors.qmd   # Map 1 source
-│   ├── map_1_platform_actors.html  # Map 1 rendered
-│   ├── map_2_thematic.qmd          # Map 2 source
-│   ├── map_2_thematic.html         # Map 2 rendered
-│   ├── map_3_emotional.qmd         # Map 3 source
-│   ├── map_3_emotional.html        # Map 3 rendered
-│   ├── map_4_temporal.qmd          # Map 4 source
-│   └── map_4_temporal.html         # Map 4 rendered
-├── archive/                        # Previous versions
-├── output/                         # Additional outputs
-├── CLAUDE.md                       # AI assistant instructions
-├── README.md                       # This file
-└── .gitignore                      # Git ignore rules
+paper/hr/drafts/
+  attention_markets_paper_hr_v5.qmd   # Current working paper (source)
+  attention_markets_paper_hr_v5.html   # Rendered HTML
+  attention_markets_paper_hr_v5.pdf    # Rendered PDF
+  attention_markets_paper_hr_v5.docx   # Rendered Word
+
+paper/hr/drafts/                       # Previous versions (v2, v3, v4)
+paper/hr/final/                        # Earlier complete draft (v1)
+paper/en/                              # English language versions
+
+maps/                                  # Supplementary interactive analyses
+archive/                               # Archived materials
+output/                                # Additional outputs
 ```
 
 ---
 
-## Theoretical Framework
+## Rendering
 
-This project draws on:
-- **Platform studies** and affordance theory (van Dijck, 2013)
-- **Attention economics** and visibility inequality (Webster, 2014)
-- **Long tail distributions** in online content (Anderson, 2006)
-- **Digital religion studies** and mediatization of religion
-- **Computational social science** methods for text analysis
+The paper is a Quarto document with embedded R code. To render all formats:
+
+```bash
+quarto render paper/hr/drafts/attention_markets_paper_hr_v5.qmd --to html
+quarto render paper/hr/drafts/attention_markets_paper_hr_v5.qmd --to pdf
+quarto render paper/hr/drafts/attention_markets_paper_hr_v5.qmd --to docx
+```
+
+**Requirements:** R (v4.x+), Quarto, XeLaTeX (for PDF), and the following R packages:
+
+```r
+install.packages(c("tidyverse", "data.table", "scales", "ggplot2",
+                    "knitr", "kableExtra", "ineq", "lubridate"))
+```
+
+---
+
+## Supplementary Materials
+
+### Interactive Analyses (Maps)
+
+Detailed exploratory analyses that informed the working paper:
+
+| Map | Title | View |
+|:---:|-------|:----:|
+| 1 | Platform and Actor Structure | [Open](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/maps/map_1_platform_actors.html) |
+| 2 | Thematic Structure (STM, 35 topics) | [Open](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/maps/map_2_thematic.html) |
+| 3 | Emotional Structure | [Open](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/maps/map_3_emotional.html) |
+| 4 | Temporal Dynamics | [Open](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/maps/map_4_temporal.html) |
+
+### Previous Paper Versions
+
+| Version | Language | Link |
+|:-------:|:--------:|:----:|
+| v4 | HR | [HTML](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/paper/hr/drafts/attention_markets_paper_hr_v4.html) |
+| v3 | HR | [HTML](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/paper/hr/drafts/attention_markets_paper_hr_v3.html) |
+| v2 | HR | [HTML](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/paper/hr/drafts/attention_markets_paper_hr_v2.html) |
+| v1 | HR | [HTML](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/paper/hr/final/attention_markets_paper_hr.html) |
+| Complete | EN | [HTML](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/paper/en/final/attention_markets_paper_complete.html) |
+| Short | EN | [HTML](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/paper/en/drafts/attention_markets_paper_en_short.html) |
+
+### Data
+
+The analysis uses the **DigiKat database** -- a media monitoring corpus of Croatian Catholic digital content collected via the Mediatoolkit platform. The raw data file (`merged_comprehensive.rds`) is not included in this repository due to size and platform terms of service. Available upon request subject to ethical and legal constraints.
 
 ---
 
 ## Citation
 
-If you use this research, please cite:
-
 ```
-Sikic (2026). Attention Markets in Religious Digital Media: Mapping the Croatian Catholic Digital Space.
-https://github.com/lusiki/Mapping-Catholic-Digital-Media-Space
+Sikic, L. (2026). Trzista paznje u religijskim digitalnim medijima:
+  Mapiranje hrvatskog katolickog digitalnog prostora. Working paper.
+  https://github.com/lusiki/Mapping-Catholic-Digital-Media-Space
 ```
 
 ---
 
 ## Author
 
-**DigiKat Project**
+**Luka Sikic** | DigiKat Project
