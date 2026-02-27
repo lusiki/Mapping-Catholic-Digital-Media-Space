@@ -6,7 +6,7 @@ A computational analysis of **600,000+ posts** from Croatian Catholic digital me
 
 ## Working Paper
 
-**Sikic, L. (2026). Tržišta pažnje u religijskim digitalnim medijima: Mapiranje hrvatskog katoličkog digitalnog prostora.**
+**Kovačić, S., Palić, P. & Sikić, L. (2026). Tržišta pažnje u religijskim digitalnim medijima: Mapiranje hrvatskog katoličkog digitalnog prostora.**
 
 | Format | Link |
 |:------:|:----:|
@@ -103,13 +103,15 @@ The analysis uses the **DigiKat database** -- a media monitoring corpus of Croat
 ## Citation
 
 ```
-Sikic, L. (2026). Trzista paznje u religijskim digitalnim medijima:
-  Mapiranje hrvatskog katolickog digitalnog prostora. Working paper.
-  https://github.com/lusiki/Mapping-Catholic-Digital-Media-Space
+Kovacic, S., Palic, P. & Sikic, L. (2026). Trzista paznje u religijskim
+  digitalnim medijima: Mapiranje hrvatskog katolickog digitalnog prostora.
+  Working paper. https://github.com/lusiki/Mapping-Catholic-Digital-Media-Space
 ```
 
 ---
 
-## Author
+## Authors
 
-**Luka Sikic** | DigiKat Project
+**Siniša Kovačić** | HINA
+**Petra Palić** | UNICATH
+**Luka Sikić** | UNICATH
