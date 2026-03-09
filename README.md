@@ -10,8 +10,9 @@ A computational analysis of **600,000+ posts** from Croatian Catholic digital me
 
 | Format | Link |
 |:------:|:----:|
-| PDF (v5) | [**Read online**](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/paper/hr/drafts/attention_markets_paper_hr_v5.pdf) |
 | HTML (v7) | [**Read online**](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/paper/hr/drafts/attention_markets_paper_hr_v7.html) |
+| PDF (v8) | [**Download**](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/paper/hr/drafts/attention_markets_paper_hr_v8.pdf) |
+| Word (v9) | [**Download**](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/paper/hr/drafts/attention_markets_paper_hr_v9.docx) |
 | Source | [`attention_markets_paper_hr_v7.qmd`](paper/hr/drafts/attention_markets_paper_hr_v7.qmd) |
 
 ---
