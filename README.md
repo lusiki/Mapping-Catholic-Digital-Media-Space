@@ -11,8 +11,8 @@ A computational analysis of **600,000+ posts** from Croatian Catholic digital me
 | Format | Link |
 |:------:|:----:|
 | PDF (v5) | [**Read online**](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/paper/hr/drafts/attention_markets_paper_hr_v5.pdf) |
-| HTML (v4) | [**Read online**](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/paper/hr/drafts/attention_markets_paper_hr_v4.html) |
-| Source | [`attention_markets_paper_hr_v5.qmd`](paper/hr/drafts/attention_markets_paper_hr_v5.qmd) |
+| HTML (v6) | [**Read online**](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/paper/hr/drafts/attention_markets_paper_hr_v6.html) |
+| Source | [`attention_markets_paper_hr_v6.qmd`](paper/hr/drafts/attention_markets_paper_hr_v6.qmd) |
 
 ---
 
@@ -40,10 +40,10 @@ The paper applies the attention economics framework to a non-commercial religiou
 
 ```
 paper/hr/drafts/
-  attention_markets_paper_hr_v4.qmd   # Current working paper (source)
-  attention_markets_paper_hr_v4.html   # Rendered HTML
+  attention_markets_paper_hr_v6.qmd   # Current working paper (source)
+  attention_markets_paper_hr_v6.html   # Rendered HTML
 
-paper/hr/drafts/                       # Previous versions (v2, v3)
+paper/hr/drafts/                       # Previous versions (v2, v3, v4, v5)
 paper/hr/final/                        # Earlier complete draft (v1)
 paper/en/                              # English language versions
 
@@ -59,7 +59,7 @@ output/                                # Additional outputs
 The paper is a Quarto document with embedded R code. To render all formats:
 
 ```bash
-quarto render paper/hr/drafts/attention_markets_paper_hr_v4.qmd --to html
+quarto render paper/hr/drafts/attention_markets_paper_hr_v6.qmd --to html
 ```
 
 **Requirements:** R (v4.x+), Quarto, XeLaTeX (for PDF), and the following R packages:
@@ -88,6 +88,7 @@ Detailed exploratory analyses that informed the working paper:
 
 | Version | Language | Link |
 |:-------:|:--------:|:----:|
+| v4 | HR | [HTML](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/paper/hr/drafts/attention_markets_paper_hr_v4.html) |
 | v3 | HR | [HTML](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/paper/hr/drafts/attention_markets_paper_hr_v3.html) |
 | v2 | HR | [HTML](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/paper/hr/drafts/attention_markets_paper_hr_v2.html) |
 | v1 | HR | [HTML](https://raw.githack.com/lusiki/Mapping-Catholic-Digital-Media-Space/main/paper/hr/final/attention_markets_paper_hr.html) |

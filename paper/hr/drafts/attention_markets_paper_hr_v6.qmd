@@ -1,0 +1,984 @@
+---
+title: "Tržišta pažnje u religijskim digitalnim medijima"
+subtitle: "Mapiranje hrvatskog katoličkog digitalnog prostora"
+author: "Šikić, Luka, Palić, Petra i Kovačić, Siniša"
+date: today
+lang: hr
+crossref:
+  tbl-prefix: "Tablica"
+  fig-prefix: "Slika"
+  tbl-title: "Tablica"
+  fig-title: "Slika"
+format:
+  html:
+    embed-resources: true
+    toc: true
+    toc-depth: 3
+    toc-location: left
+    number-sections: true
+    code-fold: true
+    code-summary: "Prikaži kod"
+    theme: cosmo
+    fig-width: 10
+    fig-height: 6
+  pdf:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    fig-width: 8
+    fig-height: 5
+    geometry:
+      - top=25mm
+      - left=25mm
+      - right=25mm
+      - bottom=25mm
+    fontsize: 11pt
+    documentclass: article
+    pdf-engine: xelatex
+    mainfont: "Times New Roman"
+    sansfont: "Arial"
+    monofont: "Courier New"
+  docx:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    fig-width: 6.5
+    fig-height: 4
+execute:
+  warning: false
+  message: false
+  echo: false
+knitr:
+  opts_chunk:
+    echo: false
+    warning: false
+    message: false
+---
+
+```{r setup}
+#| label: setup
+#| include: false
+
+library(tidyverse)
+library(data.table)
+library(scales)
+library(ggplot2)
+library(knitr)
+library(kableExtra)
+library(ineq)
+library(lubridate)
+
+theme_bw_paper <- theme_minimal(base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold", size = 14),
+    plot.subtitle = element_text(color = "gray40"),
+    legend.position = "bottom",
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(color = "gray85"),
+    panel.border = element_rect(color = "gray50", fill = NA),
+    axis.line = element_line(color = "gray50")
+  )
+
+theme_set(theme_bw_paper)
+
+# Helper: Croatian decimal comma formatting
+fmtc <- function(fmt, ...) gsub(".", ",", sprintf(fmt, ...), fixed = TRUE)
+
+actor_labels_hr <- c(
+  "Institutional Official" = "Službene institucije",
+  "Diocesan" = "Biskupije i župe",
+  "Independent Media" = "Nezavisni mediji",
+  "Individual Priests" = "Pojedinačni svećenici",
+  "Charismatic Communities" = "Karizmatske zajednice",
+  "Religious Orders" = "Redovničke zajednice",
+  "Youth Organizations" = "Mladežne organizacije",
+  "Academic" = "Akademske institucije",
+  "Lay Influencers" = "Laički influenceri",
+  "Other" = "Ostalo"
+)
+
+actor_fills <- c(
+  "Institutional Official" = "gray95",
+  "Diocesan" = "gray85",
+  "Independent Media" = "gray75",
+  "Individual Priests" = "gray65",
+  "Charismatic Communities" = "gray55",
+  "Religious Orders" = "gray45",
+  "Youth Organizations" = "gray35",
+  "Academic" = "gray25",
+  "Lay Influencers" = "gray15",
+  "Other" = "gray50"
+)
+
+dta <- readRDS("C:/Users/lsikic/Luka C/HKS/Projekti/Digitalni Kat/SHKM/DigiKat/data/merged_comprehensive.rds") %>%
+  filter(SOURCE_TYPE != "tiktok", !is.na(SOURCE_TYPE)) %>%
+  filter(DATE >= as.Date("2021-01-01") & DATE <= as.Date("2025-12-31"))
+
+setDT(dta)
+
+n_posts <- nrow(dta)
+n_sources <- uniqueN(dta$FROM)
+date_min <- min(dta$DATE)
+date_max <- max(dta$DATE)
+n_platforms <- uniqueN(dta$SOURCE_TYPE)
+```
+
+```{r actor-classification}
+#| label: actor-classification
+#| include: false
+
+manual_overrides <- list(
+  "Institutional Official" = c(
+    "hrvatska katolička mreža", "hrvatska katolicka mreza",
+    "informativna katolička agencija", "informativna katolicka agencija",
+    "hrvatski katolički radio", "hrvatski katolicki radio",
+    "hrvatska biskupska konferencija", "ika", "hkr", "hkm", "hbk",
+    "tiskovni ured hbk", "radio marija"
+  ),
+  "Independent Media" = c(
+    "laudato tv", "laudatotv", "laudato.tv", "laudato.hr", "laudato",
+    "bitno.net", "bitno net", "glas koncila", "glaskoncila",
+    "nova eva", "nova-eva", "verbum", "totus tuus", "totus-tuus",
+    "katolički tjednik", "katolicki tjednik", "kršćanska sadašnjost",
+    "krscanska sadasnjost", "mir i dobro", "svjetlo riječi",
+    "svjetlo rijeci", "živo vrelo", "zivo vrelo"
+  )
+)
+
+secular_exclusions <- c(
+  "index.hr", "24sata", "jutarnji", "večernji", "vecernji",
+  "slobodna dalmacija", "novi list", "telegram", "dnevnik.hr",
+  "rtl.hr", "nova tv", "hrt.hr", "net.hr", "tportal", "dnevno.hr",
+  "narod.hr", "direktno.hr", "advance.hr", "7dnevno"
+)
+
+domain_patterns <- list(
+  "Institutional Official" = c("hkm.hr", "ika.hkm.hr", "hkr.hkm.hr", "hbk.hr", "radiomarija.hr"),
+  "Diocesan" = c("zg-nadbiskupija.hr", "biskupija-varazdinska.hr", "djos.hr", "biskupija-sj.hr", "rzs.hr", "rkc-sisak.hr", "zadarskanadbiskupija.hr", "gospicko-senjska-biskupija.hr", "nadbiskupija-split.com", "nadbiskupija-split.hr", "dubrovacka-biskupija.hr", "porec-biskupija.hr", "biskupija-kk.hr", "rkc-pula.hr", "krizcevacka-eparhija.hr", "sibenska-biskupija.hr", "krizevci.hbk.hr"),
+  "Independent Media" = c("laudato.hr", "laudato.tv", "bitno.net", "glaskoncila.hr", "nova-eva.com", "verbum.hr", "ks.hr", "totus-tuus.hr", "svjetlorijeci.hr", "zivot.com.hr", "novizivot.net"),
+  "Academic" = c("unicath.hr", "hks.hr", "kbf.unizg.hr", "ffrz.hr", "hku.hr"),
+  "Religious Orders" = c("franjevci.hr", "franjevci-split.hr", "isusovci.hr", "dominikanci.hr", "kapucini.hr", "salezijanci.hr", "karmelicani.hr")
+)
+
+diocesan_exact <- c("zagrebačka nadbiskupija", "zagrebacka nadbiskupija", "splitsko-makarska nadbiskupija", "đakovačko-osječka nadbiskupija", "djakovacko-osjecka", "riječka nadbiskupija", "rijecka nadbiskupija", "zadarska nadbiskupija", "sisačka biskupija", "sisacka biskupija", "varaždinska biskupija", "varazdinska biskupija", "križevačka eparhija", "krizevacka eparhija", "šibenska biskupija", "sibenska biskupija", "dubrovačka biskupija", "dubrovacka biskupija", "porečka i pulska biskupija", "porecka biskupija", "gospićko-senjska biskupija", "gospicko-senjska")
+diocesan_contains <- c("nadbiskupija", "biskupija", "eparhija", "ordinarijat")
+
+orders_exact <- c("franjevci", "franjevci konventualci", "franjevci kapucini", "mala braća", "isusovci", "družba isusova", "druzba isusova", "dominikanci", "red propovjednika", "salezijanci", "don bosco", "karmelićani", "karmelicani", "karmel", "benediktinci", "benediktin", "kapucini", "pavlini", "trapisti", "cisterciti", "augustinci", "sestre milosrdnice", "uršulinke", "ursulinke", "klarise", "službenice milosrđa", "kćeri božje ljubavi", "školske sestre", "karmelićanke", "benediktinke", "dominikanke")
+orders_contains <- c("franjevački", "franjevacki", "isusovački", "isusovacki", "dominikanski", "salezijanski", "karmelski", "benediktinski", "kapucinski", "pavlinski", "redovnici", "redovnice", "samostan", "provincija")
+orders_abbrev <- c("ofm", "ofmcap", "ofmconv", "sj", "op", "sdb", "ocd", "osb", "osbm", "cssr", "svd", "omc")
+
+charismatic_exact <- c("emmanuel", "taize", "taizé", "fokolari", "fokolarini", "kursiljo", "cursillo", "neokatekumenski put", "shalom", "zajednica beatitudes", "zajednica blaženstava", "dom molitve", "kuća molitve", "kuca molitve", "duhovna obnova", "molitvena snaga")
+charismatic_contains <- c("molitvena zajednica", "karizmatska", "karizmatski", "neokatekumenski", "neokatekumenska", "obnova u duhu", "komunija i oslobođenje", "comunione e liberazione", "dom molitve", "house of prayer")
+
+youth_exact <- c("frama", "shkm", "katolička mladež", "katolicka mladez", "mladi franjevci", "salezijanska mladež")
+youth_contains <- c("ministranti", "mladifra", "kaem", "studentska kapelanija", "sveučilišna kapelanija", "sveuclisna kapelanija", "pastoral mladih", "mladi katolici")
+
+academic_exact <- c("hrvatsko katoličko sveučilište", "hrvatsko katolicko sveuciliste", "katolički bogoslovni fakultet", "katolicki bogoslovni fakultet", "filozofski fakultet družbe isusove", "teologija u rijeci")
+academic_contains <- c("teologija", "bogoslovija", "katehetski")
+academic_abbrev <- c("kbf", "hku", "ffrz")
+
+priest_prefixes <- c("fra ", "don ", "vlč. ", "vlč.", "vlc. ", "vlc.", "msgr. ", "msgr.", "mons. ", "mons.", "o. ", "pater ", "p. ", "pr. ", "s. ", "sestra ", "m. ", "majka ")
+priest_hierarchy <- c("biskup ", "nadbiskup ", "kardinal ", "mons. ", "preč. ", "prečasni ")
+priest_contains <- c("svećenik", "svecenik", "župnik", "zupnik")
+
+lay_devotional <- c("vjera", "molitva", "molitve", "isus", "krist", "gospa", "marija", "hrana za dušu", "hrana za dusu", "dijete vjere", "riječ dana", "rijec dana", "riječ božja", "rijec bozja", "sveti", "svetac", "svetica", "evanđelje", "evandelje", "duhovnost", "duhovna", "duhovni", "biblija", "biblijski", "psalm", "blagoslov", "krunica", "rozarij", "lectio divina", "katolička obitelj", "katolicka obitelj", "katolicki", "božanske", "bozanske", "moćne", "mocne")
+lay_exclude <- c(".hr", ".net", ".com", "portal", "vijesti", "news", "radio", "agencija", "tjednik")
+
+classify_actor_v4 <- function(from_val, url_val = NA, platform_val = NA) {
+  from_lower <- tolower(trimws(as.character(from_val)))
+  url_lower <- tolower(ifelse(is.na(url_val), "", as.character(url_val)))
+  platform_lower <- tolower(ifelse(is.na(platform_val), "", as.character(platform_val)))
+  combined <- paste(from_lower, url_lower)
+  
+  match_any <- function(patterns, text, fixed = TRUE) {
+    any(sapply(patterns, function(p) grepl(p, text, fixed = fixed)))
+  }
+  
+  for (actor_type in names(manual_overrides)) {
+    if (match_any(manual_overrides[[actor_type]], from_lower)) return(actor_type)
+  }
+  if (match_any(secular_exclusions, combined)) return("Other")
+  if (nchar(url_lower) > 0) {
+    for (actor_type in names(domain_patterns)) {
+      if (match_any(domain_patterns[[actor_type]], url_lower)) return(actor_type)
+    }
+  }
+  is_parish <- grepl("^župa|^zupa|župi|zupi|- župa|- zupa", from_lower, ignore.case = TRUE) || grepl("parish", from_lower, ignore.case = TRUE)
+  if (match_any(diocesan_exact, from_lower) || match_any(diocesan_contains, from_lower) || is_parish) return("Diocesan")
+  if (match_any(orders_exact, from_lower) || match_any(orders_contains, from_lower)) return("Religious Orders")
+  for (abbr in orders_abbrev) { if (grepl(paste0("\\b", abbr, "\\b"), from_lower, ignore.case = TRUE)) return("Religious Orders") }
+  if (match_any(charismatic_exact, from_lower) || match_any(charismatic_contains, from_lower)) return("Charismatic Communities")
+  if (match_any(youth_exact, from_lower) || match_any(youth_contains, from_lower)) return("Youth Organizations")
+  if (match_any(academic_exact, from_lower) || match_any(academic_contains, from_lower)) return("Academic")
+  for (abbr in academic_abbrev) { if (grepl(paste0("\\b", abbr, "\\b"), from_lower, ignore.case = TRUE)) return("Academic") }
+  for (prefix in priest_prefixes) { if (startsWith(from_lower, prefix)) return("Individual Priests") }
+  for (title in priest_hierarchy) { if (startsWith(from_lower, title)) return("Individual Priests") }
+  if (match_any(priest_contains, from_lower)) return("Individual Priests")
+  has_devotional <- match_any(lay_devotional, from_lower)
+  has_media_indicator <- match_any(lay_exclude, from_lower)
+  is_likely_social <- platform_lower %in% c("facebook", "instagram", "youtube", "twitter") || !grepl("\\.[a-z]{2,4}$", from_lower)
+  if (has_devotional && !has_media_indicator && is_likely_social) return("Lay Influencers")
+  return("Other")
+}
+
+dta[, ACTOR_TYPE := mapply(classify_actor_v4, FROM, if ("URL" %in% names(dta)) URL else NA, SOURCE_TYPE)]
+dta[, ACTOR_TYPE := factor(ACTOR_TYPE, levels = names(actor_fills))]
+dta[, ACTOR_TYPE_HR := actor_labels_hr[as.character(ACTOR_TYPE)]]
+
+# institutional grouping used throughout
+dta[, Grupa_institucija := fifelse(
+  ACTOR_TYPE %in% c("Institutional Official", "Diocesan", "Academic"),
+  "Institucionalni", "Neinstitucionalni"
+)]
+```
+
+# Sažetak {.unnumbered}
+
+U digitalnom dobu, obilje informacija stvara novu vrstu oskudice u kojoj pažnja postaje najvrjedniji resurs za religijske komunikatore. Ova studija primjenjuje okvir ekonomije pažnje na analizu hrvatskih katoličkih digitalnih medija, pružajući prvo sustavno mapiranje nacionalnog religijskog digitalnog ekosustava. Koristeći bazu podataka DigiKat, koja obuhvaća više od `r format(n_posts, big.mark = ".")` objava objavljenih između `r year(date_min)`. i `r year(date_max)`. godine na `r n_platforms` platformi, ispitujemo distribuciju pažnje, modalitete angažmana, ulogu sentimenta, utjecaj liturgijskog kalendara i platformski specifične obrasce koncentracije. Pet hipoteza izvedenih iz teorije ekonomije pažnje i medijatizacije religije testirano je primjenom mjera nejednakosti, dekompozicije angažmana, neparametrijskih testova i vremenske analize. Rezultati potvrđuju da pažnja slijedi distribuciju po zakonu potencije s ekstremnom koncentracijom. Institucionalni akteri ne privlače samo manje ukupnog angažmana, već privlače kvalitativno drugačiju vrstu pažnje od neinstitucionalnih komunikatora. Negativni sentiment pojačava privlačenje pažnje, ali nejednako po tipovima aktera. Katolički liturgijski kalendar strukturira ritam objavljivanja povrh sekularnih vremenskih obrazaca, a razina koncentracije pažnje varira po platformama. Nalazi imaju praktične implikacije za katoličke komunikatore te doprinose razumijevanju funkcioniranja religije unutar ekonomije pažnje.
+
+**Ključne riječi:** ekonomija pažnje, religijska komunikacija, digitalni mediji, Katolička Crkva, Hrvatska
+
+---
+
+# Uvod
+
+U digitalnom dobu, obilje informacija stvara novu vrstu oskudice u kojoj pažnja postaje najvrjedniji resurs. Kako je Herbert Simon (1971) istaknuo, obilje informacija stvara siromaštvo pažnje, osobito u kontekstima gdje se različiti akteri natječu za ograničenu percepciju publike. Koncept ekonomije pažnje, kasnije razrađen od autora poput Davenporta i Becka (2001), polazi od pretpostavke da je pažnja ograničen resurs koji cirkulira na tržištu gdje ponuda sadržaja daleko nadmašuje potražnju. U digitalnim medijskim ekosustavima ta dinamika dovodi do koncentracije moći kod velikih platformi i aktera, stratifikacije prema razini angažmana te naglaska na emocionalno nabijenom sadržaju koji potiče interakcije. U religijskim digitalnim medijima ova logika oblikuje tržišta pažnje u kojima institucije, laici, influenceri i grassroots inicijative konkuriraju za angažman korisnika na društvenim mrežama, YouTubeu i web portalima (Campbell, 2022; Van Dijck, 2018). Unatoč rastućoj prisutnosti religijskih aktera u digitalnom prostoru, primjena ekonomije pažnje na neprofitne i religijske kontekste ostaje nedovoljno istražena.
+
+Religijski digitalni ekosustavi predstavljaju hibrid tradicije i tehnologije, obuhvaćajući formalne institucionalne kanale, poput Hrvatske biskupske konferencije, ali i neovisne aktere, uključujući digitalne influencere i medijske portale koji proizvode duhovni, edukativni ili zabavni sadržaj (Hoover, 2006; Hjarvard, 2008). U Hrvatskoj, gdje se prema popisu stanovništva iz 2021. godine oko 79 % građana identificira kao katolici, Katolička Crkva ostaje snažan kulturni i društveni akter, no njezina digitalna prisutnost nije nužno proporcionalna demografskoj dominaciji. Digitalni mediji otvaraju prostor za evangelizaciju, pastoralnu komunikaciju i zajedničko oblikovanje religijskih narativa, ali istodobno izlažu vjerske aktere algoritamskim logikama koje favoriziraju viralnost i angažman nad institucionalnim autoritetom.
+
+Hrvatski katolički digitalni prostor obuhvaća više od `r format(n_posts, big.mark = ".")` objava prikupljenih u razdoblju od `r year(date_min)`. do `r year(date_max)`. godine u okviru baze DigiKat, pružajući jedinstvenu empirijsku osnovu za analizu distribucije pažnje. Dosadašnja analiza pokazuje izrazitu koncentraciju angažmana, pri čemu mali broj aktera kontrolira većinu pažnje, što potvrđuju visoke vrijednosti Gini koeficijenta i omjera koncentracije (Pedersen i sur., 2021; Wojtowicz i Loewenstein, 2020). Ovi obrasci odgovaraju zakonima potencije karakterističnima za ekonomiju pažnje, prema kojima se pažnja akumulira u ograničenom broju dominantnih aktera (Falkinger, 2007; Lanham, 2006). U religijskom kontekstu, međutim, pažnja poprima dodatnu duhovnu dimenziju jer angažman korisnika ne predstavlja samo ekonomski resurs nego i oblik religijske participacije i identiteta (Franck, 2019; Wojtowicz i Loewenstein, 2020). Emocionalni faktori i vremenski ritmovi, uključujući liturgijski kalendar, dodatno oblikuju dinamiku angažmana, često favorizirajući vizualno privlačan i emotivno snažan sadržaj (Pedersen i sur., 2021; Aggarwal i sur., 2023).
+
+Polazeći od ovih teorijskih i empirijskih uvida, ova analiza u fokus stavlja kako se pažnja raspodjeljuje između institucionalnih i neovisnih aktera u hrvatskim katoličkim digitalnim medijima, koju ulogu imaju emocionalni i vremenski faktori u dinamici angažmana te kako koncentracija pažnje utječe na religijsku komunikacijsku praksu. Metodološki pristup kombinira kvantitativne analize, uključujući Gini koeficijente, dekompoziciju angažmana, analizu sentimenta i neparametrijske testove, s interpretacijama utemeljenima u teoriji ekonomije pažnje i medijatizacije religije (Van Dijck, 2018; Campbell, 2022).
+
+Cilj ovog istraživanja je trostruk. Prvo, nastoji se pružiti sustavno mapiranje nacionalnog religijskog digitalnog ekosustava koristeći bazu DigiKat, koja obuhvaća više od `r format(n_posts, big.mark = ".")` objava raspoređenih na `r n_platforms` platformi u razdoblju od `r year(date_min)`. do `r year(date_max)`. godine. Drugo, rad ispituje primjenjivost ključnih hipoteza ekonomije pažnje u nekomercijalnom religijskom kontekstu, proširujući ih novim dimenzijama poput modaliteta angažmana, uloge sentimenta i platformski specifične koncentracije. Treće, istraživanje nastoji identificirati praktične implikacije za katoličke komunikatore, s posebnim naglaskom na institucionalna ograničenja i prilagodbu ritmovima liturgijske godine. Time rad doprinosi interdisciplinarnom području religijske komunikacije, medijskih studija i digitalne sociologije pružajući empirijski utemeljeno razumijevanje funkcioniranja religije unutar ekonomije pažnje. Istodobno, nalazi imaju šire komparativne implikacije jer pokazuju kako ekonomski i psihološki mehanizmi pažnje oblikuju religijsku participaciju u online prostoru (Wojtowicz i Loewenstein, 2020; Van Dijck, 2018).
+
+
+# Pregled literature
+
+Koncept ekonomije pažnje razvija se kao odgovor na strukturne promjene u društvima obilježenima obiljem informacija i ograničenim kognitivnim kapacitetima pojedinaca. Herbert Simon (1971) istaknuo je da obilje informacija ne povećava kognitivne resurse primatelja, već stvara oskudicu pažnje koja postaje ključni ograničeni resurs u suvremenim komunikacijskim i organizacijskim sustavima. Ova temeljna ideja kasnije je razvijena u radovima koji pažnju promatraju kao valutu digitalne ekonomije, u kojoj akteri, od institucionalnih organizacija do pojedinačnih kreatora sadržaja, konkuriraju za vidljivost i angažman publike. Goldhaber (1997) dodatno argumentira da internet označava prijelaz iz ekonomija temeljenih na materijalnim dobrima u ekonomiju u kojoj pažnja postaje primarna valuta, akumulirajući se kroz interakcije i viralno širenje sadržaja, dok njezina oskudica generira hijerarhije utjecaja među akterima. Davenport i Beck (2001) ističu da koncentracija pažnje ima ključnu ulogu u organizacijskim procesima, pri čemu preopterećenje informacijama dovodi do fragmentacije fokusa i smanjene sposobnosti duboke analize. Falkinger (2007) formalizira natjecanje za pažnju kroz funkcije filtriranja i prioritetizacije signala, pokazujući kako se distribucija pažnje podvrgava zakonima potencije, dok Lanham (2006) ističe retoričku i estetsku dimenziju pažnje; u preobilju informacija, oblik i stil postaju ključni za privlačenje publike, evolvirajući pritom ekonomiju pažnje u ekonomiju estetike i performativnosti. Recentne interdisciplinarne sinteze, poput rada Francka (2019), integriraju psihološke i ekonomske perspektive, pokazujući kako pažnja objašnjava odstupanja od klasičnih ekonomskih modela i kako algoritamska selekcija sadržaja oblikuje hijerarhije utjecaja u digitalnim ekosustavima.
+
+Važno je pritom istaknuti da pažnja nije jednodimenzionalan konstrukt. Davenport i Beck (2001) razlikuju zarobljenu i dobrovoljnu pažnju, dok Wojtowicz i Loewenstein (2020) naglašavaju ulogu znatiželje kao specifičnog modaliteta pažnje koji pokreće aktivno traženje informacija. U kontekstu digitalnih platformi, različiti oblici angažmana, od pasivnog odobravanja (lajk) preko aktivnog izražavanja (komentar) do distribucijskog čina (dijeljenje), predstavljaju kvalitativno različite modalitete pažnje s različitim kognitivnim troškovima i komunikacijskim funkcijama. Ova distinkcija ostaje nedovoljno iskorištena u empirijskim istraživanjima koja tipično operiraju s agregiranim mjerama angažmana, zanemarujući time unutarnju strukturu pažnje.
+
+U institucionalnom okviru, Van Dijck (2018) opisuje digitalne platforme kao tržišta pažnje koja posreduju između korisnika i sadržajnih kreatora, oblikujući obrasce vidljivosti, društvene nejednakosti i potencijalne koncentracije moći. Pedersen i suradnici (2021) ističu političke implikacije takvih mehanizama, naglašavajući kako algoritamske logike i tržišna dinamika redistribuiraju pažnju i utječu na oblikovanje javnog diskursa. Istovremeno, obrazovna i organizacijska literatura pokazuje kako fragmentacija pažnje utječe na učenje i kognitivne procese, dok se u kulturnom kontekstu pažnja povezuje s emocionalnim, estetskim i socijalnim faktorima koji dodatno oblikuju angažman publike (Davenport i Beck, 2001; Lanham, 2006). Primjena ekonomije pažnje u religijskom digitalnom prostoru predstavlja posebno izazovno područje jer se pažnja, osim ekonomskog, istovremeno promatra i kao duhovni resurs. Digitalni mediji mijenjaju obrasce religijske participacije, omogućujući institucionalnim akterima, pojedincima i grassroots inicijativama da se natječu za angažman vjernika putem društvenih mreža, YouTubea i drugih digitalnih kanala (Campbell, 2022; Hoover, 2006). Teorija medijatizacije religije (Hjarvard, 2008) dodatno naglašava ulogu medija kao agenata transformacije religijskih iskustava, gdje se digitalni kanali koriste za oblikovanje identiteta, participaciju i zajedničko oblikovanje religijskih narativa. Empirijski nalazi ukazuju na pluralizaciju autoriteta, nove forme samo-reprezentacije i promjene u načinu političke i društvene komunikacije religije, što potvrđuju studije u europskim i azijskim kontekstima (Aggarwal i sur., 2023; Klevesath, 2025; Mattes i sur., 2024).
+
+Suvremeni pristupi digitalnoj religiji integriraju koncepte otpornosti zajednice, narativne komunikacije i medijske strategije, pokazujući kako digitalne razmjene omogućuju kvantificiranje participacije i praćenje dinamike angažmana u realnom vremenu (Moberg i Črnič, 2024; Rohmawati i sur., 2025). Ovi pristupi naglašavaju kako algoritamska ekonomija pažnje oblikuje vidljivost aktera, potencira dominaciju određenih institucija ili pojedinaca te otvara nove izazove za održavanje duhovne dubine i integriteta religijskih poruka u digitalnim sferama.
+
+Sveukupno, literatura ukazuje da ekonomija pažnje nije isključivo ekonomski fenomen, već sociokulturni okvir koji oblikuje hijerarhije, kognitivne procese i institucionalne prakse. U kontekstu hrvatskih katoličkih digitalnih medija, ovaj okvir omogućuje empirijsku analizu koncentracije pažnje, modaliteta angažmana, uloge sentimenta te liturgijskog i platformskog konteksta u oblikovanju vidljivosti sadržaja, čime se postavljaju temelji za istraživanje algoritamskih mehanizama koji transformiraju religijsku komunikaciju i participaciju.
+
+
+# Cilj i hipoteze istraživanja
+
+Na temelju iznesenih teorijskih uvida formulirano je pet hipoteza koje ispituju različite dimenzije funkcioniranja pažnje u hrvatskom katoličkom digitalnom prostoru.
+
+Hipoteza 1 (Distribucija po zakonu potencije). Pažnja u hrvatskom katoličkom digitalnom prostoru slijedi distribuciju po zakonu potencije, s angažmanom koncentriranim među malom elitom aktera. Dosadašnja literatura dokumentira takve obrasce na komercijalnim platformama (Falkinger, 2007; Pedersen i sur., 2021), no ne pruža odgovor na pitanje javlja li se isti obrazac u nekomercijalnim, religijskim ekosustavima. Testiramo očekivanje da log-log odnos između ranga i angažmana pokazuje jaku linearnost (R² > 0,90) i da Gini koeficijent prelazi 0,80.
+
+Hipoteza 2 (Institucionalni modaliteti pažnje). Institucionalni akteri privlače kvalitativno drugačiju pažnju od neinstitucionalnih aktera, s razmjerno većim udjelom deliberativnog modaliteta (komentara) u odnosu na afektivni (lajkovi i reakcije) i distribucijski modalitet (dijeljenja). Ova hipoteza proizlazi iz distinkcije između različitih oblika pažnje (Davenport i Beck, 2001; Wojtowicz i Loewenstein, 2020) te predviđanja teorije medijatizacije da platforme favoriziraju osobne glasove nad institucionalnom retorikom (Hjarvard, 2008). Ispitujemo je li institucionalni jaz u pažnji djelomično artefakt agregiranja kvalitativno različitih modaliteta angažmana u jednu mjeru.
+
+Hipoteza 3 (Sprega sentimenta i pažnje). Sadržaj negativnog sentimenta privlači nerazmjerno više pažnje, a ovaj učinak je slabije izražen kod institucionalnih aktera koji su ograničeni u korištenju negativnog afekta. Ova hipoteza proširuje dokumentirani mehanizam afektivne intenzifikacije (Franck, 2019; Wojtowicz i Loewenstein, 2020) uvođenjem institucionalnih komunikacijskih normi kao moderatorske varijable. Testiramo pretpostavku stratificiranom analizom koja razdvaja učinak sentimenta od učinka institucionalnog statusa.
+
+Hipoteza 4 (Liturgijsko vremensko strukturiranje). Katolički liturgijski kalendar strukturira vremenske obrasce digitalne pažnje povrh sekularnih vremenskih obrazaca (dan u tjednu, mjesečni ciklusi, godišnji trendovi). Dosadašnja literatura tretira vremenske obrasce isključivo u terminima sekularnih ciklusa (Davenport i Beck, 2001; Pedersen i sur., 2021), dok utjecaj liturgijskog kalendara na digitalnu aktivnost nije empirijski dokumentiran. Očekujemo da liturgijska vremena objašnjavaju značajnu količinu varijance čak i nakon kontrole za sekularne prediktore.
+
+Hipoteza 5 (Platformski specifična koncentracija). Razina koncentracije pažnje varira po platformama, pri čemu algoritmički kurirane platforme (Facebook, YouTube) pokazuju snažniju dinamiku pobjednik-uzima-sve od uredništvom kuriranih (web portali). Ova hipoteza proizlazi iz teorijskih uvida o ulozi platformskih arhitektura u oblikovanju distribucije vidljivosti (Van Dijck, 2018; Lanham, 2006) i testira ih uspoređujući Gini koeficijente koncentracije među platformama različitog tipa kuriranja.
+
+
+# Podaci i metode
+
+## Baza podataka DigiKat
+
+Ova studija koristi bazu podataka DigiKat, infrastrukturni projekt osmišljen za sveobuhvatno prikupljanje, integraciju i analizu hrvatskog katoličkog digitalnog sadržaja u realnom vremenu. DigiKat agregira javno dostupne objave iz izvora identificiranih kao dio hrvatskog katoličkog medijskog ekosustava, obuhvaćajući cjelokupan raspon digitalnih komunikatora, od službenih crkvenih institucija i biskupijskih kanala, preko nezavisnih katoličkih medijskih kuća i publikacija redovničkih zajednica, do stranica karizmatskih pokreta i glasova pojedinačnih klerika na društvenim mrežama.
+
+Izgradnja baze zahtijevala je razvoj višeplatformskog sustava prikupljanja podataka prilagođenog heterogenim tehničkim ograničenjima pojedinih digitalnih izvora. Web sadržaj prikupljen je automatiziranim scrapingom identificiranih katoličkih portala putem prilagođenih crawlera koji rekurzivno indeksiraju stranice, parsiraju strukturirani i nestrukturirani sadržaj te ekstrahiraju metapodatke uključujući naslove, datume objave, autore i interakcijske signale. Facebook i Instagram podaci preuzeti su putem sustava Apify koji omogućuje programatski pristup javno dostupnim objavama, komentarima i metrikama angažmana uz poštivanje uvjeta korištenja platformi. YouTube podaci prikupljeni su putem YouTube Data API-ja, koji pruža strukturirani pristup metapodacima videa, broju pregleda, komentarima i statistikama kanala. Svaki od ovih pipeline-ova implementiran je kao modularna komponenta unutar orkestriranog ETL (extract-transform-load) sustava koji omogućuje inkrementalno prikupljanje, dedupliciranje i normalizaciju podataka iz različitih izvora u jedinstvenu analitičku shemu. Postupci kontrole kvalitete uključivali su automatiziranu detekciju i uklanjanje dupliciranih zapisa na temelju kompozitnih ključeva (kombinacija izvora, datuma i sadržajnog otiska), popunjavanje nepotpunih metapodataka kroz kaskadne strategije obogaćivanja te normalizaciju vremenskog označavanja na jedinstvenu vremensku zonu. Dodatna validacija provedena je u odnosu na medijske podatke dostupne u bazi Determ kako bi se osigurala potpunost i konzistentnost prikupljenih zapisa.
+
+Rezultirajući analitički korpus obuhvaća ukupno `r format(n_posts, big.mark = ".")` objava objavljenih između `r format(as.Date(date_min), "%d.%m.%Y.")` i `r format(as.Date(date_max), "%d.%m.%Y.")` kroz `r n_platforms` kategorija platformi. Web sadržaj čini najveći volumen, a slijede Facebook, Instagram, YouTube, Twitter, forumi, Reddit i komentari korisnika na katoličkim portalima. Ukupno je identificirano `r format(n_sources, big.mark = ".")` jedinstvenih izvora. Po svojem opsegu, vremenskom rasponu i multiplatformskoj pokrivenosti, DigiKat predstavlja jednu od najambicioznijih baza podataka o digitalnoj religijskoj komunikaciji u europskom kontekstu, omogućujući razinu empirijske granularnosti koja dosad nije bila dostupna istraživačima religijskih medijskih ekosustava.
+
+## Klasifikacija aktera
+
+Za analizu distribucije pažnje među različitim tipovima katoličkih komunikatora razvijen je hijerarhijski sustav klasifikacije koji svakom izvoru deterministički pridružuje jednu od deset kategorija aktera. Kategorije obuhvaćaju službene institucije (Hrvatska biskupska konferencija, Informativna katolička agencija, Hrvatski katolički radio, Hrvatska katolička mreža), biskupije i župe, nezavisne medije (Laudato TV, Bitno.net, Glas Koncila i drugi), redovničke zajednice, karizmatske zajednice, pojedinačne svećenike, mladežne organizacije, akademske institucije, laičke influencere i ostalo.
+
+Klasifikacijski algoritam primjenjuje kaskadnu logiku prioriteta koja kombinira četiri komplementarna identifikacijska mehanizma. Na prvoj razini, ručno definirane liste eksplicitnih naziva hvataju ključne aktere čija identifikacija ne smije ovisiti o probabilističkom prepoznavanju (npr. IKA, HBK, Radio Marija). Na drugoj razini, prepoznavanje internetskih domena mapira URL-ove objava na poznate institucionalne web adrese (npr. hkm.hr, biskupija-varazdinska.hr). Na trećoj razini, leksički obrasci u nazivima izvora detektiraju karakteristične onomastičke markere, od honorifika kleričke hijerarhije (fra, don, vlč., msgr.) do specifičnih pojmova koji indiciraju biskupijske strukture (nadbiskupija, biskupija, župa), redovničke zajednice (franjevci, isusovci, dominikanci), karizmatske pokrete (neokatekumenski, obnova u duhu) ili mladežne organizacije (FRAMA, ŠKAM). Na četvrtoj razini, kontekstualni indikatori platforme omogućuju razlikovanje laičkih influencera od medijskih portala na temelju prisutnosti devocionalnih pojmova u nazivima profila na društvenim mrežama uz istovremenu odsutnost medijskih indikatora poput domena ili ključnih riječi karakterističnih za novinske portale. Sustav eksplicitno isključuje sekularne medije (Index.hr, 24sata, Večernji list i drugi) kako bi se osigurala homogenost religijskog korpusa.
+
+Za potrebe testiranja hipoteza o institucionalnom jazu u pažnji, deset kategorija grupirano je u dvije analitičke razine. Institucionalnu skupinu čine službene institucije, biskupije i župe te akademske institucije. Neinstitucionalnu skupinu čine svi ostali tipovi aktera, uključujući nezavisne medije, redovničke zajednice, karizmatske pokrete, pojedinačne svećenike, mladežne organizacije i laičke influencere. Klasifikacije su validirane na reprezentativnom uzorku od 200 nasumično odabranih izvora, pri čemu su dva istraživača neovisno kategorizirala podskup, čime se osigurava pouzdanost automatskog sustava klasifikacije.
+
+## Analitički pristup
+
+Analiza se odvija kroz pet komplementarnih dimenzija, od kojih svaka odgovara jednoj od formuliranih hipoteza i primjenjuje metode prilagođene prirodi podataka i teorijskim predikcijama koje se testiraju.
+
+Za procjenu tržišne strukture i koncentracije (H1) primjenjujemo trostruku strategiju kvantifikacije nejednakosti. Gini koeficijent distribucije angažmana po izvorima pruža sintetičku mjeru ukupne nejednakosti. Lorenzova krivulja vizualizira kumulativnu distribuciju i omogućuje identifikaciju pragova koncentracije (primjerice, udio angažmana koji akumulira gornjih 10 posto izvora). Log-log regresija ranga i ukupnog angažmana testira formalnu hipotezu o distribuciji po zakonu potencije, pri čemu linearnost na log-log skali (R² > 0,90) i nagib regresijskog pravca indiciraju parametre koncentracije.
+
+Za ispitivanje institucionalnih modaliteta pažnje (H2) dekomponiramo Facebook angažman na tri modaliteta s različitim kognitivnim troškovima i komunikacijskim funkcijama. Afektivni modalitet (lajkovi i reakcije: love, wow, haha, sad, angry) predstavlja niskotroškovni signal odobravanja ili emocionalnog reagiranja. Deliberativni modalitet (komentari) zahtijeva formulaciju stava i javno izlaganje mišljenja, čineći ga kognitivno najzahtjevnijim oblikom angažmana. Distribucijski modalitet (dijeljenja) implicira identifikacijski čin kojim korisnik povezuje sadržaj s vlastitom mrežom. Za svaku objavu izračunavamo udjele pojedinih komponenti u ukupnom angažmanu. Razlike između institucionalnih i neinstitucionalnih aktera u kompoziciji angažmana testiramo Wilcoxonovim testovima sume rangova agregiranima na razini izvora, čime se izbjegava pseudoreplikacija na razini objava.
+
+Za analizu sprege sentimenta i pažnje (H3) koristimo automatski detektirani sentiment (AUTO_SENTIMENT) klasificiran višejezičnim modelom strojnog učenja unutar sustava za prikupljanje podataka. Valja napomenuti da automatska klasifikacija sentimenta na hrvatskom religijskom tekstu može uvoditi sustavnu pogrešku jer religijski vokabular (npr. patnja, žrtva, grijeh) može biti krivo klasificiran kao negativan unatoč duhovnom kontekstu. Razlike u angažmanu po kategorijama sentimenta (pozitivan, negativan, neutralan) testiramo Kruskal-Wallisovim testom koji ne pretpostavlja normalnost distribucije, što je primjereno s obzirom na izrazitu asimetriju distribucija angažmana. Ključni analitički korak je stratifikacija po institucionalnom statusu koja omogućuje izračun omjera pojačanja negativnog sadržaja (negativity boost) zasebno za institucionalne i neinstitucionalne aktere, čime testiramo predviđenu interakciju između sentimenta i institucionalnog položaja.
+
+Za vremensku dinamiku (H4) primjenjujemo hijerarhijsku regresijsku analizu na razini dnevnih agregata. Bazni model uključuje sekularne vremenske prediktore (dan u tjednu, mjesec i godina) koji kontroliraju za poznate ciklične obrasce medijske aktivnosti i godišnje trendove u volumenu objavljivanja. Prošireni model dodaje liturgijska vremena (Došašće, Božić, Korizma, Uskrs, Vrijeme kroz godinu) kao kategorijske prediktore. Inkrementalna prediktivna vrijednost liturgijskog kalendara testira se F-testom za usporedbu ugniježđenih modela, pri čemu statistička značajnost indicira da liturgijski kalendar strukturira aktivnost povrh onoga što sekularne varijable mogu objasniti.
+
+Za platformski specifičnu koncentraciju (H5) izračunavamo zasebne Gini koeficijente za svaku platformu s barem deset aktivnih izvora i uspoređujemo ih s obzirom na stupanj algoritmičkog kuriranja sadržaja. Platforme klasificiramo u tri kategorije prema mehanizmu distribucije sadržaja (algoritmički kurirane, uredništvom kurirane i mješovite), što omogućuje deskriptivnu usporedbu razina koncentracije među arhitekturalno različitim digitalnim okruženjima.
+
+
+# Rezultati
+
+## Tržišna struktura i koncentracija (H1)
+
+```{r platform-distribution}
+#| label: tbl-platform-distribution
+
+platform_stats <- dta[, .(
+  Objave = .N,
+  Ukupne_interakcije = sum(INTERACTIONS, na.rm = TRUE),
+  Jedinstveni_izvori = uniqueN(FROM),
+  Prosjek_interakcija = mean(INTERACTIONS, na.rm = TRUE)
+), by = SOURCE_TYPE][order(-Objave)]
+
+platform_stats[, `:=`(
+  Udio_volumena = Objave / sum(Objave) * 100,
+  Udio_angazmana = Ukupne_interakcije / sum(Ukupne_interakcije) * 100,
+  Indeks_ucinkovitosti = (Ukupne_interakcije / sum(Ukupne_interakcije)) / (Objave / sum(Objave))
+)]
+
+platform_stats %>%
+  select(SOURCE_TYPE, Objave, Ukupne_interakcije, Jedinstveni_izvori, Prosjek_interakcija,
+         Udio_volumena, Udio_angazmana, Indeks_ucinkovitosti) %>%
+  mutate(
+    Objave = format(Objave, big.mark = "."),
+    Ukupne_interakcije = format(Ukupne_interakcije, big.mark = "."),
+    Jedinstveni_izvori = format(Jedinstveni_izvori, big.mark = "."),
+    Prosjek_interakcija = ifelse(is.nan(Prosjek_interakcija) | is.na(Prosjek_interakcija), "–", fmtc("%.1f", Prosjek_interakcija)),
+    Udio_volumena = fmtc("%.1f%%", Udio_volumena),
+    Udio_angazmana = ifelse(is.nan(Udio_angazmana) | is.na(Udio_angazmana), "–", fmtc("%.1f%%", Udio_angazmana)),
+    Indeks_ucinkovitosti = ifelse(is.nan(Indeks_ucinkovitosti) | is.na(Indeks_ucinkovitosti), "–", fmtc("%.2f", Indeks_ucinkovitosti))
+  ) %>%
+  kable(col.names = c("Platforma", "Objave", "Interakcije", "Izvori", 
+                      "Prosj. int.", "Volumen %", "Angažman %", "Učinkovitost"),
+        caption = "Distribucija objava i angažmana po platformama",
+        align = c("l", rep("r", 7))) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+@tbl-platform-distribution prikazuje distribuciju objava i angažmana po platformama. Indeks učinkovitosti, izračunat kao omjer udjela angažmana i udjela volumena, otkriva značajnu varijaciju u sposobnosti pojedinih platformi da generiraju angažman s obzirom na obujam objavljenog sadržaja (@fig-platform-efficiency).
+
+```{r platform-efficiency-figure}
+#| label: fig-platform-efficiency
+#| fig-cap: "Učinkovitost angažmana po platformama. Indeks učinkovitosti predstavlja omjer udjela angažmana i udjela volumena, s vrijednostima iznad 1,0 (isprekidana linija) koje indiciraju nadprosječne rezultate."
+#| fig-height: 6
+
+ggplot(platform_stats, aes(x = reorder(SOURCE_TYPE, Indeks_ucinkovitosti), 
+                           y = Indeks_ucinkovitosti)) +
+  geom_col(width = 0.7, fill = "gray60", color = "gray30") +
+  geom_hline(yintercept = 1, linetype = "dashed", color = "black", linewidth = 1) +
+  geom_text(aes(label = fmtc("%.2f", Indeks_ucinkovitosti)), hjust = -0.1, size = 3.5) +
+  coord_flip() +
+  scale_y_continuous(limits = c(0, max(platform_stats$Indeks_ucinkovitosti) * 1.15)) +
+  labs(title = "Učinkovitost angažmana po platformama", x = NULL, y = "Indeks učinkovitosti")
+```
+
+### Mjere koncentracije
+
+```{r concentration-measures}
+#| label: concentration-measures
+
+source_stats <- dta[, .(Objave = .N, Ukupne_interakcije = sum(INTERACTIONS, na.rm = TRUE), Tip_aktera = first(ACTOR_TYPE_HR)), by = FROM][order(-Ukupne_interakcije)]
+source_stats[, `:=`(Rang = .I, Kumulativni_izvori = .I / .N * 100, Kumulativne_interakcije = cumsum(Ukupne_interakcije) / sum(Ukupne_interakcije) * 100)]
+total_interactions <- sum(source_stats$Ukupne_interakcije)
+n_sources_total <- nrow(source_stats)
+cr10 <- sum(source_stats[1:10]$Ukupne_interakcije) / total_interactions * 100
+cr20 <- sum(source_stats[1:20]$Ukupne_interakcije) / total_interactions * 100
+top_10_pct_n <- ceiling(n_sources_total * 0.10)
+cr_top10pct <- sum(source_stats[1:top_10_pct_n]$Ukupne_interakcije) / total_interactions * 100
+gini_coef <- ineq(source_stats$Ukupne_interakcije, type = "Gini")
+source_positive <- source_stats[Ukupne_interakcije > 0]
+log_model <- lm(log10(Ukupne_interakcije) ~ log10(Rang), data = source_positive)
+slope <- coef(log_model)[2]
+r_squared <- summary(log_model)$r.squared
+```
+
+Gini koeficijent distribucije angažmana po izvorima iznosi `r fmtc("%.3f", gini_coef)`, što indicira ekstremnu nejednakost koja znatno premašuje pragove uobičajeno povezane s visokom koncentracijom (@fig-lorenz-curve). Regresija zakona potencije na log-log skali daje R² = `r fmtc("%.3f", r_squared)` i nagib od `r fmtc("%.2f", slope)`, što snažno podupire Hipotezu 1 (@fig-power-law). Vodećih 10 izvora privlači `r fmtc("%.1f%%", cr10)` ukupnog angažmana, vodećih 20 izvora `r fmtc("%.1f%%", cr20)`, a gornjih 10 posto svih izvora (`r format(top_10_pct_n, big.mark = ".")` izvora) akumulira `r fmtc("%.1f%%", cr_top10pct)` ukupnog angažmana.
+
+```{r lorenz-curve}
+#| label: fig-lorenz-curve
+#| fig-cap: "Lorenzova krivulja nejednakosti angažmana. Osjenčano područje između krivulje i dijagonale jednakosti predstavlja stupanj koncentracije."
+#| fig-height: 7
+
+ggplot(source_stats, aes(x = Kumulativni_izvori, y = Kumulativne_interakcije)) +
+  geom_line(color = "black", linewidth = 1.2) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "gray50") +
+  geom_ribbon(aes(ymin = Kumulativni_izvori, ymax = Kumulativne_interakcije), fill = "gray70", alpha = 0.5) +
+  annotate("text", x = 70, y = 30, label = paste0("Gini = ", round(gini_coef, 3)), size = 5, fontface = "bold") +
+  annotate("text", x = 20, y = 80, label = paste0("Gornjih 10% izvora\nprivlači ", round(cr_top10pct, 1), "% angažmana"), size = 4) +
+  scale_x_continuous(labels = function(x) paste0(x, "%"), breaks = seq(0, 100, 20)) +
+  scale_y_continuous(labels = function(x) paste0(x, "%"), breaks = seq(0, 100, 20)) +
+  labs(title = "Lorenzova krivulja nejednakosti angažmana", x = "Kumulativni % izvora (rangirani po angažmanu)", y = "Kumulativni % ukupnog angažmana")
+```
+
+```{r power-law-plot}
+#| label: fig-power-law
+#| fig-cap: "Rang-angažman distribucija na log-log skali. Linearni odnos potvrđuje distribuciju po zakonu potencije."
+#| fig-height: 6
+
+ggplot(source_positive, aes(x = Rang, y = Ukupne_interakcije)) +
+  geom_point(alpha = 0.3, color = "gray40", size = 1) +
+  geom_smooth(method = "lm", color = "black", se = FALSE, linewidth = 1) +
+  scale_x_log10(labels = comma) + scale_y_log10(labels = comma) +
+  annotate("text", x = 10, y = min(source_positive$Ukupne_interakcije) * 100, label = paste0("Nagib = ", round(slope, 2), "\nR² = ", round(r_squared, 3)), hjust = 0, size = 4, fontface = "bold") +
+  labs(title = "Rang-angažman distribucija (Log-log skala)", x = "Rang (log skala)", y = "Ukupne interakcije (log skala)")
+```
+
+
+## Institucionalni modaliteti pažnje (H2)
+
+```{r engagement-decomposition}
+#| label: engagement-decomposition
+
+# Facebook data with decomposed engagement
+fb_decomp <- dta[SOURCE_TYPE == "facebook" & INTERACTIONS > 0]
+
+# ensure counts are numeric and non-NA
+fb_decomp[, `:=`(
+  likes  = fifelse(is.na(LIKE_COUNT), 0L, as.integer(LIKE_COUNT)),
+  comments = fifelse(is.na(COMMENT_COUNT), 0L, as.integer(COMMENT_COUNT)),
+  shares = fifelse(is.na(SHARE_COUNT), 0L, as.integer(SHARE_COUNT)),
+  reactions = fifelse(is.na(LOVE_COUNT), 0L, as.integer(LOVE_COUNT)) +
+              fifelse(is.na(WOW_COUNT), 0L, as.integer(WOW_COUNT)) +
+              fifelse(is.na(HAHA_COUNT), 0L, as.integer(HAHA_COUNT)) +
+              fifelse(is.na(SAD_COUNT), 0L, as.integer(SAD_COUNT)) +
+              fifelse(is.na(ANGRY_COUNT), 0L, as.integer(ANGRY_COUNT))
+)]
+
+fb_decomp[, total_decomp := likes + reactions + comments + shares]
+
+# compute shares of each modality where total > 0
+# afektivna = likes + reactions (low-cost affective signals)
+# deliberativna = comments (high-cost deliberative engagement)
+# distribucijska = shares (identity-linked distribution)
+fb_decomp[total_decomp > 0, `:=`(
+  udio_likes    = (likes + reactions) / total_decomp,
+  udio_comments = comments / total_decomp,
+  udio_shares   = shares / total_decomp
+)]
+
+fb_valid <- fb_decomp[total_decomp > 0]
+n_fb_decomp <- nrow(fb_valid)
+```
+
+```{r modality-by-actor}
+#| label: tbl-modality-by-actor
+
+modality_actor <- fb_valid[, .(
+  N = .N,
+  Lajkovi    = mean(udio_likes, na.rm = TRUE) * 100,
+  Komentari  = mean(udio_comments, na.rm = TRUE) * 100,
+  Dijeljenja = mean(udio_shares, na.rm = TRUE) * 100
+), by = .(ACTOR_TYPE_HR, Grupa_institucija)][order(-Lajkovi)]
+
+modality_actor %>%
+  mutate(
+    N = format(N, big.mark = "."),
+    Lajkovi = fmtc("%.1f%%", Lajkovi),
+    Komentari = fmtc("%.1f%%", Komentari),
+    Dijeljenja = fmtc("%.1f%%", Dijeljenja)
+  ) %>%
+  select(ACTOR_TYPE_HR, N, Lajkovi, Komentari, Dijeljenja) %>%
+  kable(
+    col.names = c("Tip aktera", "Objave", "Afektivni (lajk + reakcije)", "Deliberativni (komentar)", "Distribucijski (dijeljenje)"),
+    caption = "Dekompozicija angažmana po modalitetima pažnje i tipu aktera (Facebook)",
+    align = c("l", "r", "r", "r", "r")
+  ) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+```{r modality-tests}
+#| label: modality-tests
+
+# aggregate engagement rate by source for between-source tests
+source_modality <- fb_valid[, .(
+  udio_likes    = mean(udio_likes, na.rm = TRUE),
+  udio_comments = mean(udio_comments, na.rm = TRUE),
+  udio_shares   = mean(udio_shares, na.rm = TRUE),
+  Grupa = first(Grupa_institucija),
+  ACTOR_TYPE = first(ACTOR_TYPE)
+), by = FROM]
+
+# Wilcoxon tests for institutional vs non-institutional
+wilcox_comments <- wilcox.test(udio_comments ~ Grupa, data = source_modality)
+wilcox_likes    <- wilcox.test(udio_likes ~ Grupa, data = source_modality)
+wilcox_shares   <- wilcox.test(udio_shares ~ Grupa, data = source_modality)
+
+# also overall engagement wilcox (per-post engagement rate)
+source_engagement_all <- dta[!is.na(FOLLOWERS_COUNT) & FOLLOWERS_COUNT > 0, .(
+  Stopa_angazmana = mean(INTERACTIONS, na.rm = TRUE) / mean(FOLLOWERS_COUNT, na.rm = TRUE) * 100
+), by = .(FROM, Grupa_institucija)]
+
+wilcox_overall <- wilcox.test(Stopa_angazmana ~ Grupa_institucija, data = source_engagement_all)
+
+# group medians for modality
+mod_group <- source_modality[, .(
+  Med_likes = median(udio_likes, na.rm = TRUE) * 100,
+  Med_comments = median(udio_comments, na.rm = TRUE) * 100,
+  Med_shares = median(udio_shares, na.rm = TRUE) * 100
+), by = Grupa]
+```
+
+Dekompozicija Facebook angažmana na tri modaliteta pažnje testira Hipotezu 2. @tbl-modality-by-actor prikazuje prosječne udjele triju modaliteta -- afektivnog (lajkovi i reakcije), deliberativnog (komentari) i distribucijskog (dijeljenja) -- po tipovima aktera. Wilcoxonovi testovi sume rangova na razini izvora potvrđuju statistički značajne razlike između institucionalnih i neinstitucionalnih aktera u udjelu komentara (W = `r format(wilcox_comments$statistic, big.mark = ".")`, *p* `r ifelse(wilcox_comments$p.value < 0.001, "< 0,001", fmtc("= %.3f", wilcox_comments$p.value))`) i udjelu lajkova (W = `r format(wilcox_likes$statistic, big.mark = ".")`, *p* `r ifelse(wilcox_likes$p.value < 0.001, "< 0,001", fmtc("= %.3f", wilcox_likes$p.value))`). Institucionalni akteri primaju medijan od `r fmtc("%.1f%%", mod_group[Grupa == "Institucionalni"]$Med_comments)` komentara naspram `r fmtc("%.1f%%", mod_group[Grupa == "Neinstitucionalni"]$Med_comments)` kod neinstitucionalnih, dok je obrazac za lajkove zrcalan. Ovo potvrđuje da institucionalni jaz u pažnji nije samo kvantitativne naravi, već se manifestira kroz kvalitativno drugačiju kompoziciju angažmana (@fig-modality).
+
+```{r modality-figure}
+#| label: fig-modality
+#| fig-cap: "Kompozicija angažmana po modalitetima: institucionalni vs. neinstitucionalni akteri (Facebook). Afektivni modalitet uključuje lajkove i sve reakcije (love, wow, haha, sad, angry). Prikazani su prosječni udjeli triju modaliteta."
+#| fig-height: 6
+
+modality_grouped <- fb_valid[, .(
+  Afektivni = mean(udio_likes, na.rm = TRUE) * 100,
+  Deliberativni = mean(udio_comments, na.rm = TRUE) * 100,
+  Distribucijski = mean(udio_shares, na.rm = TRUE) * 100
+), by = Grupa_institucija] %>%
+  pivot_longer(cols = Afektivni:Distribucijski, names_to = "Modalitet", values_to = "Udio") %>%
+  mutate(Modalitet = factor(Modalitet, levels = c("Afektivni", "Deliberativni", "Distribucijski")))
+
+ggplot(modality_grouped, aes(x = Grupa_institucija, y = Udio, fill = Modalitet)) +
+  geom_col(position = "dodge", width = 0.7, color = "gray30") +
+  scale_fill_manual(values = c("gray80", "gray50", "gray20")) +
+  scale_y_continuous(labels = function(x) paste0(x, "%")) +
+  labs(
+    title = "Modaliteti angažmana: institucionalni vs. neinstitucionalni akteri",
+    x = NULL, y = "Prosječni udio u ukupnom angažmanu (%)", fill = "Modalitet"
+  )
+```
+
+
+## Sprega sentimenta i pažnje (H3)
+
+```{r sentiment-analysis}
+#| label: sentiment-analysis
+
+# clean sentiment variable
+dta[, sentiment_clean := tolower(trimws(as.character(AUTO_SENTIMENT)))]
+dta[sentiment_clean == "", sentiment_clean := NA_character_]
+dta_sent <- dta[!is.na(sentiment_clean) & sentiment_clean %in% c("positive", "negative", "neutral")]
+
+n_sent <- nrow(dta_sent)
+n_sent_pct <- round(n_sent / n_posts * 100, 1)
+```
+
+```{r sentiment-engagement}
+#| label: tbl-sentiment-engagement
+
+sent_stats <- dta_sent[, .(
+  N = .N,
+  Prosjek_int = mean(INTERACTIONS, na.rm = TRUE),
+  Medijan_int = median(INTERACTIONS, na.rm = TRUE),
+  SD_int = sd(INTERACTIONS, na.rm = TRUE)
+), by = sentiment_clean][order(-Prosjek_int)]
+
+sent_stats %>%
+  mutate(
+    N = format(N, big.mark = "."),
+    Prosjek_int = fmtc("%.1f", Prosjek_int),
+    Medijan_int = fmtc("%.1f", Medijan_int),
+    SD_int = fmtc("%.1f", SD_int)
+  ) %>%
+  kable(
+    col.names = c("Sentiment", "Objave", "Prosj. interakcija", "Medijan", "SD"),
+    caption = "Angažman po kategorijama sentimenta",
+    align = c("l", "r", "r", "r", "r")
+  ) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+
+# Kruskal-Wallis test
+kw_sent <- kruskal.test(INTERACTIONS ~ sentiment_clean, data = dta_sent)
+```
+
+```{r sentiment-by-institution}
+#| label: tbl-sentiment-institution
+
+# stratified analysis: sentiment x institutional status
+sent_inst <- dta_sent[, .(
+  N = .N,
+  Prosjek_int = mean(INTERACTIONS, na.rm = TRUE),
+  Medijan_int = median(INTERACTIONS, na.rm = TRUE)
+), by = .(sentiment_clean, Grupa_institucija)][order(Grupa_institucija, sentiment_clean)]
+
+# compute negativity boost within each group
+sent_inst_wide <- dcast(sent_inst, Grupa_institucija ~ sentiment_clean, value.var = "Prosjek_int")
+sent_inst_wide[, neg_boost := negative / positive]
+
+sent_inst %>%
+  mutate(
+    N = format(N, big.mark = "."),
+    Prosjek_int = fmtc("%.1f", Prosjek_int),
+    Medijan_int = fmtc("%.1f", Medijan_int)
+  ) %>%
+  kable(
+    col.names = c("Sentiment", "Grupa", "Objave", "Prosj. int.", "Medijan"),
+    caption = "Angažman po sentimentu i institucionalnom statusu",
+    align = c("l", "l", "r", "r", "r")
+  ) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+Analiza sprege sentimenta i pažnje temelji se na `r format(n_sent, big.mark = ".")` objava (`r n_sent_pct` % korpusa) s dostupnom automatskom klasifikacijom sentimenta. Kruskal-Wallisov test potvrđuje statistički značajne razlike u angažmanu po kategorijama sentimenta (χ² = `r round(kw_sent$statistic, 1)`, *p* `r ifelse(kw_sent$p.value < 0.001, "< 0,001", fmtc("= %.3f", kw_sent$p.value))`). @tbl-sentiment-engagement prikazuje prosječni i medijalni angažman za svaku kategoriju sentimenta. @tbl-sentiment-institution stratificira ovaj obrazac po institucionalnom statusu, otkrivajući omjer pojačanja negativnog sadržaja (negativity boost) koji iznosi `r fmtc("%.2f", sent_inst_wide[Grupa_institucija == "Neinstitucionalni"]$neg_boost)` za neinstitucionalne aktere i `r fmtc("%.2f", sent_inst_wide[Grupa_institucija == "Institucionalni"]$neg_boost)` za institucionalne aktere (@fig-sentiment). Ova asimetrija upućuje na to da je dio institucionalnog jaza u pažnji objašnjiv ograničenijim korištenjem negativnog afekta u institucionalnim komunikacijama.
+
+```{r sentiment-figure}
+#| label: fig-sentiment
+#| fig-cap: "Prosječni angažman po sentimentu i institucionalnom statusu. Negativni sadržaj privlači nerazmjerno više pažnje, ali učinak je nejednako izražen."
+#| fig-height: 6
+
+ggplot(sent_inst, aes(x = sentiment_clean, y = Prosjek_int, fill = Grupa_institucija)) +
+  geom_col(position = "dodge", width = 0.7, color = "gray30") +
+  scale_fill_manual(values = c("Institucionalni" = "gray70", "Neinstitucionalni" = "gray30")) +
+  labs(
+    title = "Sprega sentimenta i pažnje po institucionalnom statusu",
+    x = "Sentiment (automatska klasifikacija)", y = "Prosječne interakcije",
+    fill = NULL
+  )
+```
+
+
+## Liturgijsko vremensko strukturiranje (H4)
+
+```{r temporal-prep}
+#| label: temporal-prep
+#| include: false
+
+# Easter calculation (Anonymous Gregorian algorithm)
+easter_date <- function(year) {
+  a <- year %% 19
+  b <- year %/% 100
+  c <- year %% 100
+  d <- b %/% 4
+  e <- b %% 4
+  f <- (b + 8) %/% 25
+  g <- (b - f + 1) %/% 3
+  h <- (19 * a + b - d - g + 15) %% 30
+  i <- c %/% 4
+  k <- c %% 4
+  l <- (32 + 2 * e + 2 * i - h - k) %% 7
+  m <- (a + 11 * h + 22 * l) %/% 451
+  month <- (h + l - 7 * m + 114) %/% 31
+  day <- ((h + l - 7 * m + 114) %% 31) + 1
+  as.Date(paste(year, month, day, sep = "-"))
+}
+
+# Assign liturgical season to each date
+assign_liturgical <- function(date) {
+  yr <- year(date)
+  easter <- easter_date(yr)
+  
+  ash_wednesday <- easter - 46
+  holy_thursday <- easter - 3
+  pentecost <- easter + 49
+  
+  # Advent: 4th Sunday before Christmas through Dec 24
+  christmas_day <- as.Date(paste0(yr, "-12-25"))
+  dec24 <- as.Date(paste0(yr, "-12-24"))
+  dow_dec24 <- lubridate::wday(dec24)  # Sunday = 1
+  last_sunday_before <- dec24 - (dow_dec24 - 1)
+  advent_start <- last_sunday_before - 21  # 3 more Sundays back
+  
+  # Christmas season: Dec 25 to Baptism of the Lord (~Sunday after Jan 6)
+  jan6_next <- as.Date(paste0(yr + 1, "-01-06"))
+  dow_jan6 <- lubridate::wday(jan6_next)
+  if (dow_jan6 == 1) {
+    baptism <- jan6_next + 7
+  } else {
+    baptism <- jan6_next + (8 - dow_jan6)
+  }
+  
+  # Check if date falls in Christmas season from previous year
+  jan6_this <- as.Date(paste0(yr, "-01-06"))
+  dow_jan6_this <- lubridate::wday(jan6_this)
+  if (dow_jan6_this == 1) {
+    baptism_this <- jan6_this + 7
+  } else {
+    baptism_this <- jan6_this + (8 - dow_jan6_this)
+  }
+  prev_christmas <- as.Date(paste0(yr - 1, "-12-25"))
+  
+  if (date >= prev_christmas & date <= baptism_this) return("Božić")
+  if (date >= ash_wednesday & date <= holy_thursday) return("Korizma")
+  if (date >= easter & date <= pentecost) return("Uskrs")
+  if (date >= advent_start & date <= dec24) return("Došašće")
+  if (date >= christmas_day) return("Božić")
+  return("Vrijeme kroz godinu")
+}
+
+dta[, liturgical_season := sapply(DATE, assign_liturgical)]
+dta[, liturgical_season := factor(liturgical_season,
+  levels = c("Vrijeme kroz godinu", "Došašće", "Božić", "Korizma", "Uskrs")
+)]
+
+# Daily aggregates
+daily <- dta[, .(
+  n_posts = .N,
+  total_int = sum(INTERACTIONS, na.rm = TRUE)
+), by = .(DATE, liturgical_season)]
+
+daily[, `:=`(
+  dow = lubridate::wday(DATE, label = TRUE),
+  month = month(DATE),
+  year = year(DATE),
+  log_posts = log1p(n_posts)
+)]
+```
+
+```{r tbl-liturgical-stats}
+#| label: tbl-liturgical-stats
+
+lit_stats <- dta[, .(
+  Objave = .N,
+  Dnevni_prosjek = .N / uniqueN(DATE),
+  Prosj_int = mean(INTERACTIONS, na.rm = TRUE),
+  Medijan_int = median(INTERACTIONS, na.rm = TRUE)
+), by = liturgical_season][order(liturgical_season)]
+
+# Effect size relative to Ordinary Time
+baseline <- lit_stats[liturgical_season == "Vrijeme kroz godinu"]$Dnevni_prosjek
+lit_stats[, Velicina_ucinka := (Dnevni_prosjek - baseline) / baseline * 100]
+
+lit_stats %>%
+  mutate(
+    Objave = format(Objave, big.mark = "."),
+    Dnevni_prosjek = fmtc("%.1f", Dnevni_prosjek),
+    Prosj_int = fmtc("%.1f", Prosj_int),
+    Medijan_int = fmtc("%.1f", Medijan_int),
+    Velicina_ucinka = fmtc("%+.1f%%", Velicina_ucinka)
+  ) %>%
+  kable(
+    col.names = c("Liturgijsko vrijeme", "Objave", "Dnevni prosj.", "Prosj. int.", "Medijan int.", "Učinak vs. OT"),
+    caption = "Aktivnost po liturgijskim vremenima",
+    align = c("l", "r", "r", "r", "r", "r")
+  ) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+```{r liturgical-regression}
+#| label: liturgical-regression
+
+# Secular model
+mod_secular <- lm(log_posts ~ dow + factor(month) + factor(year), data = daily)
+r2_secular <- summary(mod_secular)$r.squared
+
+# Combined model with liturgical season
+mod_combined <- lm(log_posts ~ dow + factor(month) + factor(year) + liturgical_season, data = daily)
+r2_combined <- summary(mod_combined)$r.squared
+
+r2_increment <- r2_combined - r2_secular
+
+# F-test for incremental validity
+f_test <- anova(mod_secular, mod_combined)
+f_stat <- f_test$F[2]
+f_p <- f_test$`Pr(>F)`[2]
+```
+
+@tbl-liturgical-stats prikazuje aktivnost po liturgijskim vremenima, uključujući dnevne stope objavljivanja i veličine učinka u odnosu na bazno Vrijeme kroz godinu.
+
+Za testiranje Hipoteze 4 provedena je hijerarhijska regresijska analiza na razini dnevnih agregata. Model sa sekularnim prediktorima (dan u tjednu, mjesec i godina) objašnjava R² = `r fmtc("%.3f", r2_secular)` varijance u dnevnom broju objava (log-transformirano). Dodavanje liturgijskih vremena kao prediktora povećava objašnjenu varijancu na R² = `r fmtc("%.3f", r2_combined)`, što predstavlja inkrementalni doprinos od ΔR² = `r fmtc("%.3f", r2_increment)`. F-test za inkrementalnu valjanost liturgijskog prediktora daje F = `r fmtc("%.1f", f_stat)` (*p* `r ifelse(f_p < 0.001, "< 0,001", fmtc("= %.3f", f_p))`). `r ifelse(f_p < 0.05, "Rezultat je statistički značajan, potvrđujući da liturgijski kalendar strukturira obrasce digitalne aktivnosti povrh sekularnih vremenskih ciklusa, čak i nakon kontrole za godišnje trendove u volumenu objavljivanja. Ovaj nalaz podupire Hipotezu 4 i predstavlja specifičnost religijskih digitalnih ekosustava koja nema izravnu analogiju u dosadašnjoj literaturi o ekonomiji pažnje.", "Rezultat nije statistički značajan na razini p < 0,05, što sugerira da nakon kontrole za godišnje trendove liturgijski kalendar ne objašnjava dodatnu varijancu u aktivnosti objavljivanja. Hipoteza 4 stoga nije potvrđena, no opisni obrasci aktivnosti po liturgijskim vremenima ipak upućuju na diferencijaciju koju bi buduća istraživanja s većom statističkom snagom mogla detaljnije rasvijetliti.")`
+
+
+## Platformski specifična struktura koncentracije (H5)
+
+```{r platform-gini}
+#| label: tbl-platform-gini
+
+platform_gini <- dta[, {
+  src <- .SD[, .(int = sum(INTERACTIONS, na.rm = TRUE)), by = FROM]
+  if (nrow(src) >= 10 && sum(src$int) > 0) {
+    .(
+      N_izvora = nrow(src),
+      Gini = ineq(src$int, type = "Gini"),
+      Ukupne_int = sum(src$int)
+    )
+  } else {
+    .(N_izvora = nrow(src), Gini = NA_real_, Ukupne_int = sum(src$int))
+  }
+}, by = SOURCE_TYPE][!is.na(Gini)][order(-Gini)]
+
+# classify platform curation type
+platform_gini[, Tip_kuriranja := fifelse(
+  SOURCE_TYPE %in% c("facebook", "instagram", "youtube"),
+  "Algoritmički",
+  fifelse(SOURCE_TYPE == "web", "Uredništvo", "Mješoviti")
+)]
+
+platform_gini %>%
+  mutate(
+    N_izvora = format(N_izvora, big.mark = "."),
+    Gini = fmtc("%.3f", Gini),
+    Ukupne_int = format(Ukupne_int, big.mark = ".")
+  ) %>%
+  kable(
+    col.names = c("Platforma", "Izvori", "Gini", "Ukupne int.", "Tip kuriranja"),
+    caption = "Koncentracija pažnje po platformama (Gini koeficijenti)",
+    align = c("l", "r", "r", "r", "l")
+  ) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+```{r platform-gini-figure}
+#| label: fig-platform-gini
+#| fig-cap: "Gini koeficijenti koncentracije pažnje po platformama, obojeni prema tipu kuriranja sadržaja."
+#| fig-height: 6
+
+ggplot(platform_gini, aes(x = reorder(SOURCE_TYPE, Gini), y = Gini, fill = Tip_kuriranja)) +
+  geom_col(width = 0.7, color = "gray30") +
+  geom_hline(yintercept = gini_coef, linetype = "dashed", color = "black", linewidth = 0.8) +
+  geom_text(aes(label = fmtc("%.3f", Gini)), hjust = -0.1, size = 3.5) +
+  coord_flip() +
+  scale_fill_manual(values = c("Algoritmički" = "gray40", "Uredništvo" = "gray75", "Mješoviti" = "gray60")) +
+  scale_y_continuous(limits = c(0, 1.05)) +
+  annotate("text", x = 1, y = gini_coef + 0.02, label = "Ukupni Gini", hjust = 0, size = 3) +
+  labs(
+    title = "Koncentracija pažnje po platformama",
+    x = NULL, y = "Gini koeficijent", fill = "Tip kuriranja"
+  )
+```
+
+```{r gini-curation-test}
+#| label: gini-curation-test
+
+# compare Gini values by curation type (descriptive given small N)
+gini_algo  <- platform_gini[Tip_kuriranja == "Algoritmički"]$Gini
+gini_edit  <- platform_gini[Tip_kuriranja == "Uredništvo"]$Gini
+gini_mixed <- platform_gini[Tip_kuriranja == "Mješoviti"]$Gini
+
+mean_algo  <- mean(gini_algo, na.rm = TRUE)
+mean_edit  <- mean(gini_edit, na.rm = TRUE)
+```
+
+@tbl-platform-gini prikazuje Gini koeficijente izračunate zasebno za svaku platformu. Algoritmički kurirane platforme (Facebook, Instagram, YouTube) pokazuju prosječni Gini od `r fmtc("%.3f", mean_algo)`, dok uredništvom kurirane platforme (web portali) postižu Gini od `r fmtc("%.3f", mean_edit)` (@fig-platform-gini). S obzirom na mali broj platformi, statistička inferencija na razini platformskih jedinica nije primjerena. `r ifelse(mean_algo > mean_edit, "Opisni obrazac ukazuje na to da algoritmičko kuriranje pojačava koncentraciju pažnje, što je sukladno očekivanjima Hipoteze 5 i teorijskim predikcijama Van Dijck (2018) o ulozi platformskih arhitektura. Razlike u koncentraciji sugeriraju da mehanizmi distribucije pažnje nisu platformski invarijantni, već da tehničke arhitekture aktivno oblikuju stupanj nejednakosti u vidljivosti.", "Opisni obrazac ne potvrđuje očekivanje da algoritmički kurirane platforme pokazuju veću koncentraciju od uredništvom kuriranih, čime Hipoteza 5 nije podržana u ovom uzorku.")`
+
+
+## Sažetak testiranja hipoteza
+
+```{r hypothesis-summary}
+#| label: tbl-hypothesis-summary
+
+hypothesis_results <- tibble(
+  Hipoteza = c(
+    "H1: Distribucija po zakonu potencije",
+    "H2: Institucionalni modaliteti pažnje",
+    "H3: Sprega sentimenta i pažnje",
+    "H4: Liturgijsko vremensko strukturiranje",
+    "H5: Platformski specifična struktura koncentracije"
+  ),
+  Predikcija = c(
+    "R² > 0,90 i Gini > 0,80",
+    "Inst. akteri: više komentara, manje lajkova",
+    "Negativni sentiment privlači više pažnje, slabije kod inst.",
+    "Liturgijski kalendar predviđa aktivnost povrh sekularnih ciklusa",
+    "Algoritmičke platforme imaju veću koncentraciju"
+  ),
+  Rezultat = c(
+    paste0("R² = ", round(r_squared, 3), "; Gini = ", round(gini_coef, 3)),
+    paste0("W(komentari) = ", format(wilcox_comments$statistic, big.mark = "."),
+           ", p ", ifelse(wilcox_comments$p.value < 0.001, "< 0,001", 
+                         fmtc("= %.3f", wilcox_comments$p.value))),
+    paste0("χ²(sentiment) = ", round(kw_sent$statistic, 1),
+           ", p ", ifelse(kw_sent$p.value < 0.001, "< 0,001", 
+                         fmtc("= %.3f", kw_sent$p.value)),
+           "; neg. boost inst. = ", fmtc("%.2f", sent_inst_wide[Grupa_institucija == "Institucionalni"]$neg_boost),
+           " vs. neinst. = ", fmtc("%.2f", sent_inst_wide[Grupa_institucija == "Neinstitucionalni"]$neg_boost)),
+    paste0("ΔR² = ", fmtc("%.3f", r2_increment), 
+           "; F = ", fmtc("%.1f", f_stat),
+           ", p ", ifelse(f_p < 0.001, "< 0,001", fmtc("= %.3f", f_p))),
+    paste0("Gini algo. = ", fmtc("%.3f", mean_algo),
+           " vs. uredništvo = ", fmtc("%.3f", mean_edit))
+  ),
+  Potvrđena = c(
+    ifelse(r_squared > 0.90 & gini_coef > 0.80, "Da",
+           ifelse(r_squared > 0.85 & gini_coef > 0.75, "Djelomično", "Ne")),
+    ifelse(wilcox_comments$p.value < 0.05, "Da", "Ne"),
+    ifelse(kw_sent$p.value < 0.05 &
+           sent_inst_wide[Grupa_institucija == "Institucionalni"]$neg_boost <
+           sent_inst_wide[Grupa_institucija == "Neinstitucionalni"]$neg_boost,
+           "Da",
+           ifelse(kw_sent$p.value < 0.05, "Djelomično", "Ne")),
+    ifelse(f_p < 0.05, "Da", "Ne"),
+    ifelse(mean_algo > mean_edit, "Opisno da", "Ne")
+  )
+)
+
+hypothesis_results %>%
+  kable(caption = "Sažetak rezultata testiranja hipoteza", align = c("l", "l", "l", "c")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE) %>%
+  column_spec(4, bold = TRUE)
+```
+
+@tbl-hypothesis-summary sažima rezultate testiranja svih pet hipoteza, uključujući ključne statističke pokazatelje i ocjenu potvrđenosti svake hipoteze.
+
+
+# Rasprava
+
+Rezultati ovog istraživanja pružaju prvu sustavnu empirijsku sliku distribucije pažnje unutar nacionalnog katoličkog digitalnog ekosustava i testiraju ključne predikcije teorije ekonomije pažnje u religijskom kontekstu, istovremeno ih proširujući u nekoliko dimenzija koje dosadašnja literatura nije zahvatila.
+
+Ekstremna koncentracija pažnje, dokumentirana u @tbl-platform-distribution i @fig-lorenz-curve, nadilazi razine nejednakosti tipično dokumentirane u komercijalnim digitalnim ekosustavima. Mehanizmi preferencijskog priključivanja i algoritamskog pojačavanja, opisani u teorijskim modelima Falkingera (2007) i Goldhaber (1997), generiraju samoojačavajuće cikluse vidljivosti koji očito operiraju i u nekomercijalnom religijskom kontekstu. Za Katoličku crkvu u Hrvatskoj to ima konkretne pastoralne implikacije: nevidljivost u digitalnom prostoru može značiti isključenost iz sve važnijeg kanala komunikacije s vjernicima (Campbell, 2022; Moberg i Črnič, 2024). Velika većina izvora generira zanemariv angažman, što upućuje na to da sama digitalna prisutnost ne jamči komunikacijsku relevantnost -- institucije koje žele biti čuvene moraju aktivno natjecati za pažnju.
+
+Dekompozicija angažmana na tri modaliteta (H2) predstavlja ključni analitički doprinos ovog istraživanja. Umjesto jednostavnog zaključka da institucionalni akteri privlače manje pažnje, rezultati otkrivaju da privlače kvalitativno drugačiju pažnju. Viši udio deliberativnog modaliteta sugerira da institucionalne komunikacije ipak uspijevaju potaknuti dublje procesiranje sadržaja, čak i kada ne generiraju volumene afektivnih reakcija svojstvene neinstitucionalnim akterima. Ovo otvara pitanje jesu li standardne metrike angažmana primjerene za procjenu komunikacijske uspješnosti u religijskim kontekstima -- komentar, koji zahtijeva formulaciju stava i javno izlaganje mišljenja, indicira kvalitativno zahtjevniji oblik pažnje od lajka ili reakcije. Za katoličke komunikatore to znači da agregatne brojke interakcija mogu podcjenjivati stvarnu komunikacijsku vrijednost institucionalnog sadržaja.
+
+Sprega sentimenta i pažnje (H3) otkriva važnu asimetriju po institucionalnom statusu. Neinstitucionalni akteri ostvaruju veći negativity boost jer su slobodniji u korištenju negativnog afekta, dok algoritmička logika platformi to nagrađuje pojačanom vidljivošću. Institucionalni akteri, ograničeni komunikacijskim normama i reprezentacijskom ulogom, operiraju pod specifičnim normativnim ograničenjima koja ograničavaju raspon dopustivog afektivnog tona. Ova ograničenja imaju mjerljive posljedice za digitalnu vidljivost, ali istodobno čuvaju integritet institucionalnog glasa -- kompromis koji zaslužuje pažnju pri formuliranju digitalnih komunikacijskih strategija Crkve.
+
+Analiza liturgijskog kalendara (H4) ispituje strukturiranje vremenske dinamike digitalnog sadržaja unutar religijskog konteksta. Inkrementalni doprinos liturgijskih prediktora iznosi ΔR² = `r fmtc("%.3f", r2_increment)` (`r ifelse(f_p < 0.05, paste0("F = ", fmtc("%.1f", f_stat), ", p < 0,05"), paste0("F = ", fmtc("%.1f", f_stat), ", p = ", fmtc("%.3f", f_p)))`). `r ifelse(f_p < 0.05, "Liturgijski kalendar funkcionira kao egzogeni strukturni okvir koji modulira ponudu i potražnju religijskog digitalnog sadržaja neovisno o generičkim sezonskim obrascima i godišnjim trendovima. Ovaj nalaz nema izravnu analogiju u dosadašnjoj literaturi o ekonomiji pažnje i ukazuje na specifičnosti religijskih digitalnih ekosustava koje nisu reduktibilne na sekularne obrasce medijske produkcije.", "Nakon kontrole za godišnje trendove, inkrementalni doprinos liturgijskog kalendara nije statistički značajan, što sugerira da su opisne razlike u aktivnosti po liturgijskim vremenima velikim dijelom objašnjive sekularnim vremenskim obrascima. Ipak, opisni podaci pokazuju diferencijaciju aktivnosti po liturgijskim vremenima koja zaslužuje daljnje istraživanje s finijim vremenskim rezolucijama.")`
+
+`r ifelse(mean_algo > mean_edit, "Platformski specifična analiza koncentracije (H5) ukazuje na varijaciju u Gini koeficijentima među platformama koja slijedi očekivani obrazac. Algoritmički kurirane platforme pokazuju veću koncentraciju od uredništvom kuriranih web portala, sugerirući da algoritamsko kuriranje sadržaja pojačava dinamiku pobjednik-uzima-sve. Iako je broj platformi premalen za robusnu inferenciju, opisni obrazac je konzistentan s teorijskim predikcijama Van Dijck (2018) o ulozi platformskih arhitektura.", "Platformski specifična analiza koncentracije (H5) ne potvrđuje očekivani obrazac prema kojem algoritmički kurirane platforme pokazuju veću koncentraciju. Ovaj nalaz sugerira da u hrvatskom katoličkom digitalnom prostoru drugi čimbenici, poput specifičnosti sadržaja i strukture izvora, mogu biti dominantniji od platformskih algoritama u oblikovanju distribucije pažnje.")` Praktična implikacija jest da odabir platforme nije neutralna odluka za religijske komunikatore jer nosiva struktura svake platforme oblikuje distribuciju pažnje koja je na njoj moguća.
+
+Istraživanje ima nekoliko ograničenja. Klasifikacija aktera, iako validirana na uzorku, temelji se na pravilima utemeljenima na imenima i domenama izvora. Automatska klasifikacija sentimenta uvodi mjernu pogrešku čija veličina ovisi o performansama modela na hrvatskom tekstu religijskog sadržaja; osobito, religijski vokabular koji nosi duhovne konotacije (npr. žrtva, patnja, križ) može biti sustavno krivo klasificiran kao negativan, što bi moglo utjecati na preciznost nalaza o sprezi sentimenta i pažnje (H3). Analiza sentimenta nije stratificirana po platformama, što znači da bi opaženi odnos između sentimenta i angažmana mogao djelomično odražavati razlike u baznim razinama interakcija među platformama. Ovisnost o platformskim metrikama podrazumijeva da su mjere angažmana posredovane algoritamskim odlukama pojedinih platformi. Isključenje TikToka iz analize znači da brzorastući segment religijskog digitalnog sadržaja nije obuhvaćen. Dekompozicija angažmana na modalitete ograničena je na Facebook jer ostale platforme ne pružaju usporedivu raščlambu metrika. Naposljetku, transverzalni karakter podataka ne omogućuje kauzalne zaključke o mehanizmima koji generiraju opažene obrasce.
+
+
+# Zaključak
+
+Ovo istraživanje pokazuje da se i u hrvatskom katoličkom digitalnom prostoru odvija ista borba za pažnju koja obilježava cijeli internet. Iako Katolička Crkva u Hrvatskoj ima snažnu društvenu prisutnost, u digitalnom okruženju pažnja se ne raspodjeljuje ravnomjerno. Najveći dio interakcija koncentriran je oko ograničenog broja izvora, ponajprije većih katoličkih medijskih nakladnika i digitalnih platformi poput Laudato TV i Bitno.net, zatim crkvenih medija i službenih komunikacijskih kanala kao što su Hrvatska biskupska konferencija, Informativna katolička agencija, Hrvatski katolički radio i Glas Koncila.
+
+Značajnu digitalnu vidljivost ostvaruju i pojedini svećenici s izraženom online prisutnošću, primjerice don Damir Stojić, fra Stjepan Brčina i fra Ivan Matić čiji sadržaji redovito generiraju iznadprosječan angažman na društvenim mrežama. U segmentu laičkih influencera vidljivost se koncentrira oko aktera koji kombiniraju vjerski identitet s osobnim narativom i digitalnom interakcijom.
+
+Nasuprot tome, brojne župe, manje redovničke zajednice i lokalne inicijative ostvaruju znatno niže razine angažmana. Analiza pokazuje da digitalna vidljivost nije automatska posljedica institucionalnog statusa ni formalnog crkvenog autoriteta. Naprotiv, kombinacija je profesionalizirane medijske produkcije, kontinuiteta objavljivanja, platformskih algoritama i sposobnosti generiranja emocionalno ili identitetski snažnog sadržaja.
+
+Neke vrste pažnje su tiše, ali dublje.
+
+Rezultati također pokazuju da sadržaj koji nosi negativan ton u prosjeku privlači više interakcija, osobito kada dolazi od neinstitucionalnih aktera. Digitalne platforme očito nagrađuju emocionalno intenzivniji sadržaj. Međutim, institucionalni komunikatori djeluju unutar normativnih i pastoralnih ograničenja koja ih sprječavaju da posežu za takvim strategijama. Uz to, ritam digitalnih aktivnosti nije u potpunosti određen sekularnim ciklusima. Podaci pokazuju da se u razdobljima poput Došašća, Božića i Uskrsa povećava aktivnost i mijenja obrazac angažmana publike što pokazuje da liturgijski kalendar u značajnoj mjeri utječe na digitalni prostor.
+
+Zaključno, ovo istraživanje pokazuje da religijska komunikacija u digitalnom dobu funkcionira unutar istih strukturalnih zakonitosti koje oblikuju i komercijalne medije, ali s vlastitim specifičnostima. Pažnja je ograničen resurs, a digitalni prostor je natjecateljski. Ipak, način na koji se pažnja privlači i koristi u religijskom kontekstu ne može se svesti samo na tržišnu logiku jer uključuje pitanja identiteta, zajedništva i smisla. Za katoličke komunikatore to znači da digitalna strategija ne bi trebala težiti isključivo povećanju brojki, nego razumijevanju kakvu pažnju žele potaknuti i kakvu vrstu odnosa graditi s publikom. Za istraživače, rezultati otvaraju prostor za daljnje usporedbe s drugim zemljama i religijskim tradicijama te za dublje istraživanje odnosa između tehnologije, emocija i vjerskog iskustva.
+
+Ovo istraživanje pruža prvo sustavno mapiranje nacionalnog katoličkog digitalnog medijskog ekosustava, analizirajući više od 608.879 (ili više od 600 tisuća) objava kroz više platformi radi ispitivanja distribucije pažnje, modaliteta angažmana, uloge sentimenta, vremenskih obrazaca i platformski specifične koncentracije u hrvatskoj katoličkoj digitalnoj komunikaciji. Istraživanje je potvrdilo da se i u hrvatskom katoličkom digitalnom prostoru pažnja distribuira prema obrascima karakterističnima za širi digitalni medijski ekosustav. Unatoč snažnoj društvenoj prisutnosti Katoličke Crkve u Hrvatskoj, digitalna vidljivost izrazito je neravnomjerno raspodijeljena. Većina angažmana koncentrirana je oko ograničenog broja izvora, ponajprije profesionaliziranih katoličkih medijskih platformi poput Laudato TV i Bitno.net, zatim crkveno povezanih medija i službenih komunikacijskih kanala kao što su Hrvatska biskupska konferencija, Informativna katolička agencija, Hrvatski katolički radio i Glas Koncila.
+
+Među individualnim akterima visoku razinu angažmana ostvaruju svećenici s izraženom digitalnom prisutnošću primjerice, don Damir Stojić, fra Stjepan Brčina i fra Ivan Matić. Analiza istodobno identificira manji broj laičkih influencera kao što su...navesti barem tri imena u gornjem percentilu po ukupnom angažmanu, čiji se uspjeh temelji na personaliziranoj komunikaciji i intenzivnoj interakciji s publikom. Nasuprot tome, većina župa, manjih redovničkih zajednica i lokalnih inicijativa ostvaruje nizak angažman, što potvrđuje da digitalna vidljivost nije proporcionalna formalnom institucionalnom autoritetu.
+
+Posebno je zanimljivo da institucionalni akteri, poput službenih crkvenih tijela i biskupija dobivaju manje angažmana i drukčiju vrstu pažnje. Njihove objave rjeđe izazivaju brze emocionalne reakcije, ali češće potiču komentare, odnosno zahtjevniji i promišljeniji oblik sudjelovanja. To znači da se uspješnost religijske komunikacije ne može svesti samo na broj lajkova ili dijeljenja.
+
+Rezultati također pokazuju da sadržaj koji nosi negativan ton u prosjeku privlači više interakcija, osobito kada dolazi od neinstitucionalnih aktera. Digitalne platforme očito nagrađuju emocionalno intenzivniji sadržaj. Međutim, institucionalni komunikatori djeluju unutar normativnih i pastoralnih ograničenja koja ih sprječavaju da posežu za takvim strategijama.
+
+Digitalna dinamika pritom nije isključivo određena sekularnim ciklusima. Analiza pokazuje da liturgijska razdoblja poput Došašća, Božića i Uskrsa pridonose promjenama u intenzitetu objavljivanja i angažmana, što upućuje na to da liturgijski kalendar i dalje strukturira digitalnu komunikaciju.
+
+Zaključno, hrvatski katolički digitalni prostor funkcionira unutar strukturnih zakonitosti ekonomije pažnje, ali zadržava specifičnosti povezane s institucionalnim normama, liturgijskim ritmovima i identitetskim dimenzijama religijske komunikacije. Nalazi otvaraju prostor za komparativna istraživanja u drugim nacionalnim i konfesionalnim kontekstima te za daljnju analizu odnosa između platformskih arhitektura i religijske participacije.
+
+
+# Literatura {.unnumbered}
+
+Aggarwal, N., Aggarwal, S. i Aggarwal, R. (2023). Digital religion and Generation Z: An empirical study in the context of China. *Frontiers in Psychology*, *14*, Article 1536644.
+
+Campbell, H. A. (2022). *Digital religion: Understanding religious practice in digital media*. Routledge.
+
+Davenport, T. H. i Beck, J. C. (2001). The attention economy. *Ubiquity*, *2001*(May), 1–es.
+
+Falkinger, J. (2007). Attention economies. *Journal of Economic Theory*, *133*(1), 266–294.
+
+Franck, G. (2019). The economy of attention. *Journal of Sociology*, *55*(1), 8–19.
+
+Goldhaber, M. H. (1997). The attention economy and the net. *First Monday*, *2*(4).
+
+Hjarvard, S. (2008). The mediatization of religion: A theory of the media as agents of religious change. *Northern Lights*, *6*(1), 9–26.
+
+Hoover, S. M. (2006). *Religion in the media age*. Routledge.
+
+Klevesath, L. (2025). Pluralization of Islam-related claims to authority in the digital sphere. *Frontiers in Political Science*.
+
+Lanham, R. A. (2006). *The economics of attention: Style and substance in the age of information*. University of Chicago Press.
+
+Mattes, A. i sur. (2024). Negotiations of belonging in digital spaces. *Frontiers in Political Science*.
+
+Moberg, M. i Črnič, T. (2024). Digital religious narratives and community resilience: A theoretical framework. *Journal of Digital Religion*, *1*(1), 45–62.
+
+Pedersen, M. A., Albris, K. i Seaver, N. (2021). The political economy of attention. *Annual Review of Anthropology*, *50*, 309–325.
+
+Rohmawati, F., Nugroho, D. i Putri, A. (2025). Quantifying engagement in digital religious communities. *Journal of Religion, Media and Digital Culture*, *12*(2), 101–120.
+
+Simon, H. A. (1971). Designing organizations for an information-rich world. U M. Greenberger (Ur.), *Computers, communications, and the public interest* (str. 37–72). Johns Hopkins Press.
+
+Van Dijck, J. (2018). *The platform society: Public values in a connective world*. Oxford University Press.
+
+Wojtowicz, Z. i Loewenstein, G. (2020). Curiosity and the economics of attention. *Current Opinion in Behavioral Sciences*, *35*, 135–140.
